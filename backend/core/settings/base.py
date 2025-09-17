@@ -243,6 +243,7 @@ RASA_ENDPOINT = (
 
 INSTALLED_APPS = [
     # 'django.contrib.admin',
+    'search',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
