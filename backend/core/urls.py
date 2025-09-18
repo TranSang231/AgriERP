@@ -48,7 +48,7 @@ urlpatterns = [
     path(r'', include('va.urls')),
     path(r'', include('ecommerce.urls')),
     path(r'', include('contents.urls')),
-    path(r'', include('firebase.urls'))
+    # path(r'', include('firebase.urls'))
 ]
 # Static route
 urlpatterns += static(STATIC_URL, document_root=STATIC_ROOT)
