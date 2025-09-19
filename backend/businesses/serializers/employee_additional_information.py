@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from base.serializers import BaseListSerializer, BaseSerializer
+from base.serializers import BaseListSerializer, BaseSerializer, MutipleUpdateListSerializer
 from ..models import Employee, EmployeeCustomField, EmployeeAdditionalInformation
 
 
@@ -11,7 +11,7 @@ class EmployeeAdditionalInformationSerializer(BaseSerializer):
 
     class Meta:
         model = EmployeeAdditionalInformation
-        list_serializer_class = BaseListSerializer
+        list_serializer_class = MutipleUpdateListSerializer
         fields = ['id', 'employee', 'employee_id', 'field', 'field_id', 'value']
         extra_kwargs = {
             'employee': {'required': False},
