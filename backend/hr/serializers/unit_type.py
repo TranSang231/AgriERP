@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 
 class UnitTypeSerializer(serializers.ModelSerializer):
-    business_id = serializers.UUIDField(required=True)      
+    business_id = serializers.UUIDField(required=False, allow_null=True)      
     class Meta:         
         model = UnitType
         fields = ["id", "name", "description","business_id","created_at","updated_at"]
