@@ -44,7 +44,14 @@ jobs:
             business/package.json
 
       - name: Install deps
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Using npm ci (lockfile present)"
+            npm ci
+          else
+            echo "No lockfile found, falling back to npm install"
+            npm install
+          fi
 
       - name: Build
         env:
