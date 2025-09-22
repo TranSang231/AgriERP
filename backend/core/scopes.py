@@ -49,6 +49,11 @@ scopes = {
     **ecommerce_scopes
 }
 
+scopes.update({
+    "suppliers:view": "View suppliers",
+    "suppliers:edit": "Create/Update/Delete suppliers"
+})
+
 default_scopes = {
     **oauth_default_scopes,
     **contents_default_scopes,

@@ -266,7 +266,8 @@ INSTALLED_APPS = [
     'ecommerce',
     'contents',
     'firebase',
-    'health_check'
+    'health_check',
+    'supplier_management'
 ]
 
 
