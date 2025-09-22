@@ -30,8 +30,9 @@ jobs:
 
       - name: Debug files
         run: |
+          pwd
           ls -la
-          ls -la business
+          echo "Parent dir:" && ls -la ..
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -43,7 +44,14 @@ jobs:
             business/package.json
 
       - name: Install deps
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Using npm ci (lockfile present)"
+            npm ci
+          else
+            echo "No lockfile found, falling back to npm install"
+            npm install
+          fi
 
       - name: Build
         env:
@@ -56,6 +64,6 @@ jobs:
         with:
           name: business-nuxt-build-${{ github.sha }}
           path: |
-            business/.nuxt/**
-            business/.output/**
-            business/.nuxt/dist/server/client.manifest.json
+            .nuxt/**
+            .output/**
+            .nuxt/dist/server/client.manifest.json
