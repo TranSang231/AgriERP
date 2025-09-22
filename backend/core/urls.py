@@ -48,6 +48,7 @@ urlpatterns = [
     path(r'', include('va.urls')),
     path(r'', include('ecommerce.urls')),
     path(r'', include('contents.urls')),
+    path(r'', include('supplier_management.urls'))
     # path(r'', include('firebase.urls'))
 ]
 # Static route
