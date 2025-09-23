@@ -5,6 +5,12 @@ import { useCurrency } from '~/composables/useCurrency'
 const cart = useCartStore()
 const { format } = useCurrency()
 const router = useRouter()
+
+// TODO(cart-sync): When adding items, verify latest price/in_stock from /products/{id}
+// Consider server-side cart via /carts if needed for multi-device sync
+// TODO(cart-ui): Add remove confirmation and empty-state CTA to continue shopping
+// TODO(cart-tax-shipping): Display shipping fee and tax breakdown when backend is ready
+
 </script>
 
 <template>
@@ -24,7 +30,7 @@ const router = useRouter()
       </div>
       <div class="flex items-center justify-between mt-6">
         <div class="text-lg">Total: <span class="font-semibold">{{ format(cart.total) }}</span></div>
-        <button @click="router.push('/checkout')" class="bg-black text-white rounded px-4 py-2">Checkout</button>
+        <button @click="router.push('/checkout')" class="btn-primary">Thanh toán</button>
       </div>
     </div>
   </div>

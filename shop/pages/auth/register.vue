@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useCustomersService } from '~/services/customers'
 const router = useRouter()
 const { register } = useCustomersService()
 const form = reactive({ email: '', password: '', name: '' })
 const loading = ref(false)
 const err = ref('')
+
+// TODO(auth): Implement register, database table: ecommerce_customers
 
 async function onSubmit() {
   loading.value = true
@@ -21,10 +24,10 @@ async function onSubmit() {
 
 <template>
   <div class="container mx-auto px-4 py-10 max-w-md">
-    <h1 class="text-2xl font-semibold mb-6">Create account</h1>
-    <form @submit.prevent="onSubmit" class="space-y-4">
+    <h1 class="text-2xl font-semibold mb-6">Đăng ký tài khoản</h1>
+    <form class="space-y-4">
       <div>
-        <label class="block text-sm">Name</label>
+        <label class="block text-sm">Họ tên</label>
         <input v-model="form.name" class="border rounded w-full p-2" required />
       </div>
       <div>
@@ -32,14 +35,15 @@ async function onSubmit() {
         <input v-model="form.email" type="email" class="border rounded w-full p-2" required />
       </div>
       <div>
-        <label class="block text-sm">Password</label>
+        <label class="block text-sm">Mật khẩu</label>
         <input type="password" v-model="form.password" class="border rounded w-full p-2" required />
       </div>
       <p v-if="err" class="text-red-600 text-sm">{{ err }}</p>
-      <button :disabled="loading" class="bg-black text-white rounded px-4 py-2">
-        {{ loading ? 'Creating...' : 'Create' }}
+      <!-- TODO(auth): After register, consider auto-login and preload /customers info -->
+      <button type="button" :disabled="loading" class="btn-primary" @click="onSubmit">
+        {{ loading ? 'Đang tạo...' : 'Tạo tài khoản' }}
       </button>
-      <NuxtLink to="/auth/login" class="ml-3 underline">Sign in</NuxtLink>
+      <NuxtLink to="/auth/login" class="ml-3 underline">Đăng nhập</NuxtLink>
     </form>
   </div>
   
