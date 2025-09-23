@@ -11,7 +11,8 @@ from .views import (
     ProductViewSet,
     PromotionViewSet,
     CartViewSet,
-    OrderViewSet
+    OrderViewSet,
+    GoodsReceiptViewSet
 )
 
 
@@ -25,6 +26,7 @@ router.register(r"products", ProductViewSet, basename="ecommerce-products")
 router.register(r"promotions", PromotionViewSet, basename="ecommerce-promotions")
 router.register(r"carts", CartViewSet, basename="ecommerce-carts")
 router.register(r"orders", OrderViewSet, basename="ecommerce-orders")
+router.register(r"goods-receipts", GoodsReceiptViewSet, basename="ecommerce-goods-receipts")
 
 router.register(r"customers", CustomerViewSet, basename="ecommerce-customers")
 customer_router = routers.NestedSimpleRouter(router, r'customers', lookup='customers')

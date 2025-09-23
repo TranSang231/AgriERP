@@ -54,6 +54,7 @@ const props = defineProps<{
     contentType?: String | null,
     customCreateResponseParser?: (response: any) => any,
     lookupField?: String | null,
+    sendFullOnUpdate?: Boolean | null,
 }>();
 
 const { t } = useI18n();
@@ -198,7 +199,13 @@ const onSave = () => {
 };
 
 const saveEntry = async () => {
-    let value = current.value && !current.value.id ? current.value : changes.value;
+    const fullOnUpdate = (props as any).sendFullOnUpdate === true;
+    let value = (current.value && !current.value.id)
+        ? current.value
+        : (fullOnUpdate ? current.value : changes.value);
+
+    // Deep clone to ensure reactive arrays/objects (e.g., items) are fully serialized
+    value = _cloneDeep(value);
 
     if (!value) {
         return;
