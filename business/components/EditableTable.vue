@@ -119,13 +119,25 @@ const onSelectionChange = (val: any) => {
   selectedItems.value = val;
 };
 
-const onMultipleDelete = () => {
-  const items = selectedItems.value;
+const onMultipleDelete = async () => {
+  const items:any = selectedItems.value;
   if (!items || items.length == 0) {
     return;
   }
   const local_ids = items.map((item: any) => item.local_id);
-  current.value = current.value.filter((o: any) => !local_ids.includes(o.local_id));
+  // server-side ids
+  const ids = items.map((item: any) => item.id).filter((id: any) => !!id);
+  try {
+    if (ids.length > 0) {
+      await props.service.multipleDelete(ids);
+      // remove from origin as well to avoid showing as changed
+      origin.value = origin.value.filter((o: any) => !ids.includes(o.id));
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    current.value = current.value.filter((o: any) => !local_ids.includes(o.local_id));
+  }
 };
 
 const fetchData = async () => {
@@ -146,7 +158,18 @@ const fetchData = async () => {
 };
 
 const deleteItem = async (local_id: any) => {
-  current.value = current.value.filter((i: any) => i.local_id !== local_id);
+  const item:any = current.value.find((i: any) => i.local_id === local_id);
+  const id = item ? item.id : null;
+  try {
+    if (id) {
+      await props.service.delete(id);
+      origin.value = origin.value.filter((o: any) => o.id !== id);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    current.value = current.value.filter((i: any) => i.local_id !== local_id);
+  }
 };
 
 const onAdd = () => {

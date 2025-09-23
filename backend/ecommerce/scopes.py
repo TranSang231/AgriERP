@@ -19,6 +19,8 @@ approvable_scopes = {
     "ecommerce:promotions:edit": "Edit all promotions",
     "ecommerce:orders:view": "View all orders",
     "ecommerce:orders:edit": "Edit all orders",
+    "ecommerce:goods-receipts:view": "View all goods receipts",
+    "ecommerce:goods-receipts:edit": "Edit all goods receipts",
     "ecommerce:bills:view": "View all bills",
     "ecommerce:bills:edit": "edit all bills"
 }

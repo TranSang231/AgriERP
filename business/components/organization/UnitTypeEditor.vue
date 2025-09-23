@@ -46,10 +46,10 @@ const { t } = useI18n();
 const oauthStore = useOauthStore()
 
 const canEdit = computed(() => {
-    return oauthStore.hasOneOfScopes(['organization:edit-business']);
+    return oauthStore.hasOneOfScopes(['organization:edit']);
 });
 const canView = computed(() => {
-    return oauthStore.hasOneOfScopes(['organization:view-business']);
+    return oauthStore.hasOneOfScopes(['organization:view']);
 });
 
 
