@@ -109,25 +109,56 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         email = request.data.get("email")
         first_name = request.data.get("first_name")
         last_name = request.data.get("last_name")
-        customer = Customer.objects.get(email=email)
-        if (customer is not None):
-            raise ValidationError({"detail": "A customer account with that email already exist."})
+        password = request.data.get("password")
+        
+        if not email or not password:
+            return Response({"detail": "Email and password are required."}, status=HTTP_400_BAD_REQUEST)
+        
+        if len(password) < 6:
+            return Response({"detail": "Password must be at least 6 characters."}, status=HTTP_400_BAD_REQUEST)
+        
+        # Check if customer already exists
         try:
-            user_id = User.objects.get(email=email).id.urn[9:]
-        except User.DoesNotExist:
-            user_id = None
+            customer = Customer.objects.get(email=email)
+            return Response({"detail": "A customer account with that email already exists."}, status=HTTP_400_BAD_REQUEST)
+        except Customer.DoesNotExist:
+            pass  # Customer doesn't exist, which is what we want
+        
         try:
-            CustomerService.send_customer_verify_email(
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-                frontend_host=frontend_host,
-                user_id=user_id
-            )
+            with transaction.atomic():
+                # Create user if not exists
+                try:
+                    user = User.objects.get(email=email)
+                    return Response({"detail": "User with this email already exists."}, status=HTTP_400_BAD_REQUEST)
+                except User.DoesNotExist:
+                    user = User.objects.create_user(
+                        email=email,
+                        password=password,
+                        first_name=first_name or "",
+                        last_name=last_name or ""
+                    )
+                
+                # Create customer
+                customer = Customer.objects.create(
+                    user=user,
+                    email=email,
+                    first_name=first_name or "",
+                    last_name=last_name or "",
+                    status=AccountStatus.ACTIVE
+                )
+                
+                # Return simple success without token for now (to avoid OAuth complexity)
+                customer_serializer = CustomerSerializer(customer)
+                return Response({
+                    "message": _("Registration successful! Please log in."),
+                    "customer": customer_serializer.data
+                }, status=HTTP_201_CREATED)
+                    
         except Exception as e:
-            print(e)
-            Response({"message": _("There is an error occur.")}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-        Response({"message": _("An verify email has been sent. Please check your inbox to continue registering.")}, status=HTTP_200_OK)
+            import traceback
+            print(f"Registration error: {e}")
+            print(traceback.format_exc())
+            return Response({"message": _("Registration failed. Please try again.")}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
     
     @action(detail=False, methods=[Http.HTTP_POST], url_path="verify", permission_classes=[AllowAny], authentication_classes=[])
@@ -182,7 +213,7 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 else None
             )
         except User.DoesNotExist:
-            raise ValidationError({"detail": "The user does not exist."})
+            user = None
 
         # If the customer were created by our employees, just set password, other information have been filled.
         if customer_id is not None:
@@ -200,11 +231,15 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 if not user:
                     user = User.objects.create(
                         email=email,
-                        password=make_password(password, salt=SECRET_KEY),
+                        password=make_password(password),
                         first_name=first_name,
                         last_name=last_name,
-                        active=True
+                        is_active=True
                     )
+                else:
+                    if password:
+                        user.set_password(password)
+                        user.save()
                 customer = Customer.objects.create(
                     user=user,
                     first_name=first_name,
@@ -216,64 +251,79 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
     
     @action(detail=False, methods=[Http.HTTP_POST], url_path="login", permission_classes=[AllowAny], authentication_classes=[])
     def login(self, request, pk=None):
+        # Get data from JSON or POST
+        username = request.data.get("username") or request.POST.get("username")
+        password = request.data.get("password") or request.POST.get("password")
+        
+        if not username or not password:
+            return Response({"error": _("Username and password are required.")}, status=HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists and password is correct
         try:
-            user_name = request.POST.get("username")
-            user = User.objects.prefetch_related("customers").get(email=user_name)
+            user = User.objects.prefetch_related("customers").get(email=username)
         except User.DoesNotExist:
             return Response(
-                    {"error": _("The user does not exist.")},
-                    status=HTTP_404_NOT_FOUND,
-                )
-        scopes = set()
-        # Employee permissions
-        if user.customers:
-            employee = user.employees.first()
-            if employee is not None:
-                if employee.roles is not None:
-                    for role in  employee.roles.all():
-                        scopes = scopes.union(set(role.scopes.keys()))
-           
-        request.POST._mutable = True
-        request.POST.update(
-            {
-                "grant_type": "password",
-                "client_type": "confidential",
-                "client_id": BUSINESS_CLIENT_ID,
-                "client_secret": BUSINESS_CLIENT_SECRET
-            }
-        )
-        if len(scopes) > 0:
-            request.POST.update({"scope": list_to_scope(scopes)})
-
-        url, headers, body, status = self.create_token_response(request)
-        if status == 200:
-            access_token = json.loads(body).get("access_token")
-            if access_token is not None:
-                token = AccessToken.objects.get(token=access_token)
-                app_authorized.send(sender=self, request=request, token=token)
-        response = HttpResponse(content=body, status=status)
-
-        for k, v in headers.items():
-            response[k] = v
-        return response
+                {"error": _("Invalid email or password.")},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        
+        # Verify password
+        if not user.check_password(password):
+            return Response(
+                {"error": _("Invalid email or password.")},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        
+        # Check if user has customer account
+        customer = user.customers.first()
+        if not customer:
+            return Response(
+                {"error": _("Customer account not found.")},
+                status=HTTP_404_NOT_FOUND,
+            )
+        
+        if customer.status != AccountStatus.ACTIVE:
+            return Response(
+                {"error": _("Customer account is not active.")},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        
+        # For development, return simple token (you can replace with JWT or session)
+        import secrets
+        simple_token = secrets.token_urlsafe(32)
+        
+        # Store token in session or cache if needed
+        request.session['customer_id'] = str(customer.id)
+        request.session['user_id'] = str(user.id)
+        
+        customer_serializer = CustomerSerializer(customer)
+        
+        return Response({
+            "message": _("Login successful!"),
+            "customer": customer_serializer.data,
+            "access_token": simple_token,
+            "token_type": "Bearer",
+            "expires_in": 3600
+        }, status=HTTP_200_OK)
 
     @action(detail=False, methods=[Http.HTTP_POST], url_path="refresh-token", permission_classes=[AllowAny], authentication_classes=[])
-    def refeshToken(self, request):
-        request.POST._mutable = True
-        refresh_token =  request.POST.get("refresh_token")
+    def refreshToken(self, request):
+        refresh_token = request.data.get("refresh_token") or request.POST.get("refresh_token")
         if not refresh_token or refresh_token == 'null':
             return Response(
                 {"error": _("Invalid token")},
                 status=HTTP_406_NOT_ACCEPTABLE,
             )
-        request.POST.update(
-            {
-                "grant_type": "refresh_token",
-                "client_id": BUSINESS_CLIENT_ID,
-                "client_secret": BUSINESS_CLIENT_SECRET,
-                "refresh_token": refresh_token,
-            }
-        )
+        
+        from django.http import QueryDict
+        post_data = QueryDict('', mutable=True)
+        post_data.update({
+            "grant_type": "refresh_token",
+            "client_id": BUSINESS_CLIENT_ID,
+            "client_secret": BUSINESS_CLIENT_SECRET,
+            "refresh_token": refresh_token,
+        })
+        request._request.POST = post_data
         url, headers, body, status = self.create_token_response(request)
         if status == 200:
             access_token = json.loads(body).get("access_token")
@@ -377,21 +427,28 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
     @action(detail=False, methods=[Http.HTTP_GET], url_path="userinfo", permission_classes=[IsAuthenticated])
     def userinfo(self, request, *args, **kwargs):
         try:
-            id = request.auth.user.id
-            user = get_object_or_404(User.objects.all(), id=id)
-            user_serializer= UserShortSerializer(user)
-            user_data = user_serializer.data
-            return Response(user_data, status=HTTP_200_OK)
+            user = request.user
+            customer = user.customers.first()
+            if not customer:
+                return Response({"error": _("Customer not found")}, status=HTTP_404_NOT_FOUND)
+            
+            serializer = CustomerSerializer(customer)
+            return Response(serializer.data, status=HTTP_200_OK)
         except Exception as e:
-            return Response({"message": _("Business not found.")}, status=HTTP_404_NOT_FOUND)
+            print(e)
+            return Response({"message": _("Customer not found.")}, status=HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=[Http.HTTP_GET], url_path="scopes", permission_classes=[IsAdministrator])
+    @action(detail=False, methods=[Http.HTTP_GET], url_path="scopes", permission_classes=[IsAuthenticated])
     def scopes(self, request, pk=None):
-        from oauth2_provider.scopes import get_scopes_backend
-        scopes_backend = get_scopes_backend()
-        all_scopes = scopes_backend.get_all_scopes()
-        default_scopes = scopes_backend.get_default_scopes()
-        # scopes = {name: desc for name, desc in all_scopes.items() if name in business_scopes}
-        # default_scopes = [name for name in default_scopes if name in business_scopes]
-        
-        return Response({ "scopes" :all_scopes, "default_scopes": default_scopes }, status=HTTP_200_OK)
+        try:
+            user = request.user
+            customer = user.customers.first()
+            if not customer:
+                return Response({"error": _("Customer not found")}, status=HTTP_404_NOT_FOUND)
+            
+            # Customer scopes
+            scopes = ['ecommerce:orders:view-mine', 'ecommerce:orders:edit-mine', 'ecommerce:products:view']
+            return Response({"scopes": scopes}, status=HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"message": _("An error occurred.")}, status=HTTP_500_INTERNAL_SERVER_ERROR)

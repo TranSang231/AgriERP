@@ -225,6 +225,7 @@
         >
           <p>&copy; 2024 AgriShop. All rights reserved.</p>
         </div>
+
       </div>
     </footer>
   </div>

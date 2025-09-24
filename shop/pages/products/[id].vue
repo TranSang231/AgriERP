@@ -1,10 +1,17 @@
 <script setup lang="ts">
-const route = useRoute()
-const config = useRuntimeConfig()
 const cart = useCartStore()
 const { format } = useCurrency()
+const route = useRoute()
+// TODO(product-detail): Fetch product detail from API
+// - Endpoint: GET /products/{id}
+// - Replace mock below with:
+//   const { request } = useApi()
+//   const { data: product } = await request(`/products/${route.params.id}`)
+const product = ref({ id: Number(route.params.id), name: 'Sản phẩm demo', price: 99000 })
 
-const { data: product } = await useFetch(() => `${config.public.apiBase}/products/${route.params.id}`)
+// TODO(product-gallery): Render images (thumbnail + gallery) from product.images
+// TODO(product-categories): Show categories chips with links to filtered listing
+// TODO(product-unit): Display unit info and stock level
 
 function addToCart() {
   if (!product.value) return

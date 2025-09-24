@@ -240,7 +240,6 @@
         </div>
       </div>
     </section>
-
     <!-- Newsletter Section -->
     <section class="py-16 bg-green-600 text-white">
       <div class="container mx-auto px-4 text-center">
