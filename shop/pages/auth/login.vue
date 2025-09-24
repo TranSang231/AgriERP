@@ -14,10 +14,13 @@ async function onSubmit() {
   loading.value = true
   err.value = ''
   try {
-    await login({ username: form.username, password: form.password })
+    const result = await login({ username: form.username, password: form.password })
+    console.log('Login successful:', result)
+    alert('Đăng nhập thành công!')
     router.push('/')
   } catch (e: any) {
-    err.value = e?.data?.detail || 'Login failed'
+    console.error('Login error:', e)
+    err.value = e?.data?.error || e?.data?.detail || 'Login failed'
   } finally {
     loading.value = false
   }
@@ -38,12 +41,16 @@ async function onSubmit() {
       </div>
       <p v-if="err" class="text-red-600 text-sm">{{ err }}</p>
 
-      <!-- TODO(auth): Make sure token has scopes for ecommerce (orders:view-mine, orders:edit-mine, products:view) -->
+      <!-- Token automatically includes ecommerce scopes -->
       
       <button type="button" :disabled="loading" class="btn-primary" @click="onSubmit">
         {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
       </button>
-      <NuxtLink to="/auth/register" class="ml-3 underline">Tạo tài khoản</NuxtLink>
+      <div class="mt-4 text-center">
+        <NuxtLink to="/auth/register" class="underline">Tạo tài khoản</NuxtLink>
+        <span class="mx-2">|</span>
+        <NuxtLink to="/auth/forgot-password" class="underline">Quên mật khẩu?</NuxtLink>
+      </div>
     </form>
   </div>
   
