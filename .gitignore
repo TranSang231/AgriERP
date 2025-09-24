@@ -44,7 +44,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
-# config.env - Keep this commented out so the production config is tracked
+config.env
 
 # IDE
 .vscode/
