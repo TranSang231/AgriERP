@@ -26,6 +26,47 @@ class ProductViewSet(BaseViewSet):
         "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
     }
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        params = request.query_params
+
+        # Support shop filters without changing frontend
+        # search → keyword for BaseViewSet
+        if params.get("search"):
+            request._request.GET._mutable = True  # type: ignore
+            request._request.GET["keyword"] = params.get("search")  # type: ignore
+
+        # category → categories__id exact
+        category_id = params.get("category")
+        if category_id:
+            queryset = queryset.filter(categories__id=category_id)
+
+        # min_price / max_price
+        min_price = params.get("min_price")
+        max_price = params.get("max_price")
+        if min_price is not None and min_price != "":
+            try:
+                queryset = queryset.filter(price__gte=float(min_price))
+            except Exception:
+                pass
+        if max_price is not None and max_price != "":
+            try:
+                queryset = queryset.filter(price__lte=float(max_price))
+            except Exception:
+                pass
+
+        # ordering
+        ordering = params.get("ordering")
+        if ordering:
+            try:
+                queryset = queryset.order_by(ordering)
+            except Exception:
+                pass
+
+        # Let BaseViewSet handle remaining processing (pagination and any extra exact filters)
+        self.queryset_map = {"list": queryset}
+        return super().list(request, *args, **kwargs)
+
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
     def summary_list(self, request, *args, **kwargs):
         queryset, page_size = self.processParams(request);
