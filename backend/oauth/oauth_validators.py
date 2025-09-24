@@ -42,7 +42,11 @@ class CustomOAuth2Validator(OAuth2Validator):
         return True
 
     def _load_id_token(self, token):
-        key = self._get_key_for_token(token)
+        try:
+            key = self._get_key_for_token(token)
+        except Exception:
+            # Malformed or non-JWS token
+            return None
         if not key:
             return None
         try:
@@ -69,10 +73,14 @@ class CustomOAuth2Validator(OAuth2Validator):
     
     # If we use jwt token for accesstoken
     def validate_bearer_jwt_token(self, token, scopes, request):
-        key = self._get_key_for_token(token)
+        try:
+            key = self._get_key_for_token(token)
+        except Exception:
+            # Invalid JWS/JWT format or unsupported representation
+            return False
         if not key:
             return False
-        
+
         try:
             jwt_token = jwt.JWT(key=key, jwt=token)
             claims = json.loads(jwt_token.claims)

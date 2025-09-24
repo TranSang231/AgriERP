@@ -4,7 +4,7 @@ from contents.models import ShortContent, LongContent
 from .product_category import ProductCategory
 
 def product_image_path(instance, filename):
-    return "\\".join(['products', str(instance.id), 'images', filename])
+    return "/".join(['products', str(instance.id), 'images', filename])
 
 class Product(TimeStampedModel):
     name = models.ForeignKey(

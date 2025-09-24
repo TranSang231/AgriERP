@@ -1,4 +1,5 @@
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework.response import Response
 from common.constants import Http
@@ -25,6 +26,12 @@ class ProductViewSet(BaseViewSet):
         "destroy": [["ecommerce:products:edit"]],
         "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
     }
+
+    def get_permissions(self):
+        """Allow public access for listing and viewing products."""
+        if self.action in ["list", "retrieve", "summary_list"]:
+            return [AllowAny()]
+        return super().get_permissions()
 
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
     def summary_list(self, request, *args, **kwargs):
