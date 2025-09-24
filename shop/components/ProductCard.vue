@@ -5,8 +5,8 @@
     <!-- Product Image -->
     <div class="relative overflow-hidden aspect-square">
       <img
-        :src="product.image"
-        :alt="product.name"
+        :src="product.images[0].image"
+        :alt="product.name.origin"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         loading="lazy"
       />
@@ -76,7 +76,7 @@
     <div class="p-4">
       <!-- Category -->
       <div class="text-xs text-gray-500 mb-1">
-        {{ product.category.name }}
+        {{ product.categories[0]?.name.origin || '' }}
       </div>
 
       <!-- Product Name -->
@@ -84,7 +84,7 @@
         class="font-semibold text-gray-800 mb-2 line-clamp-2 hover:text-orange-500 transition-colors cursor-pointer"
       >
         <NuxtLink :to="`/products/${product.id}`">
-          {{ product.name }}
+          {{ product.name.origin }}
         </NuxtLink>
       </h3>
 
@@ -128,7 +128,7 @@
         </div>
 
         <!-- Stock Info -->
-        <div class="text-xs text-gray-500">Stock: {{ product.stock }}</div>
+        <div class="text-xs text-gray-500">Stock: {{ product.in_stock }}</div>
       </div>
     </div>
   </div>

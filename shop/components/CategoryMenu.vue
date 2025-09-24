@@ -30,7 +30,7 @@
             : 'hover:bg-gray-100 text-gray-700',
         ]"
       >
-        {{ category.name }}
+        {{ category.name.origin }}
       </button>
     </div>
   </div>
@@ -41,7 +41,7 @@ import type { ProductCategory } from "~/services/products";
 
 interface Props {
   categories: ProductCategory[];
-  selectedCategoryId?: number | null;
+  selectedCategoryId?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,10 +49,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  selectCategory: [categoryId: number | null];
+  selectCategory: [categoryId: string | null];
 }>();
 
-const selectCategory = (categoryId: number | null) => {
-  emit("selectCategory", categoryId);
+const selectCategory = (categoryId: string | number | null) => {
+  if (categoryId === null) return emit("selectCategory", null);
+  emit("selectCategory", String(categoryId));
 };
 </script>

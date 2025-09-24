@@ -162,7 +162,7 @@ const { getCategories } = useProductsService();
 
 // Reactive data
 const categories = ref([]);
-const selectedCategoryId = ref<number | null>(null);
+const selectedCategoryId = ref<string | null>(null);
 const showMobileFilters = ref(false);
 const sortOption = ref("");
 const loadingMore = ref(false);
@@ -178,9 +178,7 @@ onMounted(async () => {
   // Set initial filters from URL
   const initialFilters = {
     search: (route.query.search as string) || "",
-    category: route.query.category
-      ? parseInt(route.query.category as string)
-      : undefined,
+    category: (route.query.category as string) || undefined,
     min_price: route.query.min_price
       ? parseInt(route.query.min_price as string)
       : undefined,
@@ -204,11 +202,9 @@ onMounted(async () => {
 watch(
   () => route.query,
   async (newQuery) => {
-    const filters = {
+  const filters = {
       search: (newQuery.search as string) || "",
-      category: newQuery.category
-        ? parseInt(newQuery.category as string)
-        : undefined,
+      category: (newQuery.category as string) || undefined,
       min_price: newQuery.min_price
         ? parseInt(newQuery.min_price as string)
         : undefined,
@@ -229,13 +225,13 @@ watch(
 );
 
 // Event handlers
-const handleCategorySelect = async (categoryId: number | null) => {
+const handleCategorySelect = async (categoryId: string | null) => {
   selectedCategoryId.value = categoryId;
   showMobileFilters.value = false;
 
   const query = { ...route.query };
   if (categoryId) {
-    query.category = categoryId.toString();
+    query.category = categoryId;
   } else {
     delete query.category;
   }

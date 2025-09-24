@@ -8,7 +8,7 @@ export interface Product {
   sale_price?: number;
   image: string;
   images?: string[];
-  category: {
+  category?: {
     id: number;
     name: string;
     slug: string;
@@ -23,7 +23,7 @@ export interface Product {
 }
 
 export interface ProductCategory {
-  id: number;
+    id: string;
   name: string;
   slug: string;
   description?: string;
@@ -33,7 +33,7 @@ export interface ProductCategory {
 }
 
 export interface ProductFilter {
-  category?: number;
+  category?: string;
   search?: string;
   min_price?: number;
   max_price?: number;
@@ -70,7 +70,7 @@ export function useProductsService() {
   };
 
   const getProductsByCategory = (
-    categoryId: number,
+    categoryId: string,
     filters: Omit<ProductFilter, "category"> = {}
   ) => {
     return getProducts({ ...filters, category: categoryId });
@@ -91,7 +91,7 @@ export function useProductsService() {
     return request<ProductCategory[]>("/product-categories");
   };
 
-  const getCategoryById = (id: number) => {
+  const getCategoryById = (id: string) => {
     return request<ProductCategory>(`/product-categories/${id}`);
   };
 
