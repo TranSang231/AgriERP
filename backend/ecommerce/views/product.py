@@ -42,11 +42,20 @@ class ProductViewSet(BaseViewSet):
         if params.get("search"):
             request._request.GET._mutable = True  # type: ignore
             request._request.GET["keyword"] = params.get("search")  # type: ignore
+            try:
+                del request._request.GET["search"]  # type: ignore
+            except Exception:
+                pass
 
         # category → categories__id exact
         category_id = params.get("category")
         if category_id:
             queryset = queryset.filter(categories__id=category_id)
+            try:
+                request._request.GET._mutable = True  # type: ignore
+                del request._request.GET["category"]  # type: ignore
+            except Exception:
+                pass
 
         # min_price / max_price
         min_price = params.get("min_price")
@@ -56,9 +65,19 @@ class ProductViewSet(BaseViewSet):
                 queryset = queryset.filter(price__gte=float(min_price))
             except Exception:
                 pass
+            try:
+                request._request.GET._mutable = True  # type: ignore
+                del request._request.GET["min_price"]  # type: ignore
+            except Exception:
+                pass
         if max_price is not None and max_price != "":
             try:
                 queryset = queryset.filter(price__lte=float(max_price))
+            except Exception:
+                pass
+            try:
+                request._request.GET._mutable = True  # type: ignore
+                del request._request.GET["max_price"]  # type: ignore
             except Exception:
                 pass
 
@@ -67,6 +86,11 @@ class ProductViewSet(BaseViewSet):
         if ordering:
             try:
                 queryset = queryset.order_by(ordering)
+            except Exception:
+                pass
+            try:
+                request._request.GET._mutable = True  # type: ignore
+                del request._request.GET["ordering"]  # type: ignore
             except Exception:
                 pass
 

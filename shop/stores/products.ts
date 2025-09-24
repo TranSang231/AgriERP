@@ -46,7 +46,7 @@ export const useProductsStore = defineStore("products", {
   getters: {
     featuredProducts: (state) =>
       state.products.filter((p) => p.is_active).slice(0, 8),
-    productsByCategory: (state) => (categoryId: number) =>
+    productsByCategory: (state) => (categoryId: string) =>
       state.products.filter((p) => p.category.id === categoryId),
     totalPages: (state) =>
       Math.ceil(state.pagination.count / state.pagination.pageSize),
@@ -113,7 +113,7 @@ export const useProductsStore = defineStore("products", {
       await this.fetchProducts({ ...this.filters, search, page: 1 });
     },
 
-    async filterByCategory(categoryId: number) {
+    async filterByCategory(categoryId: string) {
       await this.fetchProducts({
         ...this.filters,
         category: categoryId,

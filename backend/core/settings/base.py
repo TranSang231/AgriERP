@@ -114,7 +114,10 @@ CORS_ALLOWED_ORIGINS = env.list(
         f'http://{BUSINESS_HOST}',
         f'https://{BUSINESS_HOST}',
         f'http://{DOCS_HOST}',
-        f'https://{DOCS_HOST}'
+        f'https://{DOCS_HOST}',
+        # Shop dev server
+        'http://127.0.0.1:3010',
+        'http://localhost:3010'
     ],
 )
 if BUSINESS_FRONTEND_DEV_MODE:

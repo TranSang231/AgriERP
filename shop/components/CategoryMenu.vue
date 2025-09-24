@@ -41,7 +41,7 @@ import type { ProductCategory } from "~/services/products";
 
 interface Props {
   categories: ProductCategory[];
-  selectedCategoryId?: number | null;
+  selectedCategoryId?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,10 +49,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  selectCategory: [categoryId: number | null];
+  selectCategory: [categoryId: string | null];
 }>();
 
-const selectCategory = (categoryId: number | null) => {
+const selectCategory = (categoryId: string | null) => {
   emit("selectCategory", categoryId);
 };
 </script>
