@@ -5,8 +5,8 @@
     <!-- Product Image -->
     <div class="relative overflow-hidden aspect-square">
       <img
-        :src="product.images[0].image"
-        :alt="product.name.origin"
+        :src="primaryImage"
+        :alt="product?.name?.origin || product?.name || 'Product'"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         loading="lazy"
       />
@@ -76,7 +76,7 @@
     <div class="p-4">
       <!-- Category -->
       <div class="text-xs text-gray-500 mb-1">
-        {{ product.categories[0]?.name.origin || '' }}
+        {{ product.categories?.[0]?.name?.origin || product.category?.name || '' }}
       </div>
 
       <!-- Product Name -->
@@ -84,7 +84,7 @@
         class="font-semibold text-gray-800 mb-2 line-clamp-2 hover:text-orange-500 transition-colors cursor-pointer"
       >
         <NuxtLink :to="`/products/${product.id}`">
-          {{ product.name.origin }}
+          {{ product?.name?.origin || product?.name }}
         </NuxtLink>
       </h3>
 
@@ -114,7 +114,7 @@
             v-if="product.sale_price && product.sale_price < product.price"
             class="text-lg font-bold text-orange-500"
           >
-            ${{ product.sale_price.toFixed(2) }}
+            ${{ Number(product.sale_price).toFixed(2) }}
           </span>
           <span
             :class="[
@@ -123,12 +123,12 @@
                 : 'text-lg font-bold text-gray-900',
             ]"
           >
-            ${{ product.price.toFixed(2) }}
+            ${{ Number(product.price).toFixed(2) }}
           </span>
         </div>
 
         <!-- Stock Info -->
-        <div class="text-xs text-gray-500">Stock: {{ product.in_stock }}</div>
+        <div class="text-xs text-gray-500">Stock: {{ product.in_stock ?? product.stock }}</div>
       </div>
     </div>
   </div>
@@ -145,6 +145,31 @@ interface Props {
 
 const props = defineProps<Props>();
 const cartStore = useCartStore();
+const primaryImage = computed(() => {
+  const images = (props.product as any)?.images;
+  if (Array.isArray(images) && images.length > 0) {
+    const first = images[0] as any;
+    if (first && typeof first === "object" && "image" in first) return first.image;
+    if (typeof first === "string") return first;
+  }
+  return (
+    (props.product as any)?.image ||
+    (props.product as any)?.thumbnail ||
+    "/placeholder-product.jpg"
+  );
+});
+
+onMounted(() => {
+  // console.log("[ProductCard] mounted product:", props.product);
+});
+
+watch(
+  () => props.product,
+  (val) => {
+    // console.log("[ProductCard] updated product:", val);
+  },
+  { deep: true, immediate: true }
+);
 
 const discountPercentage = computed(() => {
   if (

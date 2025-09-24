@@ -178,7 +178,7 @@
             <h3
               class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors"
             >
-              {{ category.name }}
+              {{ category.name.origin }}
             </h3>
           </NuxtLink>
         </div>
@@ -274,6 +274,8 @@ import { ref, computed, reactive, onMounted } from "vue";
 import { useProductsService } from "~/services/products";
 import type { Product, ProductCategory } from "~/services/products";
 
+import ProductCard from "@/components/ProductCard.vue";
+
 // SEO Meta
 useHead({
   title: "AgriShop - Quality Agricultural Products",
@@ -295,7 +297,9 @@ const categories = ref<ProductCategory[]>([]);
 const loading = ref(true);
 
 // Computed
-const displayedProducts = computed(() => featuredProducts.value.slice(0, 8));
+const displayedProducts = computed(() =>
+  featuredProducts.value.filter(p => !!p).slice(0, 8)
+);
 const displayedCategories = computed(() => categories.value.slice(0, 8));
 
 // Newsletter form
@@ -339,7 +343,12 @@ onMounted(async () => {
       productsResult.status === "fulfilled" &&
       productsResult.value.data.value
     ) {
-      featuredProducts.value = productsResult.value.data.value as Product[];
+      const summary = productsResult.value.data.value as any[];
+      featuredProducts.value = summary.map((p) => ({
+        ...p,
+        image: p.image || p.thumbnail,
+      })) as Product[];
+      // console.log("Featured Product", featuredProducts.value);
     }
 
     if (
