@@ -5,6 +5,7 @@ from common.constants import Http
 from base.views import BaseViewSet
 from ..models import Product
 from ..serializers import ProductSerializer, ProductShortSerializer
+from rest_framework.permissions import AllowAny
 
 
 class ProductViewSet(BaseViewSet):
@@ -25,6 +26,12 @@ class ProductViewSet(BaseViewSet):
         "destroy": [["ecommerce:products:edit"]],
         "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
     }
+
+    def get_permissions(self):
+        # Allow public access for read-only actions
+        if self.action in ["list", "retrieve", "summary_list"]:
+            return [AllowAny()]
+        return super().get_permissions()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
