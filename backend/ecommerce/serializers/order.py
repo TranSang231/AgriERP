@@ -4,6 +4,7 @@ from rest_framework.fields import UUIDField
 from ..models import Customer, Order
 from .order_item import OrderItemSerializer
 
+
 class OrderSerializer(WritableNestedSerializer):
     customer_id = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -28,6 +29,7 @@ class OrderSerializer(WritableNestedSerializer):
             "vat_rate",
             "shipping_fee",
             "shipping_status",
+            "order_status",
             "date",
             "items",
             "created_at",
@@ -43,6 +45,7 @@ class OrderSerializer(WritableNestedSerializer):
             'vat_rate': {'required': False},
             'shipping_fee': {'required': False},
             'shipping_status': {'required': False},
+            'order_status': {'required': False},
             'date': {'required': False}
         }
         read_only_fields = ["id", "created_at", "updated_at"]

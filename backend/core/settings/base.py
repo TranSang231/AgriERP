@@ -266,6 +266,7 @@ INSTALLED_APPS = [
     'ecommerce',
     'contents',
     'firebase',
+    'django_extensions',
     'health_check',
     'supplier_management'
 ]

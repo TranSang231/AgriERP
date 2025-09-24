@@ -35,11 +35,21 @@ class SupplierViewSet(BaseViewSet):
         self.clear_querysets_cache()
         return Response(self.get_serializer(instance).data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=[Http.HTTP_POST], url_path="restore")
+    def restore(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.is_active:
+            return Response(self.get_serializer(instance).data, status=status.HTTP_200_OK)
+        instance.is_active = True
+        instance.save(update_fields=["is_active"])
+        self.clear_querysets_cache()
+        return Response(self.get_serializer(instance).data, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=[Http.HTTP_GET], url_path="all")
     def all(self, request, *args, **kwargs):
         include_inactive = request.query_params.get("include_inactive", "false").lower() == "true"
         qs = Supplier.objects.all() if include_inactive else Supplier.objects.filter(is_active=True)
-        page =self.paginate_queryset(qs)
+        page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)

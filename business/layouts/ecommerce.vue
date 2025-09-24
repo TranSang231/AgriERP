@@ -41,6 +41,10 @@
                             <Document class="el-icon" />
                             <span>{{ t('Orders') }}</span>
                         </el-menu-item>
+                        <el-menu-item index="/e-commerce/goods-receipts">
+                            <Document class="el-icon" />
+                            <span>{{ t('Goods_receipts') }}</span>
+                        </el-menu-item>
                         <div class="text-white px-2">
                             <span>Todo: Add more features here.</span>
                         </div>

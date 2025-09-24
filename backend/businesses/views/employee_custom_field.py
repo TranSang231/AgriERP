@@ -13,5 +13,6 @@ class EmployeeCustomFieldViewSet(MultipleUpdateViewSet):
         "list": [["employees:view"], ["employees:edit"]],
         "retrieve": [["employees:view"], ["employees:edit"]],
         "sync": [["employees:edit"]],
+        "multiple_delele": [["employees:edit"]],
     }
 
