@@ -28,7 +28,7 @@ class CustomerService(BaseService):
         if user_id is not None:
             data.update({"user_id": user_id})
         if customer_id is not None:
-            data.update({"customer_id": user_id})
+            data.update({"customer_id": customer_id})
         token = Verification.create_token(data=data)
         scheme = (
             "http"
@@ -44,8 +44,8 @@ class CustomerService(BaseService):
         )
         logo = f"{default_scheme}://{default_host}/static/logo.jpg"
         data = {
-            "template": "businesses/emails/verify_employee_email.html",
-            "subject": _("Create Alpha account"),
+            "template": "ecommerce/emails/verify_customer_email.html",
+            "subject": _("Verify your Alpha Shop account"),
             "context": {
                 "email": email,
                 "first_name": first_name,
