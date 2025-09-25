@@ -53,6 +53,15 @@
                             <el-menu-item index="/hrm/organization/chart">{{$t('organization_chart')}}</el-menu-item>
                             <el-menu-item index="/hrm/organization/unit-type">{{$t('unit_types')}}</el-menu-item>
                         </el-sub-menu>
+                        <el-sub-menu index="/hrm/timekeeping">
+                            <template #title>
+                                <IconClock class="el-icon" />
+                                <span>{{$t('timekeeping')}}</span>
+                            </template>
+                            <el-menu-item index="/hrm/timekeeping">{{$t('time_records')}}</el-menu-item>
+                            <el-menu-item index="/hrm/timekeeping/check-in">{{$t('checkin')}}</el-menu-item>
+                            <el-menu-item index="/hrm/timekeeping/daily-summary">{{$t('daily_summary')}}</el-menu-item>
+                        </el-sub-menu>
                     </Sidebar>
                 </aside>
                 <div class="flex-auto">
@@ -72,6 +81,7 @@ import IconUsers from '~/assets/icons/users.svg'
 import IconDashboard from '~/assets/icons/dashboard.svg'
 import IconRoles from '~/assets/icons/roles.svg'
 import IconOffices from '~/assets/icons/businesses.svg'
+import IconClock from '~/assets/icons/calendar.svg'
 import { useOauthStore } from '@/stores/oauth';
 import OAuthService from '@/services/oauth';
 
