@@ -4,3 +4,4 @@ from .office import OfficeViewSet
 from .group import GroupViewSet
 from .unit import UnitViewSet
 from .unit_type import UnitTypeViewSet
+from .time_record import TimeRecordViewSet

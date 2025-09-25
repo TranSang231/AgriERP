@@ -8,7 +8,8 @@ from .views import (
     HolidayViewSet,
     WorkSessionViewSet,
     UnitViewSet,
-    UnitTypeViewSet
+    UnitTypeViewSet,
+    TimeRecordViewSet
 )
 
 app_name = "hr"
@@ -18,6 +19,7 @@ router.register(r'groups', GroupViewSet, basename="groups")
 router.register(r'offices', OfficeViewSet, basename="offices")
 router.register(r'units', UnitViewSet, basename="units")
 router.register(r'unit-types', UnitTypeViewSet, basename="unit-types")
+router.register(r'time-records', TimeRecordViewSet, basename="time-records")
 
 group_router = routers.NestedMutipleUpdateRouter(router, r'groups', lookup='group')
 group_router.register(r'offices', OfficeViewSet, basename="offices")

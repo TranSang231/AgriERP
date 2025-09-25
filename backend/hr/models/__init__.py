@@ -6,3 +6,4 @@ from .title import Title
 from .unit import Unit
 from .unit_type import UnitType
 from .unit_member import UnitMember
+from .time_record import TimeRecord
