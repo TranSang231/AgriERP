@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { createCachedEntry } from '@/utils/caching';
+import { getCachedData, createCachedEntry } from '@/utils/caching';
 
 export const useOfficesStore = defineStore('office', {
     state: () => ({

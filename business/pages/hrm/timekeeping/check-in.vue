@@ -228,6 +228,8 @@ import { useTimekeepingStore } from '@/stores/timekeeping'
 import { useEmployeesStore } from '@/stores/business/employee'
 import { useOfficesStore } from '@/stores/offices'
 import TimekeepingService from '@/services/hrm/timekeeping'
+import EmployeeService from '@/services/hrm/employees'
+import OfficeService from '@/services/offices'
 import { ElMessage } from 'element-plus'
 import { Clock, Check, Close, InfoFilled } from '@element-plus/icons-vue'
 
@@ -397,8 +399,8 @@ watch(selectedEmployeeId, () => {
 onMounted(async () => {
   try {
     await Promise.all([
-      employeesStore.fetch(),
-      officesStore.fetch(),
+      EmployeeService.fetch(),
+      OfficeService.fetch(),
       loadRecentRecords()
     ])
   } catch (error) {

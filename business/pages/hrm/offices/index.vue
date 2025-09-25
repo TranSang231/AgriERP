@@ -98,7 +98,7 @@ import EmployeeService from "@/services/hrm/employees"
 import { useEmployeesStore } from '@/stores/business/employee';
 import { useGroupsStore } from '@/stores/groups';
 import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
-import { ElTree } from 'element-plus'
+import { ElTree, ElNotification } from 'element-plus'
 
 const oauthStore = useOauthStore();
 const employeesStore = useEmployeesStore();
@@ -370,15 +370,28 @@ function createRootNode() {
     rootNodeForm.value.validate((valid) => {
         if (valid) {
             console.log("newRoot.value", newRoot.value);
+            // Create Group first, then create Office under it
             GroupService.create(newRoot.value)
-                .then((response) => {
-                    if (response) {
-                        groups.value = [...groups.value, response];
+                .then((groupResponse) => {
+                    if (groupResponse) {
+                        // Create office under the group
+                        const officeData = {
+                            ...newRoot.value,
+                            group_id: groupResponse.id
+                        };
+                        return OfficeService.create(officeData);
+                    }
+                })
+                .then((officeResponse) => {
+                    if (officeResponse) {
+                        groups.value = [...groups.value, officeResponse];
                         ElNotification({
                             title: 'Success',
                             message: 'Create office successfully',
                             type: 'success',
-                        })
+                        });
+                        // Reload data to get fresh data from server
+                        loadData();
                     }
                 })
                 .catch((error) => {
@@ -404,15 +417,18 @@ function createRootNode() {
 const loadData = async () => {
     try {
         loading.value = true;
-        GroupService.fetch();
-        EmployeeService.fetch();
+        // Load all data in parallel
+        await Promise.all([
+            GroupService.fetch(),
+            EmployeeService.fetch(),
+            OfficeService.fetch()
+        ]);
         groups.value = groupStore.allGroups;
     } catch (err) {
         console.error(err);
     } finally {
         loading.value = false;
     }
-
 }
 
 const canEdit = computed(() => {
