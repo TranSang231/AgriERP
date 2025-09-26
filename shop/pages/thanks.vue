@@ -150,17 +150,17 @@ const getOrderStatusText = (status: number) => {
             <span>{{ format(order.items.reduce((sum, item) => sum + item.amount, 0)) }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Thuế ({{ (order.vat_rate * 100).toFixed(1) }}%)</span>
-            <span>{{ format(order.items.reduce((sum, item) => sum + item.amount, 0) * order.vat_rate) }}</span>
+            <span>Thuế ({{ (order.vat_rate || 0).toFixed(1) }}%)</span>
+            <span>{{ format(order.items.reduce((sum, item) => sum + item.amount, 0) * ((order.vat_rate || 0) / 100)) }}</span>
           </div>
           <div class="flex justify-between">
             <span>Phí vận chuyển</span>
-            <span>{{ format(order.shipping_fee) }}</span>
+            <span>{{ format(order.shipping_fee || 0) }}</span>
           </div>
           <div class="border-t pt-2">
             <div class="flex justify-between text-lg font-bold">
               <span>Tổng cộng</span>
-              <span class="text-orange-600">{{ format(order.items.reduce((sum, item) => sum + item.amount, 0) * (1 + order.vat_rate) + order.shipping_fee) }}</span>
+              <span class="text-orange-600">{{ format(order.items.reduce((sum, item) => sum + item.amount, 0) * (1 + (order.vat_rate || 0) / 100) + (order.shipping_fee || 0)) }}</span>
             </div>
           </div>
         </div>
