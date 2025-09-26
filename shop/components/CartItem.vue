@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { CartItem } from "~/stores/cart";
 import { useCartStore } from "~/stores/cart";
+import { useCurrency } from "~/composables/useCurrency";
 
 // Khởi tạo store để dùng cho action của checkbox
-const cartStore = useCartStore(); 
+const cartStore = useCartStore();
+const { format } = useCurrency(); 
 
 // Định nghĩa props component nhận vào, bao gồm cả 'image' tùy chọn
 interface Props {
@@ -59,7 +61,7 @@ const removeItem = () => {
       <h4 class="text-sm font-medium text-gray-900 truncate">
         {{ item.name }}
       </h4>
-      <p class="text-sm text-gray-500">${{ item.price.toFixed(2) }}</p>
+      <p class="text-sm text-gray-500">{{ format(item.price) }}</p>
     </div>
 
     <!-- Quantity Controls -->
@@ -84,7 +86,7 @@ const removeItem = () => {
 
     <!-- Total Price -->
     <div class="text-sm font-medium text-gray-900 w-20 text-right">
-      ${{ (item.price * item.qty).toFixed(2) }}
+      {{ format(item.price * item.qty) }}
     </div>
 
     <!-- Remove Button -->

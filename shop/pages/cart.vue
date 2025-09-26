@@ -4,11 +4,13 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia'; // Import storeToRefs
 import { useCartStore } from "~/stores/cart";
 import { useCheckoutStore } from "~/stores/checkout";
+import { useCurrency } from "~/composables/useCurrency";
 import CartItem from "~/components/CartItem.vue";
 
 const router = useRouter();
 const cartStore = useCartStore();
 const checkoutStore = useCheckoutStore();
+const { format } = useCurrency();
 
 // Sử dụng storeToRefs để đảm bảo các getter và state giữ được reactivity
 // và có thể sử dụng trực tiếp trong template.
@@ -117,7 +119,7 @@ useHead({
             <div class="px-6 py-4 space-y-4">
               <div class="flex justify-between">
                 <span class="text-gray-600">Subtotal ({{ selectedCount }} items)</span>
-                <span class="font-medium">${{ selectedTotal.toFixed(2) }}</span>
+                <span class="font-medium">{{ format(selectedTotal) }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-600">Shipping</span>
@@ -125,12 +127,12 @@ useHead({
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-600">Tax</span>
-                <span class="font-medium">${{ tax.toFixed(2) }}</span>
+                <span class="font-medium">{{ format(tax) }}</span>
               </div>
               <div class="border-t border-gray-200 pt-4">
                 <div class="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span class="text-orange-600">${{ totalWithTax.toFixed(2) }}</span>
+                  <span class="text-orange-600">{{ format(totalWithTax) }}</span>
                 </div>
               </div>
             </div>

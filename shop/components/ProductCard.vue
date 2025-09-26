@@ -114,7 +114,7 @@
             v-if="product.sale_price && product.sale_price < product.price"
             class="text-lg font-bold text-orange-500"
           >
-            ${{ Number(product.sale_price).toFixed(2) }}
+            {{ format(product.sale_price) }}
           </span>
           <span
             :class="[
@@ -123,7 +123,7 @@
                 : 'text-lg font-bold text-gray-900',
             ]"
           >
-            ${{ Number(product.price).toFixed(2) }}
+            {{ format(product.price) }}
           </span>
         </div>
 
@@ -137,6 +137,7 @@
 <script setup lang="ts">
 import type { Product } from "~/services/products";
 import { useCartStore } from "~/stores/cart";
+import { useCurrency } from "~/composables/useCurrency";
 import { computed } from "vue";
 
 interface Props {
@@ -145,6 +146,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const cartStore = useCartStore();
+const { format } = useCurrency();
 const primaryImage = computed(() => {
   const images = (props.product as any)?.images;
   if (Array.isArray(images) && images.length > 0) {
