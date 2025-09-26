@@ -19,6 +19,11 @@ const { items, selectedCount, selectedTotal, selectedItems } = storeToRefs(cartS
 const tax = computed(() => selectedTotal.value * 0.08);
 const totalWithTax = computed(() => selectedTotal.value + tax.value);
 
+// Tải cart từ backend lần đầu
+if (!cartStore.hasLoaded && !cartStore.isLoading) {
+  cartStore.load();
+}
+
 // Computed property để xác định trạng thái của checkbox "Select All".
 const isAllSelected = computed(() => 
   items.value.length > 0 && items.value.every(item => item.selected)

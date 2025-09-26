@@ -11,7 +11,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         queryset=Cart.objects.all(),
         source='cart'
     )
-    product = ProductSerializer(many=True, required=False)
+    product = ProductSerializer(required=False)
     product_id = serializers.PrimaryKeyRelatedField(
         required=False,
         allow_null=True,
