@@ -50,7 +50,31 @@ export function useCustomersService() {
     if (error.value) throw error.value
   }
 
-  return { login, register, verify, logout, fetchUser, forgotPassword, resetPassword }
+  async function getProfile() {
+    const { data, error } = await request<{ customer: any }>(`/customers/userinfo`, {
+      method: 'GET'
+    })
+    if (error.value) throw error.value
+    return data.value
+  }
+
+  async function updateProfile(payload: any) {
+    const { data, error } = await request<{ message: string; customer: any }>(`/customers/profile`, {
+      method: 'PUT', body: payload
+    })
+    if (error.value) throw error.value
+    return data.value
+  }
+
+  async function changePassword(payload: { current_password: string; new_password: string }) {
+    const { data, error } = await request<{ message: string }>(`/customers/change-password`, {
+      method: 'POST', body: payload
+    })
+    if (error.value) throw error.value
+    return data.value
+  }
+
+  return { login, register, verify, logout, fetchUser, forgotPassword, resetPassword, getProfile, updateProfile, changePassword }
 }
 
 
