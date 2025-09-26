@@ -26,7 +26,7 @@
         <button
           @click="addToCart"
           class="bg-white text-gray-700 hover:bg-orange-500 hover:text-white p-2 rounded-full shadow-md transition-colors duration-200 mb-2 block"
-          :disabled="product.stock === 0"
+          :disabled="product.stock !== undefined && product.stock !== null && product.stock === 0"
         >
           <svg
             class="w-4 h-4"
@@ -184,7 +184,9 @@ const discountPercentage = computed(() => {
 });
 
 const addToCart = () => {
-  if (props.product.stock > 0) {
+  const hasStockInfo = props.product.stock !== undefined && props.product.stock !== null;
+  const canAdd = hasStockInfo ? props.product.stock > 0 : true;
+  if (canAdd) {
     cartStore.add({
       productId: props.product.id,
       name: props.product.name,
