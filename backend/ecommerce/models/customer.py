@@ -10,6 +10,7 @@ class Customer(TimeStampedModel):
     first_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True, null=True)  # Added address field
     date_of_birth = models.DateField(null=True)
     gender = models.CharField(max_length=20, choices=Gender.CHOICES, default=Gender.MALE, blank=True, null=True)
     user = models.ForeignKey(User, related_name="customers", on_delete=models.SET_NULL, null=True, blank=True)
