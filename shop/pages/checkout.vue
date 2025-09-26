@@ -5,7 +5,8 @@ import { storeToRefs } from 'pinia';
 import { useCheckoutStore } from '~/stores/checkout';
 import { useCartStore } from '~/stores/cart';
 import { useCurrency } from '~/composables/useCurrency'; 
-import { usePromotionService } from '~/services/promotions'; 
+import { usePromotionService } from '~/services/promotions';
+import { useOrderService } from '~/services/orders'; 
 
 // --- KHỞI TẠO ---
 const checkoutStore = useCheckoutStore();
@@ -13,6 +14,7 @@ const cartStore = useCartStore();
 const router = useRouter();
 const { format } = useCurrency();
 const { getActivePromotions, validatePromotion } = usePromotionService();
+const { createOrder } = useOrderService();
 
 // Lấy dữ liệu từ checkoutStore
 const { items: checkoutItems, total: subtotal, count: checkoutCount } = storeToRefs(checkoutStore);
@@ -257,59 +259,52 @@ async function placeOrder() {
   loading.value = true;
   err.value = '';
   try {
-    const orderPayload = {
-      // Customer info
+    // Chuẩn bị dữ liệu đơn hàng theo cấu trúc backend
+    const orderData = {
       customer_name: customerInfo.customer_name,
-      company_name: customerInfo.company_name,
-      tax_code: customerInfo.tax_code,
-      
-      // Payment
+      company_name: customerInfo.company_name || '',
+      tax_code: customerInfo.tax_code || '',
       payment_method: mapPaymentMethod(paymentMethod.value),
-      account_number: customerInfo.account_number,
-      
-      // Order details
+      account_number: customerInfo.account_number || '',
       vat_rate: orderDetails.vat_rate,
       shipping_fee: orderDetails.shipping_fee,
-      date: new Date().toISOString().split('T')[0], // Today's date
-      
-      // Items with proper structure for OrderItem
-      items: checkoutItems.value.map(item => ({ 
-        product_id: item.productId, 
+      date: new Date().toISOString().split('T')[0],
+      items: checkoutItems.value.map(item => ({
+        product_id: item.productId,
         product_name: item.name,
-        unit: 'Cái', // Default unit, should come from product
-        quantity: item.qty, 
+        unit: 'Cái', // Default unit
+        quantity: item.qty,
         price: item.price,
         amount: item.price * item.qty
-      })),
-      
-      // Shipping address (will need to be created separately as ShippingAddress)
-      shipping_address: {
-        address: address.line1,
-        province_id: address.province_id,
-        district_id: address.district_id,
-        ward_id: address.ward_id,
-      },
-      
-      // Voucher
-      voucher_code: voucherCode.value,
-      final_total: finalTotal.value,
+      }))
     };
-    console.log('Đang gửi đơn hàng:', orderPayload);
 
-    // TODO: Replace with actual API call
-    // const { request } = useApi()
-    // const response = await request('/orders', { method: 'POST', body: orderPayload })
+    console.log('Đang tạo đơn hàng:', orderData);
 
-    await new Promise(r => setTimeout(r, 1000));
-    alert('Thanh toán thành công!');
+    // Gọi API tạo đơn hàng
+    const { data, error } = await createOrder(orderData);
+    
+    if (error?.value) {
+      throw error.value;
+    }
 
-    const purchasedItemIds = checkoutItems.value.map(item => item.productId);
-    purchasedItemIds.forEach(id => cartStore.remove(id));
-    checkoutStore.clear();
+    if (data?.value) {
+      console.log('Đơn hàng đã được tạo:', data.value);
+      
+      // Xóa sản phẩm khỏi giỏ hàng
+      const purchasedItemIds = checkoutItems.value.map(item => item.productId);
+      purchasedItemIds.forEach(id => cartStore.remove(id));
+      checkoutStore.clear();
 
-    router.push(`/thanks`);
+      // Chuyển hướng đến trang cảm ơn
+      router.push(`/thanks?order_id=${data.value.id}`);
+    } else {
+      throw new Error('Không nhận được phản hồi từ server');
+    }
+    
   } catch (e: any) {
-    err.value = e?.data?.detail || 'Thanh toán thất bại, vui lòng thử lại.';
+    console.error('Lỗi khi tạo đơn hàng:', e);
+    err.value = e?.message || e?.data?.detail || 'Đặt hàng thất bại, vui lòng thử lại.';
   } finally {
     loading.value = false;
   }
