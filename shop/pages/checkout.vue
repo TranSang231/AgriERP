@@ -4,13 +4,15 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCheckoutStore } from '~/stores/checkout';
 import { useCartStore } from '~/stores/cart';
-import { useCurrency } from '~/composables/useCurrency'; 
+import { useCurrency } from '~/composables/useCurrency';
+import { usePromotionService } from '~/services/promotions'; 
 
 // --- KHỞI TẠO ---
 const checkoutStore = useCheckoutStore();
 const cartStore = useCartStore();
 const router = useRouter();
 const { format } = useCurrency();
+const { getActivePromotions, validatePromotion } = usePromotionService();
 
 // Lấy dữ liệu từ checkoutStore
 const { items: checkoutItems, total: subtotal, count: checkoutCount } = storeToRefs(checkoutStore);
@@ -28,6 +30,11 @@ const discount = ref(0);
 const voucherError = ref('');
 const loading = ref(false);
 const err = ref('');
+
+// Promotion state
+const availablePromotions = ref([]);
+const selectedPromotion = ref(null);
+const promotionLoading = ref(false);
 
 // Customer information
 const customerInfo = reactive({
@@ -51,9 +58,10 @@ const loadingProvinces = ref(false);
 const loadingDistricts = ref(false);
 const loadingWards = ref(false);
 
-// Load provinces on mount
+// Load provinces and promotions on mount
 onMounted(async () => {
   await loadProvinces();
+  await loadActivePromotions();
 });
 
 async function loadProvinces() {
@@ -112,6 +120,54 @@ async function loadWards(districtCode) {
   }
 }
 
+// --- PROMOTION FUNCTIONS ---
+async function loadActivePromotions() {
+  promotionLoading.value = true;
+  try {
+    const { data, error } = await getActivePromotions();
+    if (!error?.value && data?.value) {
+      availablePromotions.value = data.value;
+    }
+  } catch (error) {
+    console.error('Error loading promotions:', error);
+  } finally {
+    promotionLoading.value = false;
+  }
+}
+
+async function applyPromotion(promotionId) {
+  if (!promotionId) {
+    discount.value = 0;
+    selectedPromotion.value = null;
+    voucherError.value = '';
+    return;
+  }
+
+  try {
+    const productIds = checkoutItems.value.map(item => item.productId);
+    const quantities = checkoutItems.value.map(item => item.qty);
+    
+    const { data, error } = await validatePromotion(promotionId, productIds, quantities);
+    
+    if (!error?.value && data?.value) {
+      if (data.value.valid) {
+        // Backend đã trả về số tiền giảm thực tế
+        discount.value = data.value.discount || 0;
+        selectedPromotion.value = availablePromotions.value.find(p => p.id === promotionId);
+        voucherError.value = '';
+      } else {
+        voucherError.value = data.value.message || 'Mã giảm giá không áp dụng được cho sản phẩm này.';
+        discount.value = 0;
+        selectedPromotion.value = null;
+      }
+    }
+  } catch (error) {
+    voucherError.value = 'Lỗi khi áp dụng mã giảm giá.';
+    discount.value = 0;
+    selectedPromotion.value = null;
+  }
+}
+
 // --- GIÁ TRỊ TÍNH TOÁN ---
 const tax = computed(() => subtotal.value * 0.08);
 const finalTotal = computed(() => {
@@ -124,14 +180,18 @@ function applyVoucher() {
   voucherError.value = '';
   discount.value = 0;
 
-  if (!voucherCode.value) return;
+  if (!voucherCode.value) {
+    selectedPromotion.value = null;
+    return;
+  }
 
-  if (voucherCode.value === 'SALE50') {
-    discount.value = 50000; // giảm trực tiếp 50k
-  } else if (voucherCode.value === 'SALE10P') {
-    discount.value = subtotal.value * 0.1; // giảm 10%
+  // Find promotion by name (assuming voucherCode is promotion name)
+  const promotion = availablePromotions.value.find(p => p.name === voucherCode.value);
+  if (promotion) {
+    applyPromotion(promotion.id);
   } else {
-    voucherError.value = 'Mã giảm giá không hợp lệ.';
+    voucherError.value = 'Mã giảm giá không tồn tại hoặc đã hết hạn.';
+    selectedPromotion.value = null;
   }
 }
 
@@ -383,13 +443,26 @@ async function placeOrder() {
           <!-- Chọn voucher -->
           <div>
             <label for="voucher" class="block text-sm font-medium text-gray-700">Chọn Voucher</label>
-            <select v-model="voucherCode" @change="applyVoucher"
-                    class="mt-1 block w-full border-gray-300 rounded-md p-2">
+            <select 
+              v-model="voucherCode" 
+              @change="applyVoucher"
+              class="mt-1 block w-full border-gray-300 rounded-md p-2"
+              :disabled="promotionLoading"
+            >
               <option value="">-- Chọn voucher --</option>
-              <option value="SALE50">Giảm 50,000đ</option>
-              <option value="SALE10P">Giảm 10%</option>
+              <option 
+                v-for="promotion in availablePromotions" 
+                :key="promotion.id" 
+                :value="promotion.name"
+              >
+                {{ promotion.name }} ({{ new Date(promotion.start).toLocaleDateString() }} - {{ new Date(promotion.end).toLocaleDateString() }})
+              </option>
             </select>
+            <div v-if="promotionLoading" class="text-sm text-gray-500 mt-1">Đang tải voucher...</div>
             <p v-if="voucherError" class="text-red-500 text-sm mt-1">{{ voucherError }}</p>
+            <p v-if="selectedPromotion" class="text-green-600 text-sm mt-1">
+              ✅ Đã áp dụng: {{ selectedPromotion.name }}
+            </p>
           </div>
           
           <!-- Chi tiết giá -->
