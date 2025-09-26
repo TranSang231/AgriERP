@@ -252,9 +252,19 @@ const { logout } = useCustomersService();
 const onLogout = async () => {
   try {
     await logout();
+    auth.logout(); // Clear auth store
     closeMenus();
+    await navigateTo('/auth/login'); // Navigate to login page
+    // Show success message after navigation
+    const { $toast } = useNuxtApp();
+    $toast.success('Đăng xuất thành công');
   } catch (error) {
     console.error("Logout failed:", error);
+    // Force navigation even if logout API fails
+    auth.logout();
+    await navigateTo('/auth/login');
+    const { $toast } = useNuxtApp();
+    $toast.success('Đăng xuất thành công');
   }
 };
 
