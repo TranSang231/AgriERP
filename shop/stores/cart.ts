@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue' // Import ref và computed từ Vue
+import { ref, computed } from 'vue'
 import { useCartService } from '~/services/cart'
 
 // Định nghĩa kiểu dữ liệu cho một item trong giỏ hàng
@@ -10,13 +10,12 @@ export type CartItem = {
   name: string
   price: number
   qty: number
-  selected: boolean 
+  selected: boolean
+  image?: string
 }
 
-// SỬ DỤNG CÚ PHÁP SETUP STORE ĐỂ KIỂM SOÁT REACTIVITY TỐT HƠN
 export const useCartStore = defineStore('cart', () => {
   // --- STATE ---
-  // Sử dụng ref() để đảm bảo items luôn là một đối tượng reactive
   const items = ref<CartItem[]>([])
   const isLoading = ref(false)
   const hasLoaded = ref(false)
@@ -24,17 +23,30 @@ export const useCartStore = defineStore('cart', () => {
   // --- SERVICES ---
   const { getCart, addToCart, updateCartItem, removeFromCart } = useCartService()
 
+  // --- HELPERS ---
+  function toDisplayName(name: any): string {
+    if (typeof name === 'string') return name
+    if (name && typeof name === 'object' && 'origin' in name) return (name as any).origin as string
+    return 'Unknown Product'
+  }
+
+  function sanitizeItemsInPlace(): void {
+    items.value = items.value.map((it: any) => ({
+      ...it,
+      name: toDisplayName((it as any).name),
+      image: it.image || '/placeholder-product.jpg',
+    }))
+  }
+
   // --- GETTERS ---
-  // Các getter giờ là các computed property
   const count = computed(() => items.value.reduce((acc, item) => acc + item.qty, 0))
   const total = computed(() => items.value.reduce((acc, item) => acc + item.price * item.qty, 0))
-  
   const selectedItems = computed(() => items.value.filter(item => item.selected))
   const selectedCount = computed(() => selectedItems.value.reduce((acc, item) => acc + item.qty, 0))
   const selectedTotal = computed(() => selectedItems.value.reduce((acc, item) => acc + (item.price * item.qty), 0))
 
   // --- ACTIONS ---
-  // Các action giờ là các function thông thường
+  
   async function load() {
     if (isLoading.value) return
     try {
@@ -46,10 +58,11 @@ export const useCartStore = defineStore('cart', () => {
         items.value = cart.items.map((it: any) => ({
           itemId: it.id,
           productId: it.product?.id,
-          name: it.product?.name,
+          name: toDisplayName(it.product?.name),
           price: (it.product?.sale_price ?? it.product?.price ?? 0),
           qty: it.quantity ?? 1,
           selected: true,
+          image: it.product?.thumbnail || it.product?.image || '/placeholder-product.jpg'
         }))
       } else {
         items.value = []
@@ -64,7 +77,8 @@ export const useCartStore = defineStore('cart', () => {
 
   async function add(product: Omit<CartItem, 'selected' | 'qty'> & { qty?: number }) {
     const quantityToAdd = product.qty || 1
-    // Gọi backend để thêm vào cart
+    const normalizedName = toDisplayName((product as any).name)
+    
     try {
       const { data, error } = await addToCart({ product_id: product.productId, quantity: quantityToAdd })
       if (!error?.value && data?.value) {
@@ -77,21 +91,23 @@ export const useCartStore = defineStore('cart', () => {
           items.value.push({
             itemId: it.id,
             productId: product.productId,
-            name: product.name,
+            name: normalizedName,
             price: product.price,
             qty: quantityToAdd,
             selected: true,
+            image: product.image || '/placeholder-product.jpg'
           })
         }
         return
       }
     } catch (_) {}
+    
     // Fallback local nếu gọi API lỗi
     const found = items.value.find(i => i.productId === product.productId)
     if (found) {
       found.qty += quantityToAdd
     } else {
-      items.value.push({ ...product, qty: quantityToAdd, selected: true })
+      items.value.push({ ...product, name: normalizedName, qty: quantityToAdd, selected: true, image: product.image || '/placeholder-product.jpg' })
     }
   }
 
@@ -127,7 +143,6 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   function clear() {
-    // API không định nghĩa clear hàng loạt, xóa local để UX nhanh
     items.value = []
   }
 
@@ -142,7 +157,6 @@ export const useCartStore = defineStore('cart', () => {
     items.value.forEach(item => item.selected = select);
   }
 
-  // Trả về tất cả các state, getter, action cần thiết
   return {
     items,
     isLoading,
@@ -161,6 +175,5 @@ export const useCartStore = defineStore('cart', () => {
     toggleSelectAll,
   }
 }, {
-  // Cấu hình persist vẫn giữ nguyên
   persist: true,
 })
