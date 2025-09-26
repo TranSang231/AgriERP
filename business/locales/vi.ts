@@ -358,6 +358,7 @@ const vi = {
   in_progress: "Đang làm việc",
   select_source: "Chọn nguồn",
   enter_note: "Nhập ghi chú",
+  no_permission_to_checkin: "Không có quyền chấm công",
   Template: "Mẫu",
   final_result: "Kết quả cuối",
   period: "Quá trình",

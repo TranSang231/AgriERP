@@ -97,6 +97,9 @@
               <el-icon><Check /></el-icon>
               {{ $t('checkin') }}
             </el-button>
+            <div v-if="!canCheckIn" class="text-xs text-red-500 mt-1">
+              {{ $t('no_permission_to_checkin') }}
+            </div>
             <el-button @click="resetForm">
               {{ $t('reset') }}
             </el-button>
@@ -260,7 +263,9 @@ const recentRecords = ref([])
 
 // Computed
 const canCheckIn = computed(() => {
-  return oauthStore.hasOneOfScopes(['timekeeping:check'])
+  const hasPermission = oauthStore.hasOneOfScopes(['timekeeping:check'])
+  console.log('Can check in:', hasPermission, 'Available scopes:', oauthStore.tokenInfo?.scopes)
+  return hasPermission
 })
 
 const selectedEmployeeId = computed(() => checkInForm.value.employee_id)
@@ -327,19 +332,24 @@ const handleCheckIn = async () => {
       check_in_at: checkInForm.value.check_in_at || new Date().toISOString()
     }
     
-    await TimekeepingService.checkIn(data)
+    console.log('Check-in data:', data)
+    const result = await TimekeepingService.checkIn(data)
+    console.log('Check-in result:', result)
+    
     ElMessage.success('Checked in successfully')
     
     resetForm()
     await loadCurrentSession()
     await loadRecentRecords()
   } catch (error) {
+    console.error('Check-in error:', error)
     if (error.response?.data?.detail) {
       ElMessage.error(error.response.data.detail)
+    } else if (error.response?.data) {
+      ElMessage.error(JSON.stringify(error.response.data))
     } else {
-      ElMessage.error('Error checking in')
+      ElMessage.error('Error checking in: ' + error.message)
     }
-    console.error(error)
   } finally {
     loading.value = false
   }
@@ -398,11 +408,13 @@ watch(selectedEmployeeId, () => {
 // Lifecycle
 onMounted(async () => {
   try {
+    // Force fetch fresh data from server
     await Promise.all([
-      EmployeeService.fetch(),
-      OfficeService.fetch(),
+      EmployeeService.fetch(true), // force = true
+      OfficeService.fetch(true),   // force = true
       loadRecentRecords()
     ])
+    console.log('Loaded offices:', officesStore.allOffices)
   } catch (error) {
     console.error('Error loading initial data:', error)
   }

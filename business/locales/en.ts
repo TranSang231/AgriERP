@@ -285,6 +285,7 @@ const en = {
     in_progress: 'In Progress',
     select_source: 'Select Source',
     enter_note: 'Enter Note',
+    no_permission_to_checkin: 'No permission to check in',
     session_start: 'Session Start',
     session_end: 'Session End',
     group_title: 'Group',
