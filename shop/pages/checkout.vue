@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCheckoutStore } from '~/stores/checkout';
 import { useCartStore } from '~/stores/cart';
-import { useCurrency } from '~/composables/useCurrency';
+import { useCurrency } from '~/composables/useCurrency'; 
 import { usePromotionService } from '~/services/promotions'; 
 
 // --- KHỞI TẠO ---
@@ -30,6 +30,7 @@ const discount = ref(0);
 const voucherError = ref('');
 const loading = ref(false);
 const err = ref('');
+const transferConfirmed = ref(false); // Xác nhận đã chuyển khoản
 
 // Promotion state
 const availablePromotions = ref([]);
@@ -175,7 +176,50 @@ const finalTotal = computed(() => {
   return total > 0 ? total : 0; 
 });
 
+// --- VALIDATION ---
+const showValidation = ref(false); // Chỉ hiển thị validation sau khi user nhấn submit
+
+const validationErrors = computed(() => {
+  const errors = [];
+  
+  if (!customerInfo.customer_name?.trim()) {
+    errors.push('Tên khách hàng là bắt buộc');
+  }
+  
+  if (!address.line1?.trim()) {
+    errors.push('Địa chỉ chi tiết là bắt buộc');
+  }
+  
+  if (!address.province_id) {
+    errors.push('Tỉnh/Thành phố là bắt buộc');
+  }
+  
+  if (!address.district_id) {
+    errors.push('Quận/Huyện là bắt buộc');
+  }
+  
+  if (!address.ward_id) {
+    errors.push('Phường/Xã là bắt buộc');
+  }
+  
+  // Nếu chọn chuyển khoản thì cần xác nhận đã chuyển
+  if (paymentMethod.value === 'bank_transfer' && !transferConfirmed.value) {
+    errors.push('Vui lòng xác nhận đã chuyển khoản');
+  }
+  
+  return errors;
+});
+
+const isFormValid = computed(() => validationErrors.value.length === 0);
+
 // --- HÀM XỬ LÝ ---
+// Reset checkbox khi chuyển đổi phương thức thanh toán
+watch(paymentMethod, (newMethod) => {
+  if (newMethod !== 'bank_transfer') {
+    transferConfirmed.value = false;
+  }
+});
+
 function applyVoucher() {
   voucherError.value = '';
   discount.value = 0;
@@ -201,6 +245,15 @@ function mapPaymentMethod(method: string): number {
 }
 
 async function placeOrder() {
+  // Bật validation mode để hiển thị lỗi
+  showValidation.value = true;
+  
+  // Kiểm tra validation trước khi xử lý
+  if (!isFormValid.value) {
+    err.value = 'Vui lòng điền đầy đủ thông tin bắt buộc';
+    return;
+  }
+  
   loading.value = true;
   err.value = '';
   try {
@@ -221,7 +274,7 @@ async function placeOrder() {
       
       // Items with proper structure for OrderItem
       items: checkoutItems.value.map(item => ({ 
-        product_id: item.productId,
+        product_id: item.productId, 
         product_name: item.name,
         unit: 'Cái', // Default unit, should come from product
         quantity: item.qty, 
@@ -246,7 +299,7 @@ async function placeOrder() {
     // TODO: Replace with actual API call
     // const { request } = useApi()
     // const response = await request('/orders', { method: 'POST', body: orderPayload })
-    
+
     await new Promise(r => setTimeout(r, 1000));
     alert('Thanh toán thành công!');
 
@@ -285,7 +338,10 @@ async function placeOrder() {
                 <input 
                   v-model="customerInfo.customer_name" 
                   placeholder="Nhập tên khách hàng" 
-                  class="border rounded w-full p-3" 
+                  :class="[
+                    'border rounded w-full p-3',
+                    showValidation && !customerInfo.customer_name?.trim() ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
+                  ]"
                   required
                 />
               </div>
@@ -305,14 +361,6 @@ async function placeOrder() {
                   class="border rounded w-full p-3"
                 />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Số tài khoản</label>
-                <input 
-                  v-model="customerInfo.account_number" 
-                  placeholder="Nhập số tài khoản (nếu có)" 
-                  class="border rounded w-full p-3"
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -326,7 +374,10 @@ async function placeOrder() {
               <input 
                 v-model="address.line1" 
                 placeholder="Số nhà, tên đường, tòa nhà..." 
-                class="border rounded w-full p-3" 
+                  :class="[
+                    'border rounded w-full p-3',
+                    showValidation && !address.line1?.trim() ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
+                  ]"
                 required
               />
             </div>
@@ -337,7 +388,10 @@ async function placeOrder() {
                 <select 
                   v-model="address.province_id" 
                   @change="loadDistricts(address.province_id)"
-                  class="border rounded w-full p-3"
+                  :class="[
+                    'border rounded w-full p-3',
+                    showValidation && !address.province_id ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
+                  ]"
                   :disabled="loadingProvinces"
                   required
                 >
@@ -354,7 +408,10 @@ async function placeOrder() {
                 <select 
                   v-model="address.district_id" 
                   @change="loadWards(address.district_id)"
-                  class="border rounded w-full p-3"
+                  :class="[
+                    'border rounded w-full p-3',
+                    showValidation && !address.district_id ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
+                  ]"
                   :disabled="!address.province_id || loadingDistricts"
                   required
                 >
@@ -370,7 +427,10 @@ async function placeOrder() {
                 <label class="block text-sm font-medium text-gray-700 mb-2">Phường/Xã</label>
                 <select 
                   v-model="address.ward_id" 
-                  class="border rounded w-full p-3"
+                  :class="[
+                    'border rounded w-full p-3',
+                    showValidation && !address.ward_id ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
+                  ]"
                   :disabled="!address.district_id || loadingWards"
                   required
                 >
@@ -399,7 +459,7 @@ async function placeOrder() {
                 />
                 <div>
                   <div class="font-medium">Chuyển khoản ngân hàng</div>
-                  <div class="text-sm text-gray-500">Thanh toán qua chuyển khoản ngân hàng</div>
+                  <div class="text-sm text-gray-500">Quét QR code để thanh toán</div>
                 </div>
               </label>
               
@@ -430,6 +490,43 @@ async function placeOrder() {
                 <p class="text-sm text-gray-500">Số lượng: {{ item.qty }}</p>
               </div>
               <div class="font-semibold">{{ format(item.price * item.qty) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Code cho chuyển khoản -->
+        <div v-if="paymentMethod === 'bank_transfer'" class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 class="text-lg font-semibold text-blue-900 mb-4">Thông tin chuyển khoản</h3>
+          <div class="text-center">
+            <div class="bg-white p-4 rounded-lg border-2 border-dashed border-blue-300 mb-4">
+              <div class="text-gray-500 text-sm mb-2">QR Code sẽ hiển thị ở đây</div>
+              <div class="w-48 h-48 bg-gray-100 mx-auto rounded-lg flex items-center justify-center">
+                <div class="text-gray-400 text-sm">QR Code</div>
+              </div>
+            </div>
+            <div class="text-sm text-gray-600 mb-4">
+              <p class="mb-2">Quét QR code bằng ứng dụng ngân hàng để thanh toán</p>
+              <p class="font-medium">Số tiền: {{ format(finalTotal) }}</p>
+            </div>
+            
+            <!-- Checkbox xác nhận chuyển khoản -->
+            <div class="bg-white p-4 rounded-lg border border-blue-300">
+              <label class="flex items-center justify-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="transferConfirmed"
+                  :class="[
+                    'h-5 w-5 rounded border-2',
+                    showValidation && !transferConfirmed ? 'border-red-500' : 'border-blue-500 text-blue-600 focus:ring-blue-500'
+                  ]"
+                />
+                <span class="text-sm font-medium text-gray-700">
+                  Tôi đã chuyển khoản thành công
+                </span>
+              </label>
+              <p class="text-xs text-gray-500 mt-2">
+                Đơn hàng sẽ được xử lý sau khi admin xác nhận giao dịch
+              </p>
             </div>
           </div>
         </div>
@@ -485,11 +582,15 @@ async function placeOrder() {
             </div>
           </div>
 
-          <p v-if="err" class="text-red-600 text-sm text-center">{{ err }}</p>
+          <p v-if="err" class="text-red-600 text-sm text-center mb-4">{{ err }}</p>
           
           <!-- Nút thanh toán -->
-          <button :disabled="loading" @click="placeOrder" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold text-lg disabled:opacity-50">
-            {{ loading ? 'Đang xử lý...' : 'Thanh Toán' }}
+          <button 
+            :disabled="loading" 
+            @click="placeOrder" 
+            class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold text-lg disabled:opacity-50"
+          >
+            {{ loading ? 'Đang xử lý...' : 'Đặt hàng' }}
           </button>
         </div>
       </aside>
