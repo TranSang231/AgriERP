@@ -2,14 +2,16 @@
   <div
     class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
   >
-    <!-- Product Image -->
-    <div class="relative overflow-hidden aspect-square">
-      <img
-        :src="primaryImage"
-        :alt="product?.name?.origin || product?.name || 'Product'"
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        loading="lazy"
-      />
+      <!-- Product Image -->
+      <div class="relative overflow-hidden aspect-square">
+        <NuxtLink :to="`/products/${product.id}`" class="block">
+          <img
+            :src="primaryImage"
+            :alt="product?.name?.origin || product?.name || 'Product'"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+        </NuxtLink>
 
       <!-- Sale Badge -->
       <div
