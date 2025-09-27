@@ -2,14 +2,16 @@
   <div
     class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
   >
-    <!-- Product Image -->
-    <div class="relative overflow-hidden aspect-square">
-      <img
-        :src="primaryImage"
-        :alt="product?.name?.origin || product?.name || 'Product'"
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        loading="lazy"
-      />
+      <!-- Product Image -->
+      <div class="relative overflow-hidden aspect-square">
+        <NuxtLink :to="`/products/${product.id}`" class="block">
+          <img
+            :src="primaryImage"
+            :alt="product?.name?.origin || product?.name || 'Product'"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+        </NuxtLink>
 
       <!-- Sale Badge -->
       <div
@@ -26,7 +28,7 @@
         <button
           @click="addToCart"
           class="bg-white text-gray-700 hover:bg-orange-500 hover:text-white p-2 rounded-full shadow-md transition-colors duration-200 mb-2 block"
-          :disabled="product.stock === 0"
+          :disabled="product.stock !== undefined && product.stock !== null && product.stock === 0"
         >
           <svg
             class="w-4 h-4"
@@ -114,7 +116,7 @@
             v-if="product.sale_price && product.sale_price < product.price"
             class="text-lg font-bold text-orange-500"
           >
-            ${{ Number(product.sale_price).toFixed(2) }}
+            {{ format(product.sale_price) }}
           </span>
           <span
             :class="[
@@ -123,7 +125,7 @@
                 : 'text-lg font-bold text-gray-900',
             ]"
           >
-            ${{ Number(product.price).toFixed(2) }}
+            {{ format(product.price) }}
           </span>
         </div>
 
@@ -137,6 +139,7 @@
 <script setup lang="ts">
 import type { Product } from "~/services/products";
 import { useCartStore } from "~/stores/cart";
+import { useCurrency } from "~/composables/useCurrency";
 import { computed } from "vue";
 
 interface Props {
@@ -145,6 +148,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const cartStore = useCartStore();
+const { format } = useCurrency();
 const primaryImage = computed(() => {
   const images = (props.product as any)?.images;
   if (Array.isArray(images) && images.length > 0) {
@@ -184,7 +188,9 @@ const discountPercentage = computed(() => {
 });
 
 const addToCart = () => {
-  if (props.product.stock > 0) {
+  const hasStockInfo = props.product.stock !== undefined && props.product.stock !== null;
+  const canAdd = hasStockInfo ? props.product.stock > 0 : true;
+  if (canAdd) {
     cartStore.add({
       productId: props.product.id,
       name: props.product.name,
