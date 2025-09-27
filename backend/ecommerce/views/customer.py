@@ -306,6 +306,11 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         request.session['user_id'] = str(user.id)
         request.session.save()  # Force save session
         
+        # Store token mapping in Django cache for cross-origin requests
+        from django.core.cache import cache
+        cache.set(f'customer_token_{simple_token}', str(customer.id), timeout=3600)  # 1 hour
+        print(f"Stored token mapping in cache: customer_token_{simple_token} -> {customer.id}")
+        
         print(f"Login successful - stored session data:")
         print(f"  customer_id: {request.session.get('customer_id')}")
         print(f"  user_id: {request.session.get('user_id')}")
@@ -448,8 +453,22 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             
             # Get customer ID from session (simplified for testing)
             customer_id = request.session.get('customer_id')
+            
+            # If no session, try to get from bearer token
             if not customer_id:
-                print("No customer_id in session")
+                auth_header = request.META.get('HTTP_AUTHORIZATION')
+                if auth_header and auth_header.startswith('Bearer '):
+                    token = auth_header.split(' ')[1]
+                    print(f"Userinfo: Trying to find customer by token: {token}")
+                    
+                    # Look for customer ID by token in cache
+                    from django.core.cache import cache
+                    cache_key = f'customer_token_{token}'
+                    customer_id = cache.get(cache_key)
+                    print(f"Userinfo: Found customer_id from cache: {customer_id}")
+            
+            if not customer_id:
+                print("No customer_id in session or cache")
                 return Response({"error": _("Not authenticated"), "session": dict(request.session)}, status=HTTP_401_UNAUTHORIZED)
             
             print(f"Found customer_id in session: {customer_id}")
@@ -468,14 +487,34 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         try:
             print(f"Profile update request data: {request.data}")
             print(f"Profile update session: {request.session.get('customer_id')}")
+            print(f"Authorization header: {request.META.get('HTTP_AUTHORIZATION')}")
             
-            # Get customer ID from session (simplified for testing)
+            # Try to get customer ID from session first (for session-based auth)
             customer_id = request.session.get('customer_id')
+            
+            # If no session, try to get from bearer token
+            if not customer_id:
+                auth_header = request.META.get('HTTP_AUTHORIZATION')
+                if auth_header and auth_header.startswith('Bearer '):
+                    token = auth_header.split(' ')[1]
+                    print(f"Trying to find customer by token: {token}")
+                    
+                    # Look for customer ID by token in cache
+                    # This is a simple token mapping - in production use proper JWT validation
+                    from django.core.cache import cache
+                    cache_key = f'customer_token_{token}'
+                    customer_id = cache.get(cache_key)
+                    print(f"Found customer_id from cache: {customer_id}")
+                    
+                    if customer_id:
+                        print(f"Successfully authenticated with token: {token}")
+                    else:
+                        print(f"Token {token} not found in cache")
+            
             if not customer_id:
                 return Response({"error": _("Not authenticated")}, status=HTTP_401_UNAUTHORIZED)
             
             customer = Customer.objects.get(id=customer_id)
-            user = customer.user
             
             # Update customer fields
             customer.first_name = request.data.get("first_name", customer.first_name)
@@ -484,16 +523,22 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             customer.address = request.data.get("address", customer.address)
             customer.date_of_birth = request.data.get("date_of_birth", customer.date_of_birth)
             customer.gender = request.data.get("gender", customer.gender)
-            customer.save()
             
-            # Update user fields
-            user.first_name = request.data.get("first_name", user.first_name)
-            user.last_name = request.data.get("last_name", user.last_name)
             # Update email if provided
             if request.data.get("email"):
-                user.email = request.data.get("email")
                 customer.email = request.data.get("email")
-            user.save()
+            
+            customer.save()
+            
+            # Update user fields if user exists
+            if customer.user:
+                user = customer.user
+                user.first_name = request.data.get("first_name", user.first_name)
+                user.last_name = request.data.get("last_name", user.last_name)
+                # Update email if provided
+                if request.data.get("email"):
+                    user.email = request.data.get("email")
+                user.save()
             
             serializer = CustomerSerializer(customer)
             return Response({

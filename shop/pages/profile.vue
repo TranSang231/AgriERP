@@ -505,60 +505,16 @@ const isAuthenticated = computed(() => !!auth.user)
 const loadProfile = async () => {
   try {
     if (!isAuthenticated.value) {
+      console.log('Not authenticated, redirecting to login')
       await navigateTo('/auth/login')
       return
     }
 
-    console.log('Loading profile...')
-    // Load user profile data from API
-    const profileData = await customersService.getProfile()
-    console.log('Profile data received:', profileData)
+    console.log('Loading profile... auth.user:', auth.user)
     
-    if (profileData?.customer) {
-      const customer = profileData.customer
-      console.log('Customer data:', customer)
-      profileForm.value = {
-        first_name: customer.first_name || '',
-        last_name: customer.last_name || '',
-        email: customer.email || '',
-        username: customer.username || customer.email || '',
-        nickname: customer.nickname || '',
-        website: customer.website || '',
-        bio: customer.bio || '',
-        avatar: customer.avatar || '',
-        phone: customer.phone || '',
-        address: customer.address || '',
-        date_of_birth: customer.date_of_birth || '',
-        gender: customer.gender || 'male'
-      }
-      console.log('Profile form updated:', profileForm.value)
-    } else {
-      console.log('No customer data found, using auth store data')
-      // Fallback to auth store data
-      if (auth.user) {
-        profileForm.value = {
-          first_name: auth.user.first_name || '',
-          last_name: auth.user.last_name || '',
-          email: auth.user.email || '',
-          username: auth.user.username || auth.user.email || '',
-          nickname: auth.user.nickname || '',
-          website: auth.user.website || '',
-          bio: auth.user.bio || '',
-          avatar: auth.user.avatar || '',
-          phone: auth.user.phone || '',
-          address: auth.user.address || '',
-          date_of_birth: auth.user.date_of_birth || '',
-          gender: auth.user.gender || 'male'
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error loading profile:', error)
-    $toast.error('Không thể tải thông tin hồ sơ')
-    
-    // Fallback to auth store data if API fails
+    // First try to load from auth store (faster)
     if (auth.user) {
-      console.log('Using fallback auth store data')
+      console.log('Using auth store data first')
       profileForm.value = {
         first_name: auth.user.first_name || '',
         last_name: auth.user.last_name || '',
@@ -573,7 +529,41 @@ const loadProfile = async () => {
         date_of_birth: auth.user.date_of_birth || '',
         gender: auth.user.gender || 'male'
       }
+      console.log('Profile form populated from auth store:', profileForm.value)
     }
+    
+    // Then try to refresh from API
+    try {
+      console.log('Fetching fresh data from API...')
+      const profileData = await customersService.getProfile()
+      console.log('Profile data received:', profileData)
+      
+      if (profileData?.customer) {
+        const customer = profileData.customer
+        console.log('Customer data:', customer)
+        profileForm.value = {
+          first_name: customer.first_name || '',
+          last_name: customer.last_name || '',
+          email: customer.email || '',
+          username: customer.username || customer.email || '',
+          nickname: customer.nickname || '',
+          website: customer.website || '',
+          bio: customer.bio || '',
+          avatar: customer.avatar || '',
+          phone: customer.phone || '',
+          address: customer.address || '',
+          date_of_birth: customer.date_of_birth || '',
+          gender: customer.gender || 'male'
+        }
+        console.log('Profile form updated from API:', profileForm.value)
+      }
+    } catch (apiError) {
+      console.warn('API call failed, using auth store data:', apiError)
+    }
+    
+  } catch (error) {
+    console.error('Error loading profile:', error)
+    $toast.error('Không thể tải thông tin hồ sơ')
   }
 }
 
@@ -587,11 +577,38 @@ const updateProfile = async () => {
     if (result?.customer) {
       // Update the auth store with new data
       auth.user = result.customer
+      
+      // Update profileForm with the latest data from server
+      const customer = result.customer
+      profileForm.value = {
+        first_name: customer.first_name || '',
+        last_name: customer.last_name || '',
+        email: customer.email || '',
+        username: customer.username || customer.email || '',
+        nickname: customer.nickname || '',
+        website: customer.website || '',
+        bio: customer.bio || '',
+        avatar: customer.avatar || '',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        date_of_birth: customer.date_of_birth || '',
+        gender: customer.gender || 'male'
+      }
+      
       $toast.success('Cập nhật hồ sơ thành công!')
     }
   } catch (error) {
     console.error('Error updating profile:', error)
-    $toast.error('Không thể cập nhật hồ sơ')
+    // Check if there's a specific error message
+    if (error?.data?.error) {
+      $toast.error(error.data.error)
+    } else if (error?.data?.message) {
+      $toast.error(error.data.message)
+    } else if (error?.message) {
+      $toast.error(error.message)
+    } else {
+      $toast.error('Không thể cập nhật hồ sơ')
+    }
   } finally {
     loading.value = false
   }
@@ -641,16 +658,48 @@ const saveField = async (fieldName) => {
     if (result?.customer) {
       // Update the auth store with new data
       auth.user = result.customer
+      
+      // Update profileForm with the latest data from server
+      const customer = result.customer
+      profileForm.value = {
+        first_name: customer.first_name || '',
+        last_name: customer.last_name || '',
+        email: customer.email || '',
+        username: customer.username || customer.email || '',
+        nickname: customer.nickname || '',
+        website: customer.website || '',
+        bio: customer.bio || '',
+        avatar: customer.avatar || '',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        date_of_birth: customer.date_of_birth || '',
+        gender: customer.gender || 'male'
+      }
+      
       $toast.success('Cập nhật thành công!')
-      // Clear editing state and original values
-      editingField.value = null
-      originalValues.value = {}
     }
   } catch (error) {
     console.error('Error updating field:', error)
-    $toast.error('Không thể cập nhật thông tin')
+    // Check if there's a specific error message
+    if (error?.data?.error) {
+      $toast.error(error.data.error)
+    } else if (error?.data?.message) {
+      $toast.error(error.data.message)
+    } else if (error?.message) {
+      $toast.error(error.message)
+    } else {
+      $toast.error('Không thể cập nhật thông tin')
+    }
+    
+    // Always restore original value on error
+    if (originalValues.value[fieldName] !== undefined) {
+      profileForm.value[fieldName] = originalValues.value[fieldName]
+    }
   } finally {
+    // Always clear editing state regardless of success or failure
     loading.value = false
+    editingField.value = null
+    originalValues.value = {}
   }
 }
 
@@ -725,8 +774,12 @@ const changePassword = async () => {
     
   } catch (error) {
     console.error('Error changing password:', error)
-    if (error?.error) {
-      $toast.error(error.error)
+    if (error?.data?.error) {
+      $toast.error(error.data.error)
+    } else if (error?.data?.message) {
+      $toast.error(error.data.message)
+    } else if (error?.message) {
+      $toast.error(error.message)
     } else {
       $toast.error('Không thể đổi mật khẩu')
     }
