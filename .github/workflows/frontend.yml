@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: "business/package-lock.json"
+          cache-dependency-path: "package-lock.json"  # Đã sửa: bỏ "business/" vì đã có working-directory
 
       - name: Install deps
         run: npm ci
