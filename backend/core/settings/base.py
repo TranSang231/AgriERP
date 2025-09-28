@@ -130,6 +130,7 @@ CORS_EXPOSE_HEADERS = [
     'filename',
     'ETag'
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 ALLOWED_HOSTS = env.list(
     'DJANGO_ALLOWED_HOSTS',
