@@ -196,6 +196,7 @@ const addToCart = () => {
       name: props.product.name,
       price: props.product.sale_price || props.product.price,
       qty: 1,
+      image: props.product.thumbnail || primaryImage.value,
     });
     // Show success message (you can add toast notification here)
   }
