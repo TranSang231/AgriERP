@@ -15,6 +15,7 @@ export function useApi() {
     const requestOptions: any = {
       ...(opts as any),
       headers,
+      credentials: 'include', // Include cookies in requests
     }
     return useFetch<T>(`${config.public.apiBase}${path}`, requestOptions)
   }
