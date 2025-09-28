@@ -22,6 +22,7 @@ class CustomerSerializer(WritableNestedSerializer):
             'first_name',
             'last_name',
             'phone',
+            'address',
             'date_of_birth',
             'gender',
             'status',
@@ -34,6 +35,7 @@ class CustomerSerializer(WritableNestedSerializer):
             'first_name': {'required': False},
             'last_name': {'required': False},
             'phone': {'required': False},
+            'address': {'required': False},
             'date_of_birth': {'required': False},
             'gender': {'required': False},
             'status': {'required': False}

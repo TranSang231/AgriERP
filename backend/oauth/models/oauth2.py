@@ -46,6 +46,7 @@ class AccessToken(AbstractAccessToken):
         related_name="refreshed_access_token",
     )
     token = models.TextField(blank=True)
+    token_checksum = models.CharField(max_length=64, blank=True, default='')
     application = models.ForeignKey(
         Application,
         on_delete=models.CASCADE,
