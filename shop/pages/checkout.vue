@@ -217,10 +217,15 @@ async function applyPromotion(promotionId) {
 }
 
 // --- GIÁ TRỊ TÍNH TOÁN ---
-const tax = computed(() => subtotal.value * 0.08);
+// Thuế được tính sau khi đã trừ giảm giá (voucher/discount)
+const taxableBase = computed(() => {
+  const base = subtotal.value - discount.value;
+  return base > 0 ? base : 0;
+});
+const tax = computed(() => taxableBase.value * 0.08);
 const finalTotal = computed(() => {
-  const total = subtotal.value + tax.value - discount.value;
-  return total > 0 ? total : 0; 
+  const total = taxableBase.value + tax.value;
+  return total > 0 ? total : 0;
 });
 
 // --- VALIDATION ---
