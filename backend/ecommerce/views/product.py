@@ -2,6 +2,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework.response import Response
+from django.db.models import Q
+from django.utils import timezone
+from datetime import timedelta
 from common.constants import Http
 from base.views import BaseViewSet
 from ..models import Product
@@ -26,7 +29,9 @@ class ProductViewSet(BaseViewSet):
         "destroy": [["ecommerce:products:edit"]],
         "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
         "on_sale": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
-        "by_category": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
+        "by_category": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
+        "trending": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
+        "low_stock": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
     }
 
     def get_permissions(self):
@@ -116,6 +121,18 @@ class ProductViewSet(BaseViewSet):
         category_name = params.get('category_name')
         exclude_categories = params.get('exclude_categories')
         
+        # Advanced sorting options
+        sort_by = params.get('sort_by', 'name')
+        sort_order = params.get('sort_order', 'asc')
+        
+        # Date range filtering
+        created_after = params.get('created_after')
+        created_before = params.get('created_before')
+        
+        # Weight and dimension filtering
+        min_weight = params.get('min_weight')
+        max_weight = params.get('max_weight')
+        
         if category_id is not None:
             try:
                 category_id = int(category_id)
@@ -150,6 +167,45 @@ class ProductViewSet(BaseViewSet):
                 queryset = queryset.exclude(categories__id__in=exclude_ids)
             except (ValueError, TypeError):
                 pass
+        
+        # Date range filtering
+        if created_after is not None:
+            try:
+                from datetime import datetime
+                date_after = datetime.strptime(created_after, '%Y-%m-%d').date()
+                queryset = queryset.filter(created_at__date__gte=date_after)
+            except (ValueError, TypeError):
+                pass
+        
+        if created_before is not None:
+            try:
+                from datetime import datetime
+                date_before = datetime.strptime(created_before, '%Y-%m-%d').date()
+                queryset = queryset.filter(created_at__date__lte=date_before)
+            except (ValueError, TypeError):
+                pass
+        
+        # Weight filtering
+        if min_weight is not None:
+            try:
+                min_weight = float(min_weight)
+                queryset = queryset.filter(weight__gte=min_weight)
+            except (ValueError, TypeError):
+                pass
+        
+        if max_weight is not None:
+            try:
+                max_weight = float(max_weight)
+                queryset = queryset.filter(weight__lte=max_weight)
+            except (ValueError, TypeError):
+                pass
+        
+        # Apply sorting
+        valid_sort_fields = ['name', 'price', 'created_at', 'updated_at', 'in_stock', 'weight']
+        if sort_by in valid_sort_fields:
+            if sort_order.lower() == 'desc':
+                sort_by = f'-{sort_by}'
+            queryset = queryset.order_by(sort_by)
         
         return queryset, page_size
 
@@ -214,3 +270,52 @@ class ProductViewSet(BaseViewSet):
                 {"error": "Invalid category_id format"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    @action(detail=False, methods=[Http.HTTP_GET], url_path="trending")
+    def trending(self, request, *args, **kwargs):
+        """Get trending products (recently created or with promotions)"""
+        from datetime import timedelta
+        
+        # Products created in last 7 days or with active promotions
+        recent_date = timezone.now() - timedelta(days=7)
+        queryset = self.get_queryset().filter(
+            Q(created_at__gte=recent_date) |
+            Q(promotion_items__promotion__start__lte=timezone.now(),
+              promotion_items__promotion__end__gte=timezone.now())
+        ).distinct().order_by('-created_at', '-updated_at')
+        
+        # Apply other filters
+        queryset, page_size = self.processParams(request, queryset=queryset)
+        
+        if page_size is not None:
+            page = self.paginate_queryset(queryset)
+            data = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(data)
+        else:
+            data = self.get_serializer(queryset, many=True).data
+            return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=[Http.HTTP_GET], url_path="low-stock")
+    def low_stock(self, request, *args, **kwargs):
+        """Get products with low stock (less than threshold)"""
+        threshold = request.query_params.get('threshold', 5)
+        try:
+            threshold = float(threshold)
+        except (ValueError, TypeError):
+            threshold = 5.0
+        
+        queryset = self.get_queryset().filter(
+            in_stock__lte=threshold,
+            in_stock__gt=0
+        ).order_by('in_stock')
+        
+        # Apply other filters
+        queryset, page_size = self.processParams(request, queryset=queryset)
+        
+        if page_size is not None:
+            page = self.paginate_queryset(queryset)
+            data = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(data)
+        else:
+            data = self.get_serializer(queryset, many=True).data
+            return Response(data, status=status.HTTP_200_OK)
