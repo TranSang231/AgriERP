@@ -24,7 +24,8 @@ class ProductViewSet(BaseViewSet):
         "create": [["ecommerce:products:edit"]],
         "update": [["ecommerce:products:edit"]],
         "destroy": [["ecommerce:products:edit"]],
-        "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
+        "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
+        "on_sale": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
     }
 
     def get_permissions(self):
@@ -74,11 +75,63 @@ class ProductViewSet(BaseViewSet):
             except (ValueError, TypeError):
                 pass
         
+        # Promotion-based filtering
+        has_promotion = params.get('has_promotion')
+        promotion_id = params.get('promotion_id')
+        min_discount = params.get('min_discount')
+        
+        if has_promotion is not None and has_promotion.lower() in ['true', '1', 'yes']:
+            from django.utils import timezone
+            queryset = queryset.filter(
+                promotion_items__promotion__start__lte=timezone.now(),
+                promotion_items__promotion__end__gte=timezone.now()
+            ).distinct()
+        
+        if promotion_id is not None:
+            try:
+                promotion_id = int(promotion_id)
+                queryset = queryset.filter(promotions__id=promotion_id)
+            except (ValueError, TypeError):
+                pass
+        
+        if min_discount is not None:
+            try:
+                min_discount = float(min_discount)
+                from django.utils import timezone
+                queryset = queryset.filter(
+                    promotion_items__promotion__start__lte=timezone.now(),
+                    promotion_items__promotion__end__gte=timezone.now(),
+                    promotion_items__discount__gte=min_discount
+                ).distinct()
+            except (ValueError, TypeError):
+                pass
+        
         return queryset, page_size
 
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
     def summary_list(self, request, *args, **kwargs):
         queryset, page_size = self.processParams(request);
+        if page_size is not None:
+            page = self.paginate_queryset(queryset)
+            data = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(data)
+        else:
+            data = self.get_serializer(queryset, many=True).data
+            return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=[Http.HTTP_GET], url_path="on-sale")
+    def on_sale(self, request, *args, **kwargs):
+        """Get products that are currently on sale (have active promotions)."""
+        from django.utils import timezone
+        
+        queryset = self.get_queryset().filter(
+            promotion_items__promotion__start__lte=timezone.now(),
+            promotion_items__promotion__end__gte=timezone.now()
+        ).distinct()
+        
+        # Apply other filters
+        queryset, page_size = self.processParams(request)
+        
         if page_size is not None:
             page = self.paginate_queryset(queryset)
             data = self.get_serializer(page, many=True).data
