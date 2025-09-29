@@ -7,6 +7,8 @@ import { useCartStore } from '~/stores/cart';
 import { useCurrency } from '~/composables/useCurrency'; 
 import { usePromotionService } from '~/services/promotions';
 import { useOrderService } from '~/services/orders'; 
+import { useAuthStore } from '~/stores/auth';
+import { useCustomersService } from '~/services/customers';
 
 // --- KHỞI TẠO ---
 const checkoutStore = useCheckoutStore();
@@ -15,6 +17,8 @@ const router = useRouter();
 const { format } = useCurrency();
 const { getActivePromotions, validatePromotion } = usePromotionService();
 const { createOrder } = useOrderService();
+const auth = useAuthStore();
+const { getProfile } = useCustomersService();
 
 // Lấy dữ liệu từ checkoutStore
 const { items: checkoutItems, total: subtotal, count: checkoutCount } = storeToRefs(checkoutStore);
@@ -61,11 +65,51 @@ const loadingProvinces = ref(false);
 const loadingDistricts = ref(false);
 const loadingWards = ref(false);
 
-// Load provinces and promotions on mount
+// Load provinces, customer info and promotions on mount
 onMounted(async () => {
   await loadProvinces();
+  await loadCustomerProfileIntoCheckout();
   await loadActivePromotions();
 });
+
+async function loadCustomerProfileIntoCheckout() {
+  try {
+    // Prefer auth store first for speed
+    let customer: any = auth.user || null;
+    if (!customer) {
+      const data = await getProfile();
+      customer = (data as any)?.customer || null;
+    }
+    if (!customer) return;
+
+    // Fill customer name
+    const first = (customer.first_name || '').trim();
+    const last = (customer.last_name || '').trim();
+    customerInfo.customer_name = [first, last].filter(Boolean).join(' ');
+
+    // Fill address line
+    address.line1 = customer.address || '';
+
+    // Fill province/district/ward with dependent loading
+    const prov = customer.province_id ? String(customer.province_id) : '';
+    const dist = customer.district_id ? String(customer.district_id) : '';
+    const ward = customer.ward_id ? String(customer.ward_id) : '';
+
+    if (prov) {
+      address.province_id = prov;
+      await loadDistricts(prov);
+      if (dist) {
+        address.district_id = dist;
+        await loadWards(dist);
+        if (ward) {
+          address.ward_id = ward;
+        }
+      }
+    }
+  } catch (e) {
+    // Silent fallback if cannot load
+  }
+}
 
 async function loadProvinces() {
   loadingProvinces.value = true;
