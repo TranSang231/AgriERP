@@ -1,5 +1,7 @@
 import { useApi } from '~/services/api'
+import { useRuntimeConfig } from 'nuxt/app'
 import { useAuthStore } from '~/stores/auth'
+import { useCartStore } from '~/stores/cart'
 
 type LoginPayload = { username: string; password: string }
 type RegisterPayload = { email: string; first_name?: string; last_name?: string; password: string }
@@ -8,6 +10,7 @@ type VerifyPayload = { token: string; password: string; email: string; first_nam
 export function useCustomersService() {
   const { request } = useApi()
   const auth = useAuthStore()
+  const config = useRuntimeConfig()
 
   async function login(payload: LoginPayload) {
     const { data, error } = await request<{ access_token: string; customer: any; message: string }>(`/customers/login`, {
@@ -15,7 +18,20 @@ export function useCustomersService() {
     })
     if (error.value) throw error.value
     auth.setTokens(data.value!.access_token, '')
-    auth.user = data.value!.customer
+    // Always refresh profile from backend to avoid stale user/session
+    try {
+      const fresh = await getProfile()
+      if ((fresh as any)?.customer) auth.user = (fresh as any).customer
+      else auth.user = data.value!.customer
+    } catch (_) {
+      auth.user = data.value!.customer
+    }
+    // Immediately load cart for this account so UI updates without manual refresh
+    try {
+      const cart = useCartStore()
+      cart.items = []
+      await cart.load()
+    } catch (_) {}
     return data.value
   }
 
@@ -33,6 +49,12 @@ export function useCustomersService() {
   async function logout() {
     await request(`/customers/logout`, { method: 'POST' })
     auth.clear()
+    // Reload cart in guest context
+    try {
+      const cart = useCartStore()
+      cart.items = []
+      cart.load()
+    } catch (_) {}
   }
 
   async function fetchUser() {
@@ -51,11 +73,14 @@ export function useCustomersService() {
   }
 
   async function getProfile() {
-    const { data, error } = await request<{ customer: any }>(`/customers/userinfo`, {
-      method: 'GET'
+    // Use $fetch to avoid useFetch warning when called after mount (e.g., from stores)
+    const headers: Record<string, string> = {}
+    if (auth.accessToken) headers['Authorization'] = `Bearer ${auth.accessToken}`
+    return await $fetch<{ customer: any }>(`${config.public.apiBase}/customers/userinfo`, {
+      method: 'GET',
+      headers,
+      credentials: 'include'
     })
-    if (error.value) throw error.value
-    return data.value
   }
 
   async function updateProfile(payload: any) {
