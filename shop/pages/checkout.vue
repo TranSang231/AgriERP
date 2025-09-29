@@ -129,7 +129,8 @@ async function loadActivePromotions() {
   try {
     const { data, error } = await getActivePromotions();
     if (!error?.value && data?.value) {
-      availablePromotions.value = data.value;
+      // Only show voucher-type promotions at checkout
+      availablePromotions.value = (data.value || []).filter((p: any) => (p?.type || '').toLowerCase() === 'voucher');
     }
   } catch (error) {
     console.error('Error loading promotions:', error);
@@ -232,7 +233,7 @@ function applyVoucher() {
   }
 
   // Find promotion by name (assuming voucherCode is promotion name)
-  const promotion = availablePromotions.value.find(p => p.name === voucherCode.value);
+  const promotion = availablePromotions.value.find((p: any) => (p?.type || '').toLowerCase() === 'voucher' && p.name === voucherCode.value);
   if (promotion) {
     applyPromotion(promotion.id);
   } else {
