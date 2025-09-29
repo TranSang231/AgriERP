@@ -56,6 +56,24 @@ class ProductViewSet(BaseViewSet):
             except (ValueError, TypeError):
                 pass  # Ignore invalid price values
         
+        # Stock availability filtering
+        in_stock = params.get('in_stock')
+        out_of_stock = params.get('out_of_stock')
+        
+        if in_stock is not None and in_stock.lower() in ['true', '1', 'yes']:
+            queryset = queryset.filter(in_stock__gt=0)
+        elif out_of_stock is not None and out_of_stock.lower() in ['true', '1', 'yes']:
+            queryset = queryset.filter(in_stock__lte=0)
+            
+        # Stock quantity filtering
+        min_stock = params.get('min_stock')
+        if min_stock is not None:
+            try:
+                min_stock = float(min_stock)
+                queryset = queryset.filter(in_stock__gte=min_stock)
+            except (ValueError, TypeError):
+                pass
+        
         return queryset, page_size
 
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
