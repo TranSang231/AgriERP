@@ -25,7 +25,8 @@ class ProductViewSet(BaseViewSet):
         "update": [["ecommerce:products:edit"]],
         "destroy": [["ecommerce:products:edit"]],
         "summary_list": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
-        "on_sale": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
+        "on_sale": [["ecommerce:products:view"], ["ecommerce:products:edit"]],
+        "by_category": [["ecommerce:products:view"], ["ecommerce:products:edit"]]
     }
 
     def get_permissions(self):
@@ -34,9 +35,12 @@ class ProductViewSet(BaseViewSet):
             return [AllowAny()]
         return super().get_permissions()
 
-    def processParams(self, request):
+    def processParams(self, request, queryset=None):
         """Override to add custom price range filtering."""
-        queryset, page_size = super().processParams(request)
+        if queryset is None:
+            queryset, page_size = super().processParams(request)
+        else:
+            page_size = request.query_params.get('page_size')
         params = request.query_params
         
         # Price range filtering
@@ -106,6 +110,47 @@ class ProductViewSet(BaseViewSet):
             except (ValueError, TypeError):
                 pass
         
+        # Category-based filtering
+        category_id = params.get('category_id')
+        category_ids = params.get('category_ids')
+        category_name = params.get('category_name')
+        exclude_categories = params.get('exclude_categories')
+        
+        if category_id is not None:
+            try:
+                category_id = int(category_id)
+                queryset = queryset.filter(categories__id=category_id)
+            except (ValueError, TypeError):
+                pass
+        
+        if category_ids is not None:
+            try:
+                # Support comma-separated list of category IDs
+                if isinstance(category_ids, str):
+                    category_ids = [int(id.strip()) for id in category_ids.split(',') if id.strip()]
+                elif isinstance(category_ids, list):
+                    category_ids = [int(id) for id in category_ids]
+                queryset = queryset.filter(categories__id__in=category_ids).distinct()
+            except (ValueError, TypeError):
+                pass
+        
+        if category_name is not None:
+            # Search by category name (using ShortContent relationship)
+            queryset = queryset.filter(
+                categories__name__translations__icontains=category_name
+            ).distinct()
+        
+        if exclude_categories is not None:
+            try:
+                # Support comma-separated list of category IDs to exclude
+                if isinstance(exclude_categories, str):
+                    exclude_ids = [int(id.strip()) for id in exclude_categories.split(',') if id.strip()]
+                elif isinstance(exclude_categories, list):
+                    exclude_ids = [int(id) for id in exclude_categories]
+                queryset = queryset.exclude(categories__id__in=exclude_ids)
+            except (ValueError, TypeError):
+                pass
+        
         return queryset, page_size
 
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
@@ -139,3 +184,33 @@ class ProductViewSet(BaseViewSet):
         else:
             data = self.get_serializer(queryset, many=True).data
             return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=[Http.HTTP_GET], url_path="by-category")
+    def by_category(self, request, *args, **kwargs):
+        """Get products filtered by category"""
+        category_id = request.query_params.get('category_id')
+        if not category_id:
+            return Response(
+                {"error": "category_id parameter is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            category_id = int(category_id)
+            queryset = self.get_queryset().filter(categories__id=category_id)
+            
+            # Apply other filters from processParams
+            queryset, page_size = self.processParams(request, queryset=queryset)
+            
+            if page_size is not None:
+                page = self.paginate_queryset(queryset)
+                data = self.get_serializer(page, many=True).data
+                return self.get_paginated_response(data)
+            else:
+                data = self.get_serializer(queryset, many=True).data
+                return Response(data, status=status.HTTP_200_OK)
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid category_id format"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
