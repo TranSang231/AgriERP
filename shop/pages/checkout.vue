@@ -480,7 +480,7 @@ async function placeOrder() {
           <h2 class="text-xl font-semibold mb-4">Sản phẩm thanh toán</h2>
           <div class="bg-white rounded-lg border divide-y">
             <div v-for="item in checkoutItems" :key="item.productId" class="flex items-center space-x-4 p-4">
-              <img :src="'/placeholder-product.jpg'" :alt="item.name" class="w-16 h-16 object-cover rounded-md" />
+              <img :src="item.image" :alt="item.name" class="w-16 h-16 object-cover rounded-md" />
               <div class="flex-grow">
                 <p class="font-medium">{{ item.name }}</p>
                 <p class="text-sm text-gray-500">Số lượng: {{ item.qty }}</p>
