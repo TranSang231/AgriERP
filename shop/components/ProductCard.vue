@@ -212,6 +212,7 @@ const addToCart = () => {
       productId: props.product.id,
       name: props.product.name,
       price: effectiveSalePrice.value,
+      originalPrice: props.product.price,
       qty: 1,
       image: props.product.thumbnail || primaryImage.value,
     });

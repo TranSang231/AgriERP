@@ -61,7 +61,10 @@ const removeItem = () => {
       <h4 class="text-sm font-medium text-gray-900 truncate">
         {{ item.name }}
       </h4>
-      <p class="text-sm text-gray-500">{{ format(item.price) }}</p>
+      <div class="text-sm">
+        <span v-if="item.originalPrice && item.originalPrice > item.price" class="text-gray-400 line-through mr-2">{{ format(item.originalPrice) }}</span>
+        <span class="text-gray-900 font-medium">{{ format(item.price) }}</span>
+      </div>
     </div>
 
     <!-- Quantity Controls -->

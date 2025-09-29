@@ -18,6 +18,13 @@ const { items, selectedCount, selectedTotal, selectedItems } = storeToRefs(cartS
 
 // Các computed property tính toán thuế và tổng tiền cuối cùng.
 // Chúng sẽ tự động cập nhật khi selectedTotal thay đổi.
+const originalSelectedTotal = computed(() => {
+  return selectedItems.value.reduce((acc, item: any) => {
+    const base = (item.originalPrice ?? item.price) || 0;
+    return acc + base * (item.qty || 0);
+  }, 0);
+});
+const productsDiscount = computed(() => Math.max(0, originalSelectedTotal.value - selectedTotal.value));
 const tax = computed(() => selectedTotal.value * 0.08);
 const totalWithTax = computed(() => selectedTotal.value + tax.value);
 
@@ -119,7 +126,14 @@ useHead({
             <div class="px-6 py-4 space-y-4">
               <div class="flex justify-between">
                 <span class="text-gray-600">Subtotal ({{ selectedCount }} items)</span>
-                <span class="font-medium">{{ format(selectedTotal) }}</span>
+                <div class="font-medium">
+                  <span v-if="productsDiscount > 0" class="text-gray-400 line-through mr-2">{{ format(originalSelectedTotal) }}</span>
+                  <span>{{ format(selectedTotal) }}</span>
+                </div>
+              </div>
+              <div v-if="productsDiscount > 0" class="flex justify-between">
+                <span class="text-gray-600">Product discounts</span>
+                <span class="font-medium text-green-600">-{{ format(productsDiscount) }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-600">Shipping</span>

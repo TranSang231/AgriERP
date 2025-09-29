@@ -8,7 +8,10 @@ export type CartItem = {
   itemId?: number
   productId: number
   name: string
+  // price: đơn giá đã áp dụng giảm (nếu có)
   price: number
+  // originalPrice: đơn giá gốc trước khi giảm
+  originalPrice?: number
   qty: number
   selected: boolean
   image?: string
@@ -60,6 +63,7 @@ export const useCartStore = defineStore('cart', () => {
           productId: it.product?.id,
           name: toDisplayName(it.product?.name),
           price: (it.product?.sale_price ?? it.product?.price ?? 0),
+          originalPrice: (it.product?.price ?? it.product?.sale_price ?? 0),
           qty: it.quantity ?? 1,
           selected: true,
           image: it.product?.thumbnail || it.product?.image || '/placeholder-product.jpg'
@@ -93,6 +97,7 @@ export const useCartStore = defineStore('cart', () => {
             productId: product.productId,
             name: normalizedName,
             price: product.price,
+            originalPrice: (product as any).originalPrice ?? product.price,
             qty: quantityToAdd,
             selected: true,
             image: product.image || '/placeholder-product.jpg'
@@ -107,7 +112,14 @@ export const useCartStore = defineStore('cart', () => {
     if (found) {
       found.qty += quantityToAdd
     } else {
-      items.value.push({ ...product, name: normalizedName, qty: quantityToAdd, selected: true, image: product.image || '/placeholder-product.jpg' })
+      items.value.push({
+        ...product,
+        name: normalizedName,
+        originalPrice: (product as any).originalPrice ?? product.price,
+        qty: quantityToAdd,
+        selected: true,
+        image: product.image || '/placeholder-product.jpg'
+      })
     }
   }
 
