@@ -189,7 +189,7 @@
                       <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin cá nhân</h3>
                       
                       <form @submit.prevent="updateProfile" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <!-- Email -->
                           <div>
                             <div class="flex items-center justify-between mb-1">
@@ -214,7 +214,7 @@
                                 editingField === 'email' ? 'border-gray-200' : 'border-gray-200 bg-gray-50'
                               ]"
                             >
-                            <p class="text-xs text-gray-500 mt-1">{{ profileForm.email || 'email@example.com' }}</p>
+                            <p style="display: none;" class="text-xs text-gray-500 mt-1">{{ profileForm.email || 'email@example.com' }}</p>
                             <div v-if="editingField === 'email'" class="flex space-x-2 mt-2">
                               <button 
                                 type="button"
@@ -259,7 +259,7 @@
                                 editingField === 'first_name' ? 'border-gray-200' : 'border-gray-200 bg-gray-50'
                               ]"
                             >
-                            <p class="text-xs text-gray-500 mt-1">{{ profileForm.first_name || 'Tên của bạn' }}</p>
+                            <p style="display: none;" class="text-xs text-gray-500 mt-1">{{ profileForm.first_name || 'Tên của bạn' }}</p>
                             <div v-if="editingField === 'first_name'" class="flex space-x-2 mt-2">
                               <button 
                                 type="button"
@@ -305,7 +305,7 @@
                                 editingField === 'last_name' ? 'border-gray-200' : 'border-gray-200 bg-gray-50'
                               ]"
                             >
-                            <p class="text-xs text-gray-500 mt-1">{{ profileForm.last_name || 'Họ của bạn' }}</p>
+                            <p style="display: none;" class="text-xs text-gray-500 mt-1">{{ profileForm.last_name || 'Họ của bạn' }}</p>
                             <div v-if="editingField === 'last_name'" class="flex space-x-2 mt-2">
                               <button 
                                 type="button"
@@ -355,11 +355,85 @@
                                 editingField === 'address' ? 'border-gray-200' : 'border-gray-200 bg-gray-50'
                               ]"
                             >
-                            <p class="text-xs text-gray-500 mt-1">{{ profileForm.address || 'Địa chỉ nhà' }}</p>
+                            <p style="display: none;" class="text-xs text-gray-500 mt-1">{{ profileForm.address || 'Địa chỉ nhà' }}</p>
                             <div v-if="editingField === 'address'" class="flex space-x-2 mt-2">
                               <button 
                                 type="button"
                                 @click="saveField('address')"
+                                :disabled="loading"
+                                class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {{ loading ? 'Đang lưu...' : 'Lưu' }}
+                              </button>
+                              <button 
+                                type="button"
+                                @click="cancelEdit"
+                                :disabled="loading"
+                                class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                              >
+                                Hủy
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Province/District/Ward (same editable pattern) -->
+                          <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-3">
+                              <label class="block text-sm font-medium text-gray-700">Khu vực (Tỉnh/Quận/Phường)</label>
+                              <button 
+                                type="button"
+                                @click="toggleEdit('location')"
+                                class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                              >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                              </button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Tỉnh/Thành phố</label>
+                                <select 
+                                  v-model="profileForm.province_id" 
+                                  @change="onProvinceChange"
+                                  :disabled="editingField !== 'location'"
+                                  class="border rounded w-full p-3 appearance-none"
+                                >
+                                  <option value="">-- Chọn tỉnh/thành phố --</option>
+                                  <option v-for="p in provinces" :key="p.code" :value="String(p.code)">{{ p.name }}</option>
+                                </select>
+                                <div v-if="loadingProvinces" class="text-sm text-gray-500 mt-1">Đang tải...</div>
+                              </div>
+                              <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Quận/Huyện</label>
+                                <select 
+                                  v-model="profileForm.district_id" 
+                                  @change="onDistrictChange"
+                                  :disabled="editingField !== 'location' || !profileForm.province_id"
+                                  class="border rounded w-full p-3 appearance-none"
+                                >
+                                  <option value="">-- Chọn quận/huyện --</option>
+                                  <option v-for="d in districts" :key="d.code" :value="String(d.code)">{{ d.name }}</option>
+                                </select>
+                                <div v-if="loadingDistricts" class="text-sm text-gray-500 mt-1">Đang tải...</div>
+                              </div>
+                              <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Phường/Xã</label>
+                                <select 
+                                  v-model="profileForm.ward_id" 
+                                  :disabled="editingField !== 'location' || !profileForm.district_id"
+                                  class="border rounded w-full p-3 appearance-none"
+                                >
+                                  <option value="">-- Chọn phường/xã --</option>
+                                  <option v-for="w in wards" :key="w.code" :value="String(w.code)">{{ w.name }}</option>
+                                </select>
+                                <div v-if="loadingWards" class="text-sm text-gray-500 mt-1">Đang tải...</div>
+                              </div>
+                            </div>
+                            <div v-if="editingField === 'location'" class="flex space-x-2 mt-2">
+                              <button 
+                                type="button"
+                                @click="saveField('location')"
                                 :disabled="loading"
                                 class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
@@ -400,7 +474,7 @@
                                   editingField === 'phone' ? 'border-gray-200' : 'border-gray-200 bg-gray-50'
                                 ]"
                               >
-                              <p class="text-xs text-gray-500 mt-1">{{ profileForm.phone || 'Số điện thoại' }}</p>
+                              <p style="display: none;" class="text-xs text-gray-500 mt-1">{{ profileForm.phone || 'Số điện thoại' }}</p>
                               <div v-if="editingField === 'phone'" class="flex space-x-2 mt-2">
                                 <button 
                                   type="button"
@@ -464,7 +538,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useCustomersService } from '~/services/customers'
@@ -494,6 +568,9 @@ const profileForm = ref({
   avatar: '',
   phone: '',
   address: '',
+  province_id: '',
+  district_id: '',
+  ward_id: '',
   date_of_birth: '',
   gender: 'male'
 })
@@ -525,10 +602,22 @@ const loadProfile = async () => {
         bio: auth.user.bio || '',
         avatar: auth.user.avatar || '',
         phone: auth.user.phone || '',
-        address: auth.user.address || '',
+          address: auth.user.address || '',
+          province_id: (auth.user as any).province_id || '',
+          district_id: (auth.user as any).district_id || '',
+          ward_id: (auth.user as any).ward_id || '',
         date_of_birth: auth.user.date_of_birth || '',
         gender: auth.user.gender || 'male'
       }
+      // Ensure dependent lists are populated for display
+      try {
+        if (profileForm.value.province_id) {
+          await fetchDistricts(String(profileForm.value.province_id))
+        }
+        if (profileForm.value.district_id) {
+          await fetchWards(String(profileForm.value.district_id))
+        }
+      } catch (_) {}
       console.log('Profile form populated from auth store:', profileForm.value)
     }
     
@@ -552,9 +641,20 @@ const loadProfile = async () => {
           avatar: customer.avatar || '',
           phone: customer.phone || '',
           address: customer.address || '',
+          province_id: customer.province_id || '',
+          district_id: customer.district_id || '',
+          ward_id: customer.ward_id || '',
           date_of_birth: customer.date_of_birth || '',
           gender: customer.gender || 'male'
         }
+        try {
+          if (profileForm.value.province_id) {
+            await fetchDistricts(String(profileForm.value.province_id))
+          }
+          if (profileForm.value.district_id) {
+            await fetchWards(String(profileForm.value.district_id))
+          }
+        } catch (_) {}
         console.log('Profile form updated from API:', profileForm.value)
       }
     } catch (apiError) {
@@ -648,8 +748,13 @@ const saveField = async (fieldName) => {
     loading.value = true
     
     // Create update payload with only the changed field
-    const updateData = {
-      [fieldName]: profileForm.value[fieldName]
+    const updateData: any = {}
+    if (fieldName === 'location') {
+    updateData.province_id = profileForm.value.province_id ? String(profileForm.value.province_id) : ''
+    updateData.district_id = profileForm.value.district_id ? String(profileForm.value.district_id) : ''
+    updateData.ward_id = profileForm.value.ward_id ? String(profileForm.value.ward_id) : ''
+    } else {
+      updateData[fieldName] = (profileForm.value as any)[fieldName]
     }
     
     // Call API to update profile
@@ -672,27 +777,34 @@ const saveField = async (fieldName) => {
         avatar: customer.avatar || '',
         phone: customer.phone || '',
         address: customer.address || '',
+        province_id: customer.province_id || '',
+        district_id: customer.district_id || '',
+        ward_id: customer.ward_id || '',
         date_of_birth: customer.date_of_birth || '',
         gender: customer.gender || 'male'
       }
       
-      $toast.success('Cập nhật thành công!')
+      if ($toast && (typeof $toast.success === 'function')) {
+        $toast.success('Cập nhật thành công!')
+      } else {
+        console.log('Cập nhật thành công!')
+      }
     }
-  } catch (error) {
-    console.error('Error updating field:', error)
-    // Check if there's a specific error message
-    if (error?.data?.error) {
-      $toast.error(error.data.error)
-    } else if (error?.data?.message) {
-      $toast.error(error.data.message)
-    } else if (error?.message) {
-      $toast.error(error.message)
+  } catch (err) {
+    console.error('Error updating field:', err)
+    const anyErr: any = err as any
+    const msg = (anyErr && (anyErr.data?.error || anyErr.data?.message || anyErr.message)) || 'Không thể cập nhật thông tin'
+    if ($toast && (typeof $toast.error === 'function')) {
+      $toast.error(msg)
     } else {
-      $toast.error('Không thể cập nhật thông tin')
+      console.error(msg)
     }
     
     // Always restore original value on error
-    if (originalValues.value[fieldName] !== undefined) {
+    if (fieldName === 'location') {
+      // Restore location as a group if backed up individually isn't available
+      // No-op if not stored; user can reselect
+    } else if (originalValues.value[fieldName] !== undefined) {
       profileForm.value[fieldName] = originalValues.value[fieldName]
     }
   } finally {
@@ -812,6 +924,70 @@ const logout = async () => {
 // Lifecycle
 onMounted(() => {
   loadProfile()
+})
+
+// --- Vietnam Province API for profile ---
+const provinces = ref<any[]>([])
+const districts = ref<any[]>([])
+const wards = ref<any[]>([])
+const loadingProvinces = ref(false)
+const loadingDistricts = ref(false)
+const loadingWards = ref(false)
+
+async function fetchProvinces() {
+  loadingProvinces.value = true
+  try {
+    const res = await fetch('https://provinces.open-api.vn/api/')
+    provinces.value = await res.json()
+  } catch (e) {
+    // ignore
+  } finally {
+    loadingProvinces.value = false
+  }
+}
+
+async function fetchDistricts(provinceCode: string) {
+  if (!provinceCode) { districts.value = []; wards.value = []; return }
+  loadingDistricts.value = true
+  try {
+    const res = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
+    const data = await res.json()
+    districts.value = data?.districts || []
+    wards.value = []
+  } catch (e) {
+    // ignore
+  } finally {
+    loadingDistricts.value = false
+  }
+}
+
+async function fetchWards(districtCode: string) {
+  if (!districtCode) { wards.value = []; return }
+  loadingWards.value = true
+  try {
+    const res = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
+    const data = await res.json()
+    wards.value = data?.wards || []
+  } catch (e) {
+    // ignore
+  } finally {
+    loadingWards.value = false
+  }
+}
+
+function onProvinceChange() {
+  fetchDistricts(profileForm.value.province_id as any)
+  profileForm.value.district_id = ''
+  profileForm.value.ward_id = ''
+}
+
+function onDistrictChange() {
+  fetchWards(profileForm.value.district_id as any)
+  profileForm.value.ward_id = ''
+}
+
+onMounted(() => {
+  fetchProvinces()
 })
 </script>
 

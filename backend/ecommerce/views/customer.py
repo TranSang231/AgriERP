@@ -11,6 +11,7 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_404_NOT_FOUND,
     HTTP_406_NOT_ACCEPTABLE,
     HTTP_500_INTERNAL_SERVER_ERROR
@@ -521,6 +522,9 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             customer.last_name = request.data.get("last_name", customer.last_name)
             customer.phone = request.data.get("phone", customer.phone)
             customer.address = request.data.get("address", customer.address)
+            customer.province_id = request.data.get("province_id", customer.province_id)
+            customer.district_id = request.data.get("district_id", customer.district_id)
+            customer.ward_id = request.data.get("ward_id", customer.ward_id)
             customer.date_of_birth = request.data.get("date_of_birth", customer.date_of_birth)
             customer.gender = request.data.get("gender", customer.gender)
             
