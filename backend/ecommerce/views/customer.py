@@ -522,6 +522,7 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             customer.last_name = request.data.get("last_name", customer.last_name)
             customer.phone = request.data.get("phone", customer.phone)
             customer.address = request.data.get("address", customer.address)
+            customer.avatar = request.data.get("avatar", customer.avatar)
             customer.province_id = request.data.get("province_id", customer.province_id)
             customer.district_id = request.data.get("district_id", customer.district_id)
             customer.ward_id = request.data.get("ward_id", customer.ward_id)

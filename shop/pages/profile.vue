@@ -88,7 +88,7 @@
                             class="w-full h-full object-cover"
                           >
                         </div>
-                      <button class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50">
+                      <button @click="toggleEdit('avatar')" class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50">
                         <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                         </svg>
@@ -96,7 +96,7 @@
                     </div>
                     
                     <div class="mt-4">
-                      <label class="file-upload-label">
+                      <label v-if="editingField === 'avatar'" class="file-upload-label">
                         <input type="file" accept="image/*" @change="handleImageUpload">
                         Tải lên ảnh
                       </label>
@@ -815,15 +815,35 @@ const saveField = async (fieldName) => {
   }
 }
 
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      profileForm.value.avatar = e.target.result
+const handleImageUpload = async (event: any) => {
+  const file = event.target.files && event.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = async (e: any) => {
+    const base64 = e?.target?.result
+    if (!base64) return
+    profileForm.value.avatar = base64
+    try {
+      // Save avatar immediately and sync auth store with backend response
+      const result = await customersService.updateProfile({ avatar: base64 })
+      if (result && (result as any).customer) {
+        const customer = (result as any).customer
+        auth.user = customer
+        profileForm.value.avatar = customer.avatar || base64
+      }
+      if ($toast && (typeof $toast.success === 'function')) $toast.success('Ảnh đại diện đã được cập nhật')
+      // Exit edit mode after successful upload
+      if (editingField.value === 'avatar') {
+        editingField.value = null
+        originalValues.value = {}
+      }
+    } catch (err) {
+      const anyErr: any = err as any
+      const msg = (anyErr && (anyErr.data?.error || anyErr.data?.message || anyErr.message)) || 'Không thể cập nhật ảnh'
+      if ($toast && (typeof $toast.error === 'function')) $toast.error(msg)
     }
-    reader.readAsDataURL(file)
   }
+  reader.readAsDataURL(file)
 }
 
 // Password change methods
