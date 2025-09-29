@@ -89,36 +89,46 @@ class PromotionViewSet(BaseViewSet):
             
             # Calculate total discount
             total_discount = 0
-            for i, product_id in enumerate(product_ids):
-                try:
-                    promotion_item = PromotionItem.objects.get(
-                        promotion=promotion,
-                        product_id=product_id
-                    )
-                    quantity = quantities[i] if i < len(quantities) else 1
-                    
-                    # Check quantity limits
-                    if promotion_item.quantity_limit > 0 and quantity > promotion_item.quantity_limit:
-                        return Response({
-                            'valid': False,
-                            'message': f'Quantity exceeds limit for product {product_id}'
-                        }, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    # Get product price
-                    from ..models import Product
-                    product = Product.objects.get(id=product_id)
-                    product_price = getattr(product, 'sale_price', None) or getattr(product, 'price', 0) or 0
-                    
-                    # Calculate discount for this item: (discount_percent / 100) * price * quantity
-                    item_discount = (promotion_item.discount / 100) * float(product_price) * float(quantity)
-                    total_discount += item_discount
-                    
-                except PromotionItem.DoesNotExist:
-                    # Product not in promotion, skip
-                    continue
-                except Product.DoesNotExist:
-                    # Product not found, skip
-                    continue
+            from ..models import Product
+            if getattr(promotion, 'type', 'discount') == getattr(Promotion, 'TYPE_VOUCHER', 'voucher'):
+                # Voucher: apply promotion.discount to all selected products
+                for i, product_id in enumerate(product_ids):
+                    try:
+                        product = Product.objects.get(id=product_id)
+                        quantity = quantities[i] if i < len(quantities) else 1
+                        product_price = getattr(product, 'sale_price', None) or getattr(product, 'price', 0) or 0
+                        item_discount = (float(getattr(promotion, 'discount', 0)) / 100.0) * float(product_price) * float(quantity)
+                        total_discount += item_discount
+                    except Product.DoesNotExist:
+                        continue
+            else:
+                # Discount: product-level via PromotionItem
+                for i, product_id in enumerate(product_ids):
+                    try:
+                        promotion_item = PromotionItem.objects.get(
+                            promotion=promotion,
+                            product_id=product_id
+                        )
+                        quantity = quantities[i] if i < len(quantities) else 1
+                        
+                        # Check quantity limits
+                        if promotion_item.quantity_limit > 0 and quantity > promotion_item.quantity_limit:
+                            return Response({
+                                'valid': False,
+                                'message': f'Quantity exceeds limit for product {product_id}'
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        product = Product.objects.get(id=product_id)
+                        product_price = getattr(product, 'sale_price', None) or getattr(product, 'price', 0) or 0
+                        
+                        # Calculate discount for this item: (discount_percent / 100) * price * quantity
+                        item_discount = (promotion_item.discount / 100) * float(product_price) * float(quantity)
+                        total_discount += item_discount
+                        
+                    except PromotionItem.DoesNotExist:
+                        continue
+                    except Product.DoesNotExist:
+                        continue
             
             return Response({
                 'valid': True,
