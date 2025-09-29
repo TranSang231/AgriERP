@@ -11,8 +11,8 @@ from ..serializers import PromotionSerializer
 class PromotionViewSet(BaseViewSet):
     queryset = Promotion.objects.all()
     search_map = {
-        "name__ogigin": "icontains",
-        "description__ogigin": "icontains"
+        "name": "icontains",
+        "description": "icontains"
     }
     serializer_class = PromotionSerializer
     # Allow public access to promotions (no auth required)

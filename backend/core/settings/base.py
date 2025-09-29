@@ -88,6 +88,7 @@ LOCAL_BUILD = env.bool("LOCAL_BUILD", default=False)
 # WARNING: These flags can be turn on for local pc only!
 BUSINESS_FRONTEND_DEV_MODE = env.bool("BUSINESS_FRONTEND_DEV_MODE", default=False)
 DOCS_FRONTEND_DEV_MODE = env.bool("DOCS_FRONTEND_DEV_MODE", default=False)
+SHOP_FRONTEND_DEV_MODE = env.bool("SHOP_FRONTEND_DEV_MODE", default=True)
 
 DEFAULT_HOST = (
     os.environ["DEFAULT_HOST"]
@@ -125,6 +126,9 @@ if BUSINESS_FRONTEND_DEV_MODE:
 
 if DOCS_FRONTEND_DEV_MODE:
     CORS_ALLOWED_ORIGINS += [f'http://localhost:3009']
+
+if SHOP_FRONTEND_DEV_MODE:
+    CORS_ALLOWED_ORIGINS += [f'http://localhost:3010']
 
 CORS_EXPOSE_HEADERS = [
     'filename',
@@ -269,9 +273,9 @@ INSTALLED_APPS = [
     'va',
     'ecommerce',
     'contents',
-    'firebase',
+    # 'firebase',
     'health_check',
-    'django_extensions',
+    # 'django_extensions',
 ]
 
 
