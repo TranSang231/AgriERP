@@ -154,6 +154,7 @@ import { useProductsService } from "~/services/products";
 import ProductGrid from "~/components/ProductGrid.vue";
 import ProductFilters from "~/components/ProductFilters.vue";
 import CategoryMenu from "~/components/CategoryMenu.vue";
+import { useHead } from "nuxt/app";
 
 const route = useRoute();
 const router = useRouter();

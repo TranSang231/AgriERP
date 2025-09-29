@@ -14,7 +14,7 @@
             <div class="relative">
               <input
                 v-model="searchQuery"
-                @keyup.enter="performSearch"
+                @keyup.enter="performSearch()"
                 type="text"
                 placeholder="Search products..."
                 class="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -252,7 +252,10 @@
 </template>
 
 <script setup lang="ts">
+import { navigateTo, useNuxtApp } from "nuxt/app";
 import { onMounted, onUnmounted } from "vue";
+import { useSearch } from "~/composables/useSearch";
+import { useUI } from "~/composables/useUI";
 import { useCustomersService } from "~/services/customers";
 import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
@@ -277,14 +280,14 @@ const onLogout = async () => {
     await navigateTo('/auth/login'); // Navigate to login page
     // Show success message after navigation
     const { $toast } = useNuxtApp();
-    $toast.success('Đăng xuất thành công');
+    ($toast as any).success('Đăng xuất thành công');
   } catch (error) {
     console.error("Logout failed:", error);
     // Force navigation even if logout API fails
     auth.logout();
     await navigateTo('/auth/login');
     const { $toast } = useNuxtApp();
-    $toast.success('Đăng xuất thành công');
+    ($toast as any).success('Đăng xuất thành công');
   }
 };
 

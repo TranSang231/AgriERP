@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Hero Section -->
+    <!-- Hero Section with Shop Stats -->
     <section class="bg-gradient-to-r from-green-600 to-orange-500 text-white">
       <div class="container mx-auto px-4 py-16">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -12,6 +12,49 @@
               Discover premium farming supplies, seeds, tools, and equipment for
               modern agriculture.
             </p>
+
+            <!-- Shop Statistics -->
+            <div
+              v-if="shopStats"
+              class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+            >
+              <div
+                class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center"
+              >
+                <div class="text-2xl font-bold">
+                  {{ shopStats.total_products }}
+                </div>
+                <div class="text-sm opacity-80">Products</div>
+              </div>
+              <div
+                class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center"
+              >
+                <div class="text-2xl font-bold">
+                  {{ shopStats.total_categories }}
+                </div>
+                <div class="text-sm opacity-80">Categories</div>
+              </div>
+              <div
+                class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center"
+              >
+                <div class="text-2xl font-bold">
+                  {{ shopStats.products_on_sale }}
+                </div>
+                <div class="text-sm opacity-80">On Sale</div>
+              </div>
+              <div
+                class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center"
+                v-if="shopStats?.price_range"
+              >
+                <div class="text-2xl font-bold">
+                  ${{ shopStats.price_range.min }}-${{
+                    shopStats.price_range.max
+                  }}
+                </div>
+                <div class="text-sm opacity-80">Price Range</div>
+              </div>
+            </div>
+
             <div class="flex flex-col sm:flex-row gap-4">
               <NuxtLink
                 to="/products"
@@ -20,10 +63,10 @@
                 Shop Now
               </NuxtLink>
               <NuxtLink
-                to="/categories"
+                to="/products?on_sale=true"
                 class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors text-center"
               >
-                Browse Categories
+                View Sale Items
               </NuxtLink>
             </div>
           </div>
@@ -148,13 +191,12 @@
           </p>
         </div>
 
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          v-if="displayedCategories?.length > 0"
-        >
+        <!-- Categories Grid - Always show 8 items -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Real categories -->
           <NuxtLink
-            v-for="category in displayedCategories"
-            :key="category.id"
+            v-for="category in displayedCategories.slice(0, 8)"
+            :key="`real-${category.id}`"
             :to="`/products?category=${category.id}`"
             class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center group"
           >
@@ -178,9 +220,57 @@
             <h3
               class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors"
             >
-              {{ category.name.origin }}
+              {{ category.name?.origin || category.description || "Danh mục" }}
             </h3>
           </NuxtLink>
+
+          <!-- Static placeholder categories to fill remaining slots -->
+          <div
+            v-for="(categoryName, index) in placeholderCategories.slice(
+              0,
+              Math.max(0, 8 - displayedCategories.length)
+            )"
+            :key="`placeholder-${index}`"
+            class="bg-white rounded-lg shadow-md p-6 text-center opacity-50"
+          >
+            <div
+              class="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col items-center">
+              <div
+                class="w-8 h-8 rounded border-2 border-dashed border-gray-300 flex items-center justify-center mb-2"
+              >
+                <svg
+                  class="w-4 h-4 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  ></path>
+                </svg>
+              </div>
+              <span class="text-xs text-gray-300">Chưa có dữ liệu</span>
+            </div>
+          </div>
         </div>
 
         <div class="text-center mt-8">
@@ -219,15 +309,78 @@
           </p>
         </div>
 
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          v-if="displayedProducts?.length > 0"
-        >
+        <!-- Products Grid - Always show 8 items -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Real products -->
           <ProductCard
-            v-for="product in displayedProducts"
-            :key="product.id"
+            v-for="product in displayedProducts.slice(0, 8)"
+            :key="`real-${product.id}`"
             :product="product"
           />
+
+          <!-- Static placeholder products to fill remaining slots -->
+          <div
+            v-for="(productName, index) in [
+              'Premium Seeds',
+              'Organic Fertilizer',
+              'Irrigation System',
+              'Garden Tools',
+              'Plant Protection',
+              'Soil Treatment',
+              'Harvesting Kit',
+              'Storage Solution',
+            ].slice(0, Math.max(0, 8 - displayedProducts.length))"
+            :key="`placeholder-${index}`"
+            class="bg-white rounded-lg shadow-sm overflow-hidden opacity-50"
+          >
+            <!-- Product Image Placeholder -->
+            <div
+              class="aspect-square bg-gray-100 flex items-center justify-center"
+            >
+              <div
+                class="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
+              >
+                <svg
+                  class="w-8 h-8 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="p-4">
+              <div class="flex flex-col items-center text-center">
+                <div
+                  class="w-8 h-8 rounded border-2 border-dashed border-gray-300 flex items-center justify-center mb-2"
+                >
+                  <svg
+                    class="w-4 h-4 text-gray-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    ></path>
+                  </svg>
+                </div>
+                <span class="text-xs text-gray-300 mb-2">Chưa có sản phẩm</span>
+                <div class="w-full h-8 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="text-center mt-12">
@@ -270,11 +423,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from "vue";
-import { useProductsService } from "~/services/products";
-import type { Product, ProductCategory } from "~/services/products";
-
-import ProductCard from "@/components/ProductCard.vue";
+import { reactive, onMounted, computed } from "vue";
+import ProductCard from "~/components/ProductCard.vue";
+import { useProducts } from "~/composables/useProducts";
+import { useHead } from "nuxt/app";
 
 // SEO Meta
 useHead({
@@ -288,19 +440,36 @@ useHead({
   ],
 });
 
-// Services
-const { getCategories, getProductsSummary } = useProductsService();
+// Use products composable
+const {
+  featuredProducts,
+  categoriesWithProducts,
+  newArrivals,
+  onSaleProducts,
+  shopStats,
+  loading,
+  initializeShop,
+} = useProducts();
 
-// Reactive state
-const featuredProducts = ref<Product[]>([]);
-const categories = ref<ProductCategory[]>([]);
-const loading = ref(true);
+// Static placeholder data
+const placeholderCategories = [
+  "Seeds & Plants",
+  "Fertilizers",
+  "Tools & Equipment",
+  "Pest Control",
+  "Irrigation",
+  "Livestock Feed",
+  "Harvesting",
+  "Storage",
+];
+
+const placeholderProducts = Array(8).fill(null);
 
 // Computed
-const displayedProducts = computed(() =>
-  featuredProducts.value.filter(p => !!p).slice(0, 8)
+const displayedProducts = computed(() => featuredProducts.value.slice(0, 8));
+const displayedCategories = computed(() =>
+  categoriesWithProducts.value.slice(0, 8)
 );
-const displayedCategories = computed(() => categories.value.slice(0, 8));
 
 // Newsletter form
 const newsletterForm = reactive({
@@ -328,39 +497,8 @@ const subscribeNewsletter = async () => {
   }
 };
 
-// Lifecycle
+// Initialize shop data on mount
 onMounted(async () => {
-  loading.value = true;
-
-  try {
-    // Load featured products and categories in parallel
-    const [productsResult, categoriesResult] = await Promise.allSettled([
-      getProductsSummary(),
-      getCategories(),
-    ]);
-
-    if (
-      productsResult.status === "fulfilled" &&
-      productsResult.value.data.value
-    ) {
-      const summary = productsResult.value.data.value as any[];
-      featuredProducts.value = summary.map((p) => ({
-        ...p,
-        image: p.image || p.thumbnail,
-      })) as Product[];
-      // console.log("Featured Product", featuredProducts.value);
-    }
-
-    if (
-      categoriesResult.status === "fulfilled" &&
-      categoriesResult.value.data.value
-    ) {
-      categories.value = categoriesResult.value.data.value as ProductCategory[];
-    }
-  } catch (error) {
-    console.error("Failed to load data:", error);
-  } finally {
-    loading.value = false;
-  }
+  await initializeShop();
 });
 </script>

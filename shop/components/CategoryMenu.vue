@@ -25,12 +25,12 @@
         @click="selectCategory(category.id)"
         :class="[
           'block w-full text-left px-3 py-2 rounded-md transition-colors mb-2',
-          selectedCategoryId === category.id
+          selectedCategoryId === String(category.id)
             ? 'bg-orange-100 text-orange-700 font-medium'
             : 'hover:bg-gray-100 text-gray-700',
         ]"
       >
-        {{ category.name.origin }}
+        {{ category.name?.origin || category.description || "Danh mục" }}
       </button>
     </div>
   </div>

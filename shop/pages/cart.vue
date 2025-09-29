@@ -6,6 +6,7 @@ import { useCartStore } from "~/stores/cart";
 import { useCheckoutStore } from "~/stores/checkout";
 import { useCurrency } from "~/composables/useCurrency";
 import CartItem from "~/components/CartItem.vue";
+import { useHead } from "nuxt/app";
 
 const router = useRouter();
 const cartStore = useCartStore();
