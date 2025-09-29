@@ -33,6 +33,31 @@ class ProductViewSet(BaseViewSet):
             return [AllowAny()]
         return super().get_permissions()
 
+    def processParams(self, request):
+        """Override to add custom price range filtering."""
+        queryset, page_size = super().processParams(request)
+        params = request.query_params
+        
+        # Price range filtering
+        min_price = params.get('min_price')
+        max_price = params.get('max_price')
+        
+        if min_price is not None:
+            try:
+                min_price = float(min_price)
+                queryset = queryset.filter(price__gte=min_price)
+            except (ValueError, TypeError):
+                pass  # Ignore invalid price values
+                
+        if max_price is not None:
+            try:
+                max_price = float(max_price)
+                queryset = queryset.filter(price__lte=max_price)
+            except (ValueError, TypeError):
+                pass  # Ignore invalid price values
+        
+        return queryset, page_size
+
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
     def summary_list(self, request, *args, **kwargs):
         queryset, page_size = self.processParams(request);
