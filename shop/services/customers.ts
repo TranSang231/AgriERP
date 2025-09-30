@@ -1,5 +1,5 @@
 import { useApi } from '~/services/api'
-import { useRuntimeConfig } from 'nuxt/app'
+import { useRuntimeConfig, clearNuxtData } from 'nuxt/app'
 import { useAuthStore } from '~/stores/auth'
 import { useCartStore } from '~/stores/cart'
 
@@ -18,6 +18,8 @@ export function useCustomersService() {
     })
     if (error.value) throw error.value
     auth.setTokens(data.value!.access_token, '')
+    // Clear any cached useFetch data from previous (or guest) session
+    try { clearNuxtData() } catch (_) {}
     // Always refresh profile from backend to avoid stale user/session
     try {
       const fresh = await getProfile()
@@ -49,6 +51,8 @@ export function useCustomersService() {
   async function logout() {
     await request(`/customers/logout`, { method: 'POST' })
     auth.clear()
+    // Clear cached data tied to previous authenticated session
+    try { clearNuxtData() } catch (_) {}
     // Reload cart in guest context
     try {
       const cart = useCartStore()

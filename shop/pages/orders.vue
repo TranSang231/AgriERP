@@ -2,9 +2,11 @@
 import { ref, onMounted } from 'vue';
 import { useCurrency } from '~/composables/useCurrency';
 import { useOrderService } from '~/services/orders';
+import { useAuthStore } from '~/stores/auth';
 
 const { format } = useCurrency();
 const { getOrders } = useOrderService();
+const auth = useAuthStore();
 
 const orders = ref([]);
 const loading = ref(true);
@@ -13,7 +15,8 @@ const error = ref('');
 onMounted(async () => {
   try {
     loading.value = true;
-    const { data, error: ordersError } = await getOrders();
+    const customerId = (auth.user as any)?.id;
+    const { data, error: ordersError } = await getOrders(customerId ? { customer_id: customerId } : undefined);
     
     if (ordersError?.value) {
       throw ordersError.value;
