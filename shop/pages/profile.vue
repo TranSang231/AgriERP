@@ -135,7 +135,8 @@
                           <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu hiện tại</label>
                           <input 
                             v-model="passwordForm.current_password"
-                            type="password" 
+                            type="password"
+                            autocomplete="current-password"
                             placeholder="Nhập mật khẩu hiện tại" 
                             class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                           >
@@ -145,7 +146,8 @@
                           <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu mới</label>
                           <input 
                             v-model="passwordForm.new_password"
-                            type="password" 
+                            type="password"
+                            autocomplete="new-password"
                             placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)" 
                             class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                           >
@@ -155,7 +157,8 @@
                           <label class="block text-sm font-medium text-gray-700 mb-2">Xác nhận mật khẩu mới</label>
                           <input 
                             v-model="passwordForm.confirm_password"
-                            type="password" 
+                            type="password"
+                            autocomplete="new-password"
                             placeholder="Nhập lại mật khẩu mới" 
                             class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                           >
@@ -899,21 +902,23 @@ const changePassword = async () => {
     })
     
     console.log('Password change result:', result)
-    $toast.success('Đổi mật khẩu thành công!')
+    if ($toast && typeof $toast.success === 'function') {
+      $toast.success('Đổi mật khẩu thành công!')
+    }
     
     // Clear form and hide - always do this on success
     resetPasswordForm()
     
   } catch (error) {
     console.error('Error changing password:', error)
-    if (error?.data?.error) {
-      $toast.error(error.data.error)
-    } else if (error?.data?.message) {
-      $toast.error(error.data.message)
-    } else if (error?.message) {
-      $toast.error(error.message)
+    const anyErr: any = error as any
+    // Handle unauthorized explicitly
+    if (anyErr?.statusCode === 401) {
+      $toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+      try { await navigateTo('/auth/login') } catch (_) {}
     } else {
-      $toast.error('Không thể đổi mật khẩu')
+      const msg = (anyErr && (anyErr.data?.error || anyErr.data?.message || anyErr.message)) || 'Không thể đổi mật khẩu'
+      $toast.error(msg)
     }
   } finally {
     loading.value = false
