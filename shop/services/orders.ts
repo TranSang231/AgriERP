@@ -33,6 +33,7 @@ export interface Order {
 }
 
 export interface CreateOrderData {
+  customer_id?: string;
   customer_name: string;
   company_name?: string;
   tax_code?: string;
@@ -42,7 +43,7 @@ export interface CreateOrderData {
   shipping_fee: number;
   date: string;
   items: {
-    product_id: string;
+    product_id: number;
     product_name: string;
     unit: string;
     quantity: number;

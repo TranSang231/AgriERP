@@ -311,6 +311,7 @@ async function placeOrder() {
   try {
     // Chuẩn bị dữ liệu đơn hàng theo cấu trúc backend
     const orderData = {
+      customer_id: (auth.user as any)?.id || undefined,
       customer_name: customerInfo.customer_name,
       company_name: customerInfo.company_name || '',
       tax_code: customerInfo.tax_code || '',
@@ -332,7 +333,7 @@ async function placeOrder() {
     console.log('Đang tạo đơn hàng:', orderData);
 
     // Gọi API tạo đơn hàng
-    const { data, error } = await createOrder(orderData);
+    const { data, error } = await createOrder(orderData as any);
     
     if (error?.value) {
       throw error.value;
