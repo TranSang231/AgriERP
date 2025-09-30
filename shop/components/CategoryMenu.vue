@@ -19,19 +19,21 @@
       </button>
 
       <!-- Categories -->
-      <button
-        v-for="category in categories"
-        :key="category.id"
-        @click="selectCategory(category.id)"
-        :class="[
-          'block w-full text-left px-3 py-2 rounded-md transition-colors mb-2',
-          selectedCategoryId === category.id
-            ? 'bg-orange-100 text-orange-700 font-medium'
-            : 'hover:bg-gray-100 text-gray-700',
-        ]"
-      >
-        {{ category.name.origin }}
-      </button>
+      <div class="max-h-64 overflow-y-auto pr-1">
+        <button
+          v-for="category in categories"
+          :key="category.id"
+          @click="selectCategory(category.id)"
+          :class="[
+            'block w-full text-left px-3 py-2 rounded-md transition-colors mb-2',
+            selectedCategoryId === category.id
+              ? 'bg-orange-100 text-orange-700 font-medium'
+              : 'hover:bg-gray-100 text-gray-700',
+          ]"
+        >
+          {{ category.name.origin }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
