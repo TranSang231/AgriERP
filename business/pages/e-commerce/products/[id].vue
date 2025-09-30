@@ -23,7 +23,12 @@ const loadProduct = async () => {
     const productId = route.params.id
     if (productId && productId !== 'new') {
       const response = await productService.get(productId)
-      productData.value = response
+      // Ensure category_ids is populated so the select shows current categories
+      const categoryIds = Array.isArray(response?.categories)
+        ? response.categories.map((c: any) => c?.id).filter(Boolean).map((id: any) => String(id))
+        : []
+      productData.value = { ...response, category_ids: categoryIds }
+      console.log(productData.value)
     } else {
       // For new product, use default data
       productData.value = {
