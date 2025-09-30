@@ -15,6 +15,8 @@ class PromotionSerializer(WritableNestedSerializer):
             "name",
             "start",
             "end",
+            "type",
+            "discount",
             "promotion_items",
             "created_at",
             "updated_at"
@@ -22,7 +24,9 @@ class PromotionSerializer(WritableNestedSerializer):
         extra_kwargs = {
             'name': {'required': False},
             'start': {'required': False},
-            'end': {'required': False}
+            'end': {'required': False},
+            'type': {'required': False},
+            'discount': {'required': False}
         }
         read_only_fields = ["id", "created_at", "updated_at"]
         nested_create_fields = ["promotion_items"]

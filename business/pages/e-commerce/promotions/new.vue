@@ -4,6 +4,8 @@
       name: null,
       start: null,
       end: null,
+      type: 'discount',
+      discount: null,
       promotion_items: [
         {
           product_id: null,

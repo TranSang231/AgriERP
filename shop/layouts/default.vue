@@ -77,7 +77,7 @@
               </svg>
               <!-- Cart Count Badge -->
               <span
-                v-if="cart.count > 0"
+                v-if="auth.isAuthenticated && cart.count > 0"
                 class="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
               >
                 {{ cart.count }}
@@ -252,7 +252,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useCustomersService } from "~/services/customers";
 import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
@@ -299,9 +299,19 @@ const handleClickOutside = (event: Event) => {
 // Lifecycle
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
+  // Ensure cart badge is correct after hard refresh
+  try { cart.load() } catch (_) {}
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
 });
+
+// Reload cart whenever auth status changes (logout/login/switch)
+watch(
+  () => auth.isAuthenticated,
+  () => {
+    try { cart.load() } catch (_) {}
+  }
+)
 </script>

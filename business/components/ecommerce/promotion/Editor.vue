@@ -45,9 +45,29 @@
             />
             <span v-else>{{ utcToLocalDateTime(scope.current.end) }}</span>
           </el-form-item>
+          <el-form-item :label="t('Type')" prop="type">
+            <el-select
+              v-if="scope.editing"
+              v-model="scope.current.type"
+              :placeholder="t('Pick_options')"
+            >
+              <el-option :label="t('Discount')" value="discount" />
+              <el-option :label="t('Voucher')" value="voucher" />
+            </el-select>
+            <span v-else>{{ scope.current.type }}</span>
+          </el-form-item>
+          <el-form-item v-if="scope.current.type === 'voucher'" :label="t('Discount')" prop="discount">
+            <el-input
+              v-if="scope.editing"
+              v-model="scope.current.discount"
+              :placeholder="t('default_place_holder')"
+              type="number"
+            />
+            <span v-else>{{ scope.current.discount }}</span>
+          </el-form-item>
           <el-divider class="my-4"/>
-          <span>{{ t('Products') }}</span>
-          <table>
+          <span v-if="scope.current.type === 'discount'">{{ t('Products') }}</span>
+          <table v-if="scope.current.type === 'discount'">
             <tr>
               <th class="text-left">{{ t('Product') }}</th>
               <th class="text-left">{{ t('Discount') }}</th>
@@ -125,7 +145,7 @@
               </td>
             </tr>
           </table>
-          <el-button v-if="scope.editing" :icon="Plus" @click="onAddProduct()" class="self-end px-2"> {{ t("add_new") }} </el-button>
+          <el-button v-if="scope.editing && scope.current.type === 'discount'" :icon="Plus" @click="onAddProduct()" class="self-end px-2"> {{ t("add_new") }} </el-button>
         </div>
       </template>
     </ModelForm>

@@ -7,6 +7,8 @@ import { useCartStore } from '~/stores/cart';
 import { useCurrency } from '~/composables/useCurrency'; 
 import { usePromotionService } from '~/services/promotions';
 import { useOrderService } from '~/services/orders'; 
+import { useAuthStore } from '~/stores/auth';
+import { useCustomersService } from '~/services/customers';
 
 // --- KHỞI TẠO ---
 const checkoutStore = useCheckoutStore();
@@ -15,6 +17,8 @@ const router = useRouter();
 const { format } = useCurrency();
 const { getActivePromotions, validatePromotion } = usePromotionService();
 const { createOrder } = useOrderService();
+const auth = useAuthStore();
+const { getProfile } = useCustomersService();
 
 // Lấy dữ liệu từ checkoutStore
 const { items: checkoutItems, total: subtotal, count: checkoutCount } = storeToRefs(checkoutStore);
@@ -61,11 +65,51 @@ const loadingProvinces = ref(false);
 const loadingDistricts = ref(false);
 const loadingWards = ref(false);
 
-// Load provinces and promotions on mount
+// Load provinces, customer info and promotions on mount
 onMounted(async () => {
   await loadProvinces();
+  await loadCustomerProfileIntoCheckout();
   await loadActivePromotions();
 });
+
+async function loadCustomerProfileIntoCheckout() {
+  try {
+    // Prefer auth store first for speed
+    let customer: any = auth.user || null;
+    if (!customer) {
+      const data = await getProfile();
+      customer = (data as any)?.customer || null;
+    }
+    if (!customer) return;
+
+    // Fill customer name
+    const first = (customer.first_name || '').trim();
+    const last = (customer.last_name || '').trim();
+    customerInfo.customer_name = [first, last].filter(Boolean).join(' ');
+
+    // Fill address line
+    address.line1 = customer.address || '';
+
+    // Fill province/district/ward with dependent loading
+    const prov = customer.province_id ? String(customer.province_id) : '';
+    const dist = customer.district_id ? String(customer.district_id) : '';
+    const ward = customer.ward_id ? String(customer.ward_id) : '';
+
+    if (prov) {
+      address.province_id = prov;
+      await loadDistricts(prov);
+      if (dist) {
+        address.district_id = dist;
+        await loadWards(dist);
+        if (ward) {
+          address.ward_id = ward;
+        }
+      }
+    }
+  } catch (e) {
+    // Silent fallback if cannot load
+  }
+}
 
 async function loadProvinces() {
   loadingProvinces.value = true;
@@ -129,7 +173,8 @@ async function loadActivePromotions() {
   try {
     const { data, error } = await getActivePromotions();
     if (!error?.value && data?.value) {
-      availablePromotions.value = data.value;
+      // Only show voucher-type promotions at checkout
+      availablePromotions.value = (data.value || []).filter((p: any) => (p?.type || '').toLowerCase() === 'voucher');
     }
   } catch (error) {
     console.error('Error loading promotions:', error);
@@ -172,10 +217,15 @@ async function applyPromotion(promotionId) {
 }
 
 // --- GIÁ TRỊ TÍNH TOÁN ---
-const tax = computed(() => subtotal.value * 0.08);
+// Thuế được tính sau khi đã trừ giảm giá (voucher/discount)
+const taxableBase = computed(() => {
+  const base = subtotal.value - discount.value;
+  return base > 0 ? base : 0;
+});
+const tax = computed(() => taxableBase.value * 0.08);
 const finalTotal = computed(() => {
-  const total = subtotal.value + tax.value - discount.value;
-  return total > 0 ? total : 0; 
+  const total = taxableBase.value + tax.value;
+  return total > 0 ? total : 0;
 });
 
 // --- VALIDATION ---
@@ -232,7 +282,7 @@ function applyVoucher() {
   }
 
   // Find promotion by name (assuming voucherCode is promotion name)
-  const promotion = availablePromotions.value.find(p => p.name === voucherCode.value);
+  const promotion = availablePromotions.value.find((p: any) => (p?.type || '').toLowerCase() === 'voucher' && p.name === voucherCode.value);
   if (promotion) {
     applyPromotion(promotion.id);
   } else {
@@ -261,6 +311,7 @@ async function placeOrder() {
   try {
     // Chuẩn bị dữ liệu đơn hàng theo cấu trúc backend
     const orderData = {
+      customer_id: (auth.user as any)?.id || undefined,
       customer_name: customerInfo.customer_name,
       company_name: customerInfo.company_name || '',
       tax_code: customerInfo.tax_code || '',
@@ -282,7 +333,7 @@ async function placeOrder() {
     console.log('Đang tạo đơn hàng:', orderData);
 
     // Gọi API tạo đơn hàng
-    const { data, error } = await createOrder(orderData);
+    const { data, error } = await createOrder(orderData as any);
     
     if (error?.value) {
       throw error.value;
@@ -479,7 +530,7 @@ async function placeOrder() {
           <h2 class="text-xl font-semibold mb-4">Sản phẩm thanh toán</h2>
           <div class="bg-white rounded-lg border divide-y">
             <div v-for="item in checkoutItems" :key="item.productId" class="flex items-center space-x-4 p-4">
-              <img :src="'/placeholder-product.jpg'" :alt="item.name" class="w-16 h-16 object-cover rounded-md" />
+              <img :src="item.image" :alt="item.name" class="w-16 h-16 object-cover rounded-md" />
               <div class="flex-grow">
                 <p class="font-medium">{{ item.name }}</p>
                 <p class="text-sm text-gray-500">Số lượng: {{ item.qty }}</p>

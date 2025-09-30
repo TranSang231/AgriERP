@@ -12,6 +12,13 @@
       :searchable="true"
     >
       <el-table-column prop="name" :label="t('Name')" min-width="150"/>
+      <el-table-column prop="type" :label="t('Type')" min-width="120"/>
+      <!-- <el-table-column prop="discount" :label="t('Discount')" min-width="120">
+        <template #default="scope">
+          <span v-if="scope.row.type === 'voucher'">{{ scope.row.discount }}</span>
+          <span v-else>-</span>
+        </template>
+      </el-table-column> -->
       <el-table-column
         prop="start"
         :label="t('Start')"

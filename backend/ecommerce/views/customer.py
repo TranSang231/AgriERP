@@ -11,6 +11,7 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_404_NOT_FOUND,
     HTTP_406_NOT_ACCEPTABLE,
     HTTP_500_INTERNAL_SERVER_ERROR
@@ -393,6 +394,11 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
 
+        # flush session to prevent stale auth
+        try:
+            request.session.flush()
+        except Exception as e:
+            print(f"Error flushing session: {e}")
         return Response({"message": _("Logout success!")}, status=HTTP_200_OK)
     
     @action(detail=False, methods=[Http.HTTP_POST], url_path="forgot_password", permission_classes=[AllowAny], authentication_classes=[])
@@ -451,21 +457,20 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             print(f"Userinfo request session: {dict(request.session)}")
             print(f"Userinfo request cookies: {request.COOKIES}")
             
-            # Get customer ID from session (simplified for testing)
-            customer_id = request.session.get('customer_id')
-            
-            # If no session, try to get from bearer token
+            # Prefer Authorization header first
+            customer_id = None
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                print(f"Userinfo: Trying to find customer by token: {token}")
+                from django.core.cache import cache
+                cache_key = f'customer_token_{token}'
+                customer_id = cache.get(cache_key)
+                print(f"Userinfo: Found customer_id from cache: {customer_id}")
+
+            # Fallback to session
             if not customer_id:
-                auth_header = request.META.get('HTTP_AUTHORIZATION')
-                if auth_header and auth_header.startswith('Bearer '):
-                    token = auth_header.split(' ')[1]
-                    print(f"Userinfo: Trying to find customer by token: {token}")
-                    
-                    # Look for customer ID by token in cache
-                    from django.core.cache import cache
-                    cache_key = f'customer_token_{token}'
-                    customer_id = cache.get(cache_key)
-                    print(f"Userinfo: Found customer_id from cache: {customer_id}")
+                customer_id = request.session.get('customer_id')
             
             if not customer_id:
                 print("No customer_id in session or cache")
@@ -489,27 +494,24 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             print(f"Profile update session: {request.session.get('customer_id')}")
             print(f"Authorization header: {request.META.get('HTTP_AUTHORIZATION')}")
             
-            # Try to get customer ID from session first (for session-based auth)
-            customer_id = request.session.get('customer_id')
+            # Prefer Authorization header first
+            customer_id = None
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                print(f"Trying to find customer by token: {token}")
+                from django.core.cache import cache
+                cache_key = f'customer_token_{token}'
+                customer_id = cache.get(cache_key)
+                print(f"Found customer_id from cache: {customer_id}")
+                if customer_id:
+                    print(f"Successfully authenticated with token: {token}")
+                else:
+                    print(f"Token {token} not found in cache")
             
-            # If no session, try to get from bearer token
+            # Fallback to session
             if not customer_id:
-                auth_header = request.META.get('HTTP_AUTHORIZATION')
-                if auth_header and auth_header.startswith('Bearer '):
-                    token = auth_header.split(' ')[1]
-                    print(f"Trying to find customer by token: {token}")
-                    
-                    # Look for customer ID by token in cache
-                    # This is a simple token mapping - in production use proper JWT validation
-                    from django.core.cache import cache
-                    cache_key = f'customer_token_{token}'
-                    customer_id = cache.get(cache_key)
-                    print(f"Found customer_id from cache: {customer_id}")
-                    
-                    if customer_id:
-                        print(f"Successfully authenticated with token: {token}")
-                    else:
-                        print(f"Token {token} not found in cache")
+                customer_id = request.session.get('customer_id')
             
             if not customer_id:
                 return Response({"error": _("Not authenticated")}, status=HTTP_401_UNAUTHORIZED)
@@ -521,6 +523,10 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             customer.last_name = request.data.get("last_name", customer.last_name)
             customer.phone = request.data.get("phone", customer.phone)
             customer.address = request.data.get("address", customer.address)
+            customer.avatar = request.data.get("avatar", customer.avatar)
+            customer.province_id = request.data.get("province_id", customer.province_id)
+            customer.district_id = request.data.get("district_id", customer.district_id)
+            customer.ward_id = request.data.get("ward_id", customer.ward_id)
             customer.date_of_birth = request.data.get("date_of_birth", customer.date_of_birth)
             customer.gender = request.data.get("gender", customer.gender)
             

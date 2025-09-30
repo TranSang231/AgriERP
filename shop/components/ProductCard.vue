@@ -15,7 +15,7 @@
 
       <!-- Sale Badge -->
       <div
-        v-if="product.sale_price && product.sale_price < product.price"
+        v-if="effectiveSalePrice < product.price"
         class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs font-semibold rounded"
       >
         -{{ discountPercentage }}%
@@ -113,14 +113,14 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <span
-            v-if="product.sale_price && product.sale_price < product.price"
+            v-if="effectiveSalePrice < product.price"
             class="text-lg font-bold text-orange-500"
           >
-            {{ format(product.sale_price) }}
+            {{ format(effectiveSalePrice) }}
           </span>
           <span
             :class="[
-              product.sale_price && product.sale_price < product.price
+              effectiveSalePrice < product.price
                 ? 'text-sm text-gray-400 line-through'
                 : 'text-lg font-bold text-gray-900',
             ]"
@@ -140,7 +140,8 @@
 import type { Product } from "~/services/products";
 import { useCartStore } from "~/stores/cart";
 import { useCurrency } from "~/composables/useCurrency";
-import { computed } from "vue";
+import { computed, onMounted, watch } from "vue";
+import { usePromotionsStore } from "~/stores/promotions";
 
 interface Props {
   product: Product;
@@ -149,6 +150,7 @@ interface Props {
 const props = defineProps<Props>();
 const cartStore = useCartStore();
 const { format } = useCurrency();
+const promotionsStore = usePromotionsStore();
 const primaryImage = computed(() => {
   const images = (props.product as any)?.images;
   if (Array.isArray(images) && images.length > 0) {
@@ -163,26 +165,41 @@ const primaryImage = computed(() => {
   );
 });
 
-onMounted(() => {
-  // console.log("[ProductCard] mounted product:", props.product);
+onMounted(async () => {
+  promotionsStore.loadActiveDiscounts();
 });
 
 watch(
   () => props.product,
   (val) => {
-    // console.log("[ProductCard] updated product:", val);
+    console.log("[ProductCard] updated product:", val);
   },
   { deep: true, immediate: true }
 );
 
+const productLevelDiscountPercent = computed(() => {
+  // Prefer discount derived from embedded product.promotions
+  const fromEmbedded = promotionsStore.getDiscountPercentFromProductObject(props.product as any);
+  if (fromEmbedded && fromEmbedded > 0) return fromEmbedded;
+  // Fallback: map loaded from backend list endpoint
+  return promotionsStore.getProductDiscountPercent(props.product.id);
+});
+
+const effectiveSalePrice = computed(() => {
+  const baseSale = props.product.sale_price && props.product.sale_price < props.product.price
+    ? props.product.sale_price
+    : props.product.price;
+  const discountPercent = productLevelDiscountPercent.value;
+  if (discountPercent > 0) {
+    const discounted = baseSale * (1 - discountPercent / 100);
+    return Math.max(0, Math.min(discounted, baseSale));
+  }
+  return baseSale;
+});
+
 const discountPercentage = computed(() => {
-  if (
-    props.product.sale_price &&
-    props.product.sale_price < props.product.price
-  ) {
-    return Math.round(
-      (1 - props.product.sale_price / props.product.price) * 100
-    );
+  if (effectiveSalePrice.value < props.product.price) {
+    return Math.round((1 - effectiveSalePrice.value / props.product.price) * 100);
   }
   return 0;
 });
@@ -194,7 +211,8 @@ const addToCart = () => {
     cartStore.add({
       productId: props.product.id,
       name: props.product.name,
-      price: props.product.sale_price || props.product.price,
+      price: effectiveSalePrice.value,
+      originalPrice: props.product.price,
       qty: 1,
       image: props.product.thumbnail || primaryImage.value,
     });

@@ -21,13 +21,37 @@ class CartViewSet(BaseViewSet):
 
     # ----- Helpers -----
     def _get_current_customer(self, request):
+        # Prefer Authorization bearer mapping (same approach as customer userinfo)
+        customer_id = None
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            try:
+                from django.core.cache import cache
+                customer_id = cache.get(f'customer_token_{token}')
+            except Exception:
+                customer_id = None
+
+        # Fallback to session
+        if not customer_id:
+            try:
+                customer_id = request.session.get('customer_id')
+            except Exception:
+                customer_id = None
+
+        if customer_id:
+            try:
+                return Customer.objects.get(id=customer_id)
+            except Customer.DoesNotExist:
+                return None
+
+        # As a final fallback, use authenticated Django user if present
         user = getattr(request, "user", None)
-        if user and user.is_authenticated:
-            cust = Customer.objects.filter(user=user).first()
-            if cust:
-                return cust
-        # Development fallback: use the first customer to ensure DB writes for testing
-        return Customer.objects.first()
+        if user and getattr(user, 'is_authenticated', False):
+            return Customer.objects.filter(user=user).first()
+
+        # No identified customer
+        return None
 
     def _get_or_create_cart(self, customer):
         if customer is None:
