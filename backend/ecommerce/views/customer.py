@@ -563,11 +563,19 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         try:
             print(f"Change password request data: {request.data}")
             
-            # Get customer ID from session
-            customer_id = request.session.get('customer_id')
+            # Prefer Authorization Bearer token mapped in cache, fallback to session
+            customer_id = None
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                from django.core.cache import cache
+                cache_key = f'customer_token_{token}'
+                customer_id = cache.get(cache_key)
+            if not customer_id:
+                customer_id = request.session.get('customer_id')
             if not customer_id:
                 return Response({"error": _("Not authenticated")}, status=HTTP_401_UNAUTHORIZED)
-            
+
             customer = Customer.objects.get(id=customer_id)
             user = customer.user
             
