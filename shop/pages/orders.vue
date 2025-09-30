@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useCurrency } from '~/composables/useCurrency';
 import { useOrderService } from '~/services/orders';
 import { useAuthStore } from '~/stores/auth';
@@ -15,8 +15,13 @@ const error = ref('');
 onMounted(async () => {
   try {
     loading.value = true;
+    if (!auth.isAuthenticated) {
+      orders.value = [];
+      error.value = '';
+      return;
+    }
     const customerId = (auth.user as any)?.id;
-    const { data, error: ordersError } = await getOrders(customerId ? { customer_id: customerId } : undefined);
+    const { data, error: ordersError } = await getOrders(customerId ? { customer_id: customerId } : { customer_id: 'me' });
     
     if (ordersError?.value) {
       throw ordersError.value;
@@ -34,6 +39,32 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+// Refetch when auth changes (login/logout)
+watch(
+  () => auth.isAuthenticated,
+  async (isAuthed) => {
+    try {
+      loading.value = true;
+      if (!isAuthed) {
+        orders.value = [];
+        error.value = '';
+        return;
+      }
+      const customerId = (auth.user as any)?.id;
+      const { data, error: ordersError } = await getOrders(customerId ? { customer_id: customerId } : { customer_id: 'me' });
+      if (ordersError?.value) {
+        throw ordersError.value;
+      }
+      orders.value = data?.value || [];
+    } catch (e: any) {
+      console.error('Lỗi khi tải danh sách đơn hàng:', e);
+      error.value = e?.message || 'Không thể tải danh sách đơn hàng';
+    } finally {
+      loading.value = false;
+    }
+  }
+);
 
 const getPaymentMethodText = (method: number) => {
   return method === 0 ? 'Chuyển khoản ngân hàng' : 'Thanh toán khi nhận hàng (COD)';
