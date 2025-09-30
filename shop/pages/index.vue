@@ -185,7 +185,7 @@
 
         <div class="text-center mt-8">
           <NuxtLink
-            to="/products"
+            to="/categories"
             class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold"
           >
             View All Categories
