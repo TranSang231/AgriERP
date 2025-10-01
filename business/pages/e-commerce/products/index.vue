@@ -73,9 +73,12 @@
             />
           </el-form-item>
           
-          <!-- Nút xóa bộ lọc -->
+       <!-- nút lọc + xóa bộ lọc -->
           <el-form-item label="&nbsp;">
-            <el-button @click="resetFilters" type="info" plain class="w-full">Xóa bộ lọc</el-button>
+            <div class="flex gap-2 w-full">
+              <el-button @click="applyFilters" type="primary" class="flex-1">Lọc</el-button>
+              <el-button @click="resetFilters" type="info" plain class="flex-1">Xóa bộ lọc</el-button>
+            </div>
           </el-form-item>
         </div>
       </el-form>
@@ -223,6 +226,12 @@ const resetFilters = () => {
   filters.min_price = null;
   filters.max_price = null;
   filters.dateRange = [];
+  if (productTable.value) {
+    productTable.value.resetPageAndLoadData();
+  }
+};
+// hàm apply filters
+const applyFilters = () => {
   if (productTable.value) {
     productTable.value.resetPageAndLoadData();
   }
