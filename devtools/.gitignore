@@ -1,0 +1,20 @@
+# Container data
+/docker/certs
+/docker/dynamodb
+/docker/esdata01
+/docker/filebeat_ingest_data
+/docker/filebeatdata01
+/docker/internsearch-data1
+/docker/internsearch-data2
+/docker/kibanadata
+/docker/logstash_ingest_data
+/docker/logstashdata01
+/docker/metricbeatdata01
+/docker/mysql
+/docker/rasa
+/docker/redis
+
+# Local env files
+.env
+.env.*
+!.env.example

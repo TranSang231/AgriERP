@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+{% load static %}
+{% load i18n %}
+<html lang="{{lang}}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <link rel="stylesheet" href="">
+</head>
+<body style="background-color: #f3f5f7; margin: 0 !important; padding: 0 !important;" data-gr-c-s-loaded="true">
+<table style="border:0; padding: 0; width: 100%; border-spacing: 0">
+    <!-- LOGO -->
+    <tbody>
+    <tr>
+        <td style="background-color: #B62132; text-align: -webkit-center">
+            <table style="max-width: 600px; border:0; padding: 0; width: 100%; border-spacing: 0">
+                <tbody>
+                <tr>
+                    <td style="padding: 30px 10px; text-align: -webkit-center; vertical-align: top">
+                        <a target="_blank">
+                            <img src="{{logo}}" alt="Alpha" style="display: block; width: 45%; border: 0">
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <!-- HERO -->
+    <tr>
+        <td style="padding: 0 10px; background-color: #B62132; text-align: -webkit-center;">
+            <table style="max-width: 600px; border:0; padding: 0; width: 100%; border-spacing: 0">
+                <tbody>
+                <tr>
+                    <td style="background-color: white; text-align: -webkit-center; vertical-align: top;
+                    padding: 40px 20px 20px; border-radius: 4px 4px 0 0; color: rgb(17, 17, 17);
+                    font-family: Avenir Black, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                        <h1 style="font-size: 42px; font-weight: 400; margin: 0;">{% translate "Welcome to Alpha" %}</h1>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <!-- COPY BLOCK -->
+    <tr>
+        <td style="background-color: #f4f4f4; text-align: -webkit-center; padding: 0 10px;">
+            <table style="max-width: 600px; border:0; padding: 0; width: 100%; border-spacing: 0">
+                <!-- COPY -->
+                <tbody>
+                <tr>
+                    <td style="background-color: white; text-align: -webkit-left; padding: 20px 30px 40px; color: rgb(102, 102, 102);
+                     font-family: Avenir, sans-serif; font-size: 16px; font-weight: 400; line-height: 25px;">
+                        <p style="margin: 0;">
+                            {% blocktranslate %}
+                            Dear {{ first_name }},
+                            {% endblocktranslate %}
+                        </p>
+                        <p>{% translate "You have been invited to Alpha Business tool" %}</p>
+                        <p>{% translate "Please click the button below to finish setting up your account." %}</p>
+                    </td>
+                </tr>
+                <!-- BULLETPROOF BUTTON -->
+                <tr>
+                    <td style="background-color: white; text-align: -webkit-left">
+                        <table style="border:0; padding: 0; width: 100%; border-spacing: 0">
+                            <tbody>
+                            <tr>
+                                <td style="padding: 20px 30px 60px; background-color: white; text-align: -webkit-center; ">
+                                    <table style="border:0; padding: 0; border-spacing: 0">
+                                        <tbody>
+                                        <tr>
+                                            <td style="border-radius: 3px; text-align: -webkit-center; background-color: #B62132">
+                                                <a href="{{ link }}" target="_blank"
+                                                   style="font-size: 18px; font-family: Avenir, sans-serif;
+                                                   color: white; text-decoration: none;
+                                                   padding: 12px 50px; border-radius: 2px; border: 1px solid rgb(182, 33, 50);
+                                                   display: inline-block;">{% translate "Register" %}</a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <!-- SUPPORT CALLOUT -->
+    <tr>
+        <td style="padding: 30px 10px 0; background-color: #f4f4f4; text-align: -webkit-center">
+            <!-- FOOTER -->
+    <tr>
+        <td style="padding: 0 10px; background-color: #f4f4f4; text-align: -webkit-center">
+            <table style="max-width: 600px; border:0; padding: 0; width: 100%; border-spacing: 0">
+                <!-- NAVIGATION -->
+                <tbody>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,229 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-31 03:43+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: services/business.py:46 services/employee.py:51
+msgid "Create Alpha account"
+msgstr "Tạo tài khoản Alpha"
+
+#: services/business.py:65
+#, fuzzy
+#| msgid "The user does not exist."
+msgid "The email does not exist."
+msgstr "Người dùng này không tồn tại"
+
+#: services/business.py:68 services/business.py:128 services/business.py:152
+msgid "The account were not activated."
+msgstr "Tài khoản chưa được kích hoạt."
+
+#: services/business.py:90
+msgid "Password Reset Request"
+msgstr "Yêu cầu đặt lại mật khẩu"
+
+#: services/business.py:114 services/business.py:141 services/business.py:165
+#: views/business.py:493 views/business.py:513 views/business.py:532
+#, fuzzy
+#| msgid "There is an error occur."
+msgid "An error occurred."
+msgstr "Đã có lỗi xảy ra."
+
+#: services/business.py:125 services/business.py:149 views/employee.py:183
+msgid "User not found."
+msgstr "Người dùng không tồn tại"
+
+#: services/business.py:134
+#, fuzzy
+#| msgid "Token expired!"
+msgid "Token has expired."
+msgstr "Token đã hết hạn!"
+
+#: services/business.py:137
+#, fuzzy
+#| msgid "Invalid token"
+msgid "Invalid token."
+msgstr "Token không hợp lệ"
+
+#: services/business.py:155
+msgid "Current password is incorrect."
+msgstr "Mật khẩu hiện tại không đúng."
+
+#: templates/businesses/emails/verify_business_email.html:37
+#: templates/businesses/emails/verify_employee_email.html:39
+msgid "Welcome to Alpha"
+msgstr "Chào mừng bạn đến với Alpha"
+
+#: templates/businesses/emails/verify_business_email.html:54
+#, python-format
+msgid "Dear %(first_name)s,"
+msgstr "Chào %(first_name)s,"
+
+#: templates/businesses/emails/verify_business_email.html:57
+msgid "Thank you for choosing Alpha!"
+msgstr "Cảm ơn bạn đã chọn Alpha!"
+
+#: templates/businesses/emails/verify_business_email.html:60
+msgid ""
+"Please click the button below to continue registering your Alpha Business "
+"account."
+msgstr ""
+"Vui lòng click nút nhấn dưới đây để tiếp tục đăng ký tài khoản Alpha Business "
+"của bạn."
+
+#: templates/businesses/emails/verify_business_email.html:63
+msgid ""
+"(You received this email because we found your request on Alpha Business "
+"site. If that were not you, please skip this email.)"
+msgstr ""
+"(Bạn nhận được email này bởi vì bạn đăng ký tạo tài khoản trên Alpha "
+"Business. Nếu đó không phải là bạn, vui lòng bỏ qua email này.)"
+
+#: templates/businesses/emails/verify_business_email.html:81
+#: templates/businesses/emails/verify_employee_email.html:79
+msgid "Register"
+msgstr "Đăng ký"
+
+#: templates/businesses/emails/verify_business_email.html:101
+#, python-format
+msgid "This email was generated for  %(email)s."
+msgstr "Email được tạo cho  %(email)s."
+
+#: templates/businesses/emails/verify_business_email.html:128
+msgid "PANDOSIMA Co.,Ltd - 46 Xuan Dan 2, Xuan Ha, Thanh khe, Danang"
+msgstr "Công ty TNHH PANDOSIMA - 46 Xuân Đán 2, Xuân Hà, Thanh Khê, Đà Nắng"
+
+#: templates/businesses/emails/verify_employee_email.html:56
+#, python-format
+msgid ""
+"\n"
+"                            Dear %(first_name)s,\n"
+"                            "
+msgstr ""
+"\n"
+"                            Chào %(first_name)s,\n"
+"                            "
+
+#: templates/businesses/emails/verify_employee_email.html:60
+msgid "You have been invited to Alpha Business tool"
+msgstr "Bạn vừa được mời sử dụng Alpha Business"
+
+#: templates/businesses/emails/verify_employee_email.html:61
+msgid "Please click the button below to finish setting up your account."
+msgstr "Vui lòng click vào nút nhấn bên dưới để thiết lập tài khoản của bạn"
+
+#: templates/businesses/website/index.html:14
+msgid "Alpha - Business Assistant Platform"
+msgstr "Alpha - Nền tảng trợ lý kinh doanh"
+
+#: views/business.py:75 views/business.py:125 views/business.py:163
+msgid "The user does not exist."
+msgstr "Người dùng này không tồn tại"
+
+#: views/business.py:147 views/business.py:229 views/employee.py:157
+#: views/employee.py:163
+msgid "Invalid token"
+msgstr "token không hợp lệ"
+
+#: views/business.py:193
+msgid "The user does not exist or permission denied."
+msgstr ""
+"Người dùng này không tồn tại hoặc bạn không có quyền truy cập thông tin."
+
+#: views/business.py:306 views/business.py:310 views/employee.py:114
+#: views/employee.py:118
+msgid "The invitation have been sent."
+msgstr "Thư mời đã được gửi."
+
+#: views/business.py:309 views/employee.py:90 views/employee.py:117
+msgid "There is an error occur."
+msgstr "Đã có lỗi xảy ra."
+
+#: views/business.py:397
+#, python-brace-format
+msgid "The email {email} have not verified."
+msgstr "Email {email} chưa được xác minh."
+
+#: views/business.py:403
+#, python-brace-format
+msgid "The phone number {phone} have not verified."
+msgstr "Số điện thoại {phone} chưa được xác minh."
+
+#: views/business.py:422 views/business.py:432
+msgid "Invalid plan."
+msgstr "Gói cước không hợp lệ."
+
+#: views/business.py:489
+#, fuzzy
+#| msgid "The invitation have been sent."
+msgid "The link has been sent."
+msgstr "Thư mời đã được gửi."
+
+#: views/business.py:506
+msgid "Password has been reset."
+msgstr "Mật khẩu đã được đặt lại."
+
+#: views/business.py:525
+msgid "Password has been changed."
+msgstr "Mật khẩu đã được thay đổi."
+
+#: views/business.py:552
+#, fuzzy
+#| msgid "You have been invited to Alpha Business tool"
+msgid "You have to login to your bussiness."
+msgstr "Bạn vừa được mời sử dụng Alpha Business"
+
+#: views/employee.py:52
+msgid "Un-Authorized"
+msgstr "Không có quyền"
+
+#: views/employee.py:132
+msgid "Invalid employee id."
+msgstr "Mã nhân viên không đúng."
+
+#: views/employee.py:186
+msgid "Verified"
+msgstr "Đã xác minh"
+
+#~ msgid "Individual"
+#~ msgstr "Cá nhân"
+
+#~ msgid ""
+#~ "Please note that we only accept applications from individual with an "
+#~ "identity card or passport."
+#~ msgstr ""
+#~ "Lưu ý rằng chúng tôi chỉ chấp nhận đơn đăng ký của những cá nhân có chứng "
+#~ "minh nhân dân hoặc hộ chiếu."
+
+#~ msgid "Household"
+#~ msgstr "Hộ kinh doanh cá thể"
+
+#~ msgid ""
+#~ "By selecting Household, you indicate that you have the certificate of "
+#~ "household business registration."
+#~ msgstr ""
+#~ "Chọn Hộ kinh doanh cá thể nghĩa là bạn đã có giấy chứng nhận đăng ký hộ "
+#~ "kinh doanh."
+
+#~ msgid "Company"
+#~ msgstr "Doanh nghiệp"
+
+#~ msgid "Please note that company will need to provide a business license."
+#~ msgstr "Lưu ý rằng doanh nghiệp sẽ cần phải có giấy phép kinh doanh."
+
+#~ msgid "Invalid country code."
+#~ msgstr "Mã quốc gia không hợp lệ"

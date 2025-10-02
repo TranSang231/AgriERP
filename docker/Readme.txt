@@ -1,0 +1,1 @@
+This folder is reserve for temporary data. Don't commit anything in this folder to git.

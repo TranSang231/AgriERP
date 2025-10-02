@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* @layer base {
+    h1 {
+        @apply font-heading1 text-heading1;
+    }
+
+    h2 {
+        @apply text-4xl;
+    }
+
+    h3 {
+        @apply text-3xl font-semibold;
+    }
+
+    p {
+        @apply font-paragraph text-paragraph;
+    }
+} */
+
+
+@layer utilities {
+    .my-primary-btn {
+        @apply inline-flex items-center justify-center rounded-lg py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-primary text-white
+    }
+
+    .shadow-custom {
+        box-shadow: 0 20px 30px -10px rgba(29, 1, 80, .1);
+    }
+
+    .custom-transform {
+        @apply transform opacity-100 scale-100 rotate-0 skew-x-0 skew-y-0;
+        transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg, 0deg);
+        transform-style: preserve-3d;
+    }
+
+    .spacer-xxl {
+        @apply w-full h-[50px]
+    }
+
+    .card-outer {
+        @apply border-[1px] border-[#f2f3ff] rounded-[15px] flex flex-col overflow-hidden shadow-custom;
+    }
+
+    /* Price page */
+    /* .plan-card {
+        @apply border border-gray-200 rounded-lg p-8 pb-10 shadow-custom;
+    }
+
+    .plan-badge {
+        @apply bg-[#f9f5ff] text-[#2a00fd]
+    }
+
+    .uui-badge-10 {
+        @apply flex gap-1.5 bg-gray-100 text-gray-700 whitespace-nowrap rounded-full px-2 py-0.5 font-medium text-sm leading-6
+    }
+
+    .is-primary {
+        @apply bg-[#f9f5ff] text-[custom-primary]
+    }
+
+    .primary-btn {
+        @apply flex items-center justify-center gap-2 border border-primary bg-primary text-white text-center whitespace-nowrap rounded-md px-4 py-2.5 font-medium text-base leading-6 no-underline transition-all duration-300 shadow-sm hover:shadow-md
+    }
+
+    .limitations-list {
+        @apply grid gap-x-4 gap-y-4 grid-cols-1 auto-cols-fr
+    } */
+}

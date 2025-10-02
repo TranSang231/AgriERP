@@ -1,0 +1,5 @@
+from .short_content import ShortContentSerializer
+from .short_translate import ShortTranslateSerializer
+from .long_content import LongContentSerializer
+from .long_translate import LongTranslateSerializer
+from .attachment import AttachmentSerializer

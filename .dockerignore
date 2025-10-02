@@ -1,0 +1,10 @@
+.venv
+venv
+*.pyc
+dist
+/backend/static
+.git
+.vscode
+__pycache__
+debug.log
+/docker

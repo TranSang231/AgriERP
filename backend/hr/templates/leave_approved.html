@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+{% load static %} {% load i18n %}
+<html lang="{{lang}}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{% translate "Leave Request Approved" %}</title>
+    <link rel="stylesheet" href="" />
+  </head>
+  <body
+    style="
+      background-color: #f3f5f7;
+      margin: 0 !important;
+      padding: 0 !important;
+    "
+    data-gr-c-s-loaded="true"
+  >
+    <table style="border: 0; padding: 0; width: 100%; border-spacing: 0">
+      <!-- LOGO -->
+      <tbody>
+        <tr>
+          <td style="background-color: #b62132; text-align: -webkit-center">
+            <table
+              style="
+                max-width: 600px;
+                border: 0;
+                padding: 0;
+                width: 100%;
+                border-spacing: 0;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td
+                    style="
+                      padding: 30px 10px;
+                      text-align: -webkit-center;
+                      vertical-align: top;
+                    "
+                  >
+                    <a target="_blank">
+                      <img
+                        src="{{logo}}"
+                        alt="Alpha"
+                        style="display: block; width: 45%; border: 0"
+                      />
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <!-- HERO -->
+        <tr>
+          <td
+            style="
+              padding: 0 10px;
+              background-color: #b62132;
+              text-align: -webkit-center;
+            "
+          >
+            <table
+              style="
+                max-width: 600px;
+                border: 0;
+                padding: 0;
+                width: 100%;
+                border-spacing: 0;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td
+                    style="
+                      background-color: white;
+                      text-align: -webkit-center;
+                      vertical-align: top;
+                      padding: 40px 20px 20px;
+                      border-radius: 4px 4px 0 0;
+                      color: rgb(17, 17, 17);
+                      font-family: Avenir Black, sans-serif;
+                      font-size: 48px;
+                      font-weight: 400;
+                      letter-spacing: 4px;
+                      line-height: 48px;
+                    "
+                  >
+                    <h1 style="font-size: 42px; font-weight: 400; margin: 0">
+                      {% translate "Leave Request Approved" %}
+                    </h1>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <!-- COPY BLOCK -->
+        <tr>
+          <td
+            style="
+              background-color: #f4f4f4;
+              text-align: -webkit-center;
+              padding: 0 10px;
+            "
+          >
+            <table
+              style="
+                max-width: 600px;
+                border: 0;
+                padding: 0;
+                width: 100%;
+                border-spacing: 0;
+              "
+            >
+              <!-- COPY -->
+              <tbody>
+                <tr>
+                  <td
+                    style="
+                      background-color: white;
+                      text-align: -webkit-left;
+                      padding: 20px 30px 40px;
+                      color: rgb(102, 102, 102);
+                      font-family: Avenir, sans-serif;
+                      font-size: 16px;
+                      font-weight: 400;
+                      line-height: 25px;
+                    "
+                  >
+                    <p style="margin: 0">
+                      {% blocktranslate %} Dear {{ first_name }} {{ last_name}},
+                      {% endblocktranslate %}
+                    </p>
+                    <p>
+                      {% translate "Your leave request has been approved." %}
+                    </p>
+                  </td>
+                </tr>
+                {% comment %}
+                <!-- BULLETPROOF BUTTON -->
+                <tr>
+                  <td style="background-color: white; text-align: -webkit-left">
+                    <table
+                      style="
+                        border: 0;
+                        padding: 0;
+                        width: 100%;
+                        border-spacing: 0;
+                      "
+                    >
+                      <tbody>
+                        <tr>
+                          <td
+                            style="
+                              padding: 20px 30px 60px;
+                              background-color: white;
+                              text-align: -webkit-center;
+                            "
+                          >
+                            <table
+                              style="border: 0; padding: 0; border-spacing: 0"
+                            >
+                              <tbody>
+                                <tr>
+                                  <td
+                                    style="
+                                      border-radius: 3px;
+                                      text-align: -webkit-center;
+                                      background-color: #4caf50;
+                                    "
+                                  >
+                                    <a
+                                      href="{{ link }}"
+                                      target="_blank"
+                                      style="
+                                        font-size: 18px;
+                                        font-family: Avenir, sans-serif;
+                                        color: white;
+                                        text-decoration: none;
+                                        padding: 12px 50px;
+                                        border-radius: 2px;
+                                        border: 1px solid #4caf50;
+                                        display: inline-block;
+                                      "
+                                      >{% translate "View Leave Details" %}</a
+                                    >
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                {% endcomment %}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <!-- SUPPORT CALLOUT -->
+        <tr>
+          <td
+            style="
+              padding: 30px 10px 0;
+              background-color: #f4f4f4;
+              text-align: -webkit-center;
+            "
+          >
+            <!-- FOOTER -->
+            <tr>
+              <td
+                style="
+                  padding: 0 10px;
+                  background-color: #f4f4f4;
+                  text-align: -webkit-center;
+                "
+              >
+                <table
+                  style="
+                    max-width: 600px;
+                    border: 0;
+                    padding: 0;
+                    width: 100%;
+                    border-spacing: 0;
+                  "
+                >
+                  <!-- NAVIGATION -->
+                  <tbody>
+                    <tr>
+                      <td
+                        style="
+                          padding: 0 10px;
+                          background-color: #b62132;
+                          text-align: -webkit-center;
+                        "
+                      >
+                        <table
+                          style="
+                            max-width: 600px;
+                            border: 0;
+                            padding: 0;
+                            width: 100%;
+                            border-spacing: 0;
+                          "
+                        >
+                          <!-- NAVIGATION -->
+                          <tbody>
+                            <tr style="text-align: center">
+                              <td style="display: inline-block">
+                                <a
+                                  href="/privacy-policy"
+                                  style="text-decoration: none; color: white"
+                                  >Privacy policy /</a
+                                >
+                              </td>
+                              <td
+                                style="display: inline-block; margin-right: 5px"
+                              >
+                                <a
+                                  href="/term-of-use"
+                                  style="text-decoration: none; color: white"
+                                  >Terms of use /</a
+                                >
+                              </td>
+                              <td
+                                style="display: inline-block; margin-right: 5px"
+                              >
+                                <a
+                                  href="/helps"
+                                  style="text-decoration: none; color: white"
+                                  >Help</a
+                                >
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="
+                          padding: 0 10px;
+                          background-color: #b62132;
+                          color: white;
+                          text-align: -webkit-center;
+                        "
+                      >
+                        <p>
+                          {% translate 'PANDOSIMA Co.,Ltd - 46 Xuan Dan 2, Xuan Ha, Thanh khe, Danang' %}
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

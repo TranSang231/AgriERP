@@ -1,0 +1,2 @@
+* Manage payment methods, transport service providers. 
+* Integrate with payment and transport service providers.

@@ -1,0 +1,9 @@
+/env
+/venv
+/.venv
+/static
+/src/collectstatic
+/frontend/.vscode
+/client-sites
+**/__pycache__
+**/package-lock.json

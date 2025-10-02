@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__nuxt {
+  height: 100%;
+}
+
+/* Theme helpers */
+.btn-primary { @apply bg-primary-600 text-white hover:bg-primary-700 transition rounded px-4 py-2; }
+.link-primary { @apply text-primary-600 hover:text-primary-700; }
+.badge { @apply inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-primary-50 text-primary-700; }
+
+

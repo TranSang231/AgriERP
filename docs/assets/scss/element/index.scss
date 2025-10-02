@@ -1,0 +1,82 @@
+@use 'sass:map';
+@use 'element-plus/theme-chalk/src/mixins/function.scss' as *;
+$custom-colors: (
+    ) !default;
+$custom-colors: map.deep-merge(('white': #ffffff,
+            'black': #000000,
+            'selected': #e892bc,
+            'on-surface-variant': #524343,
+            'primary': ('base': #B62132,
+            ),
+            'success': ('base': #B61362,
+            ),
+            'warning': ('base': #e6a23c,
+            ),
+            'danger': ('base': #f56c6c,
+            ),
+            'error': ('base': #f56c6c,
+            ),
+            'info': ('base': #31111D,
+            ),
+        ),
+        $custom-colors
+);
+
+// we can add this to custom namespace, default is 'el'
+// @forward "element-plus/theme-chalk/src/mixins/config.scss" with (
+//   $namespace: "ep"
+// );
+
+// You should use them in scss, because we calculate it by sass.
+// comment next lines to use default color
+@forward "element-plus/theme-chalk/src/common/var.scss" with ( // do not use same name, it will override.
+    $colors: $custom-colors,
+    $menu: ('active-color': #BFF1BC,
+        'bg-color': getCssVar('color', 'primary'),
+        'text-color': getCssVar('color', 'white'),
+        'hover-bg-color': #FFFFFF66,
+    ),
+    // $button:(
+    //     'border-color': getCssVar('color','primary'),
+    //     'bg-color': getCssVar('color','primary'),
+    //     'text-color': getCssVar('color', 'white'),
+    //     'hover-text-color': getCssVar('color','primary'),
+    //     'hover-bg-color': getCssVar('color', 'white'),
+    // ),
+    $button-padding-horizontal: ("default": 5px),
+    $table: ('header-bg-color': getCssVar('color', 'primary'),
+        'header-text-color': getCssVar('color', 'white'),
+        'border': 1px solid getCssVar('color', 'primary'),
+        'border-color': getCssVar('color', 'primary'),
+    ),
+    $card: ('border-color': getCssVar('color', 'primary'),
+    ),
+);
+
+// if you want to import all
+@use "element-plus/theme-chalk/src/index.scss" as *;
+
+// You can comment it to hide debug info.
+// @debug $custom-colors;
+
+// custom dark variables
+// @use "./dark.scss";
+
+.el-card__header {
+    background-color: getCssVar('color', 'primary');
+}
+
+.el-table .sort-caret.ascending {
+    border-bottom-color: getCssVar('color', 'white');
+}
+
+.el-table .sort-caret.descending {
+    border-top-color: getCssVar('color', 'white');
+}
+
+
+// Customize the el-tree-node__content height
+.el-tree-node__content {
+  height: auto;
+  padding: 10px;
+}

@@ -1,0 +1,6 @@
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# START CRON JOB
+* * * * * cd /code && python ./schedule.py > /proc/1/fd/1 2>/proc/1/fd/2
+# END CRON JOB

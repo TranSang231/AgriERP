@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-05 14:48+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: models/email.py:105
+msgid "sent by email"
+msgstr "đã gửi bằng email"
+
+#: models/phone.py:93
+msgid "sent by sms"
+msgstr "đã gửi bằng sms"
+
+#: templates/otp/phone/sms_message.html:2
+#, python-format
+msgid "Your OTP token is %(token)s"
+msgstr "Mã xác nhận của bạn là %(token)s"
+
+#: views/email.py:32 views/phone.py:32
+msgid "There is an error occur."
+msgstr "Đã có lỗi xảy ra."
+
+#: views/email.py:33 views/phone.py:33
+msgid "The OTP have been sent."
+msgstr "Mã xác nhận đã được gửi."

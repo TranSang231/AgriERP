@@ -1,0 +1,13 @@
+version: '3.1'
+
+services:
+
+  web:
+    build: .
+    restart: always
+    ports:
+      - __WEB_PORT__:8008
+    env_file:
+      - ./docker.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

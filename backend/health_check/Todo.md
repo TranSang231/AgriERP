@@ -1,0 +1,1 @@
+* Implemt index view to show the status off all services.

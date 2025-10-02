@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load static %}
+{% load i18n %}
+{% load django_vite %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"  lang="en" content="Pandosima is a multi-industry company, we focus on software development services, providing comprehensive business management solutions. We also provide office rental services, sell laptops and IoT components, provide programming courses, courses on business administration, digital marketing, and artificial intelligence in business. All of these additional services create maximum convenience and support for businesses in the process of digitalization and improving management capacity.">
+    <meta name="description" lang="vi" content="Pandosima là công ty hoạt động đa ngành, chúng tôi lấy dịch vụ phát triển phần mền làm trọng tâm, cung cấp các giải pháp quản trị doanh nghiệp toàn diện. Chúng tôi cũng cấp dịch vụ cho thuê văn phòng, bán laptop và linh kiện IoT,  cung cấp các khóa học lập trình, các khóa học về quản trị doanh nghiệp, marketing số, trí tuệ nhân tạo trong kinh doanh. Tất cả các dịch vụ bổ xung này tạo ra tiện ích và hỗ trợ tối đa cho các doanh nghiệp trong quá trình số hóa và nâng cao năng lực quản lý.">
+    <meta name="keywords" content="pandosima,software,coworking,co-working,space,office,training,phần mềm,văn phòng,chia sẻ,cho thuê,học,lập trình,laptop,iot,linh kiện">
+    <link rel="icon" href="/static/logo.ico" />
+    <title>{% translate "Domain not found" %}</title>
+    {% vite_asset 'node_modules/nuxt/dist/app/entry.js' app='business' %}
+  </head>
+  <body>
+    <div>
+      <span>{% translate "The domain was not found!" %}</span>
+    </div>
+  </body>
+</html>

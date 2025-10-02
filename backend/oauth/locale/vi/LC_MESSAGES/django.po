@@ -1,0 +1,124 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-09-26 11:45+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: models/oauth2.py:23
+msgid "The applications created by Alpha"
+msgstr "Các ứng dụng được tạo bởi Alpha"
+
+#: models/oauth2.py:24
+msgid "The third-parties' applications"
+msgstr "Các ứng dụng của bên thứ ba"
+
+#: models/oauth2.py:25
+#, fuzzy
+#| msgid "The applications created by Alpha"
+msgid "The application created by the businesses"
+msgstr "Ứng dụng được tạo bởi các doanh nghiệp"
+
+#: models/user.py:23
+msgid "staff status"
+msgstr ""
+
+#: models/user.py:25
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+"Xác định liệu người dùng có thể đăng nhập vào trang quản trị này hay không."
+
+#: services/user.py:63
+msgid "Create Alpha account"
+msgstr "Tạo tài khoản Alpha"
+
+#: templates/oauth/emails/verify_admin_email.html:39
+msgid "Welcome to Alpha"
+msgstr "Chào mừng đến với Alpha"
+
+#: templates/oauth/emails/verify_admin_email.html:56
+#, python-format
+msgid ""
+"\n"
+"                            Dear %(first_name)s,\n"
+"                            "
+msgstr ""
+"\n"
+"                            Chào %(first_name)s,\n"
+"                            "
+
+#: templates/oauth/emails/verify_admin_email.html:60
+msgid "You have been invited to Alpha Admin tool"
+msgstr "Bạn đã được mời sử dụng công cụ quản trị Alpha"
+
+#: templates/oauth/emails/verify_admin_email.html:61
+msgid "Please click the button below to finish setting up your account."
+msgstr ""
+"Vui lòng nhấp vào nút bên dưới để hoàn tất việc thiết lập tài khoản của bạn."
+
+#: templates/oauth/emails/verify_admin_email.html:79
+msgid "Register"
+msgstr "Đăng ký"
+
+#: views/administrator.py:58
+msgid "The user does not exist."
+msgstr "Người dùng không tồn tại."
+
+#: views/administrator.py:99
+msgid "Invalid token"
+msgstr "Mã xác nhận không hợp lệ"
+
+#: views/administrator.py:140
+msgid "Can not revoke refresh token."
+msgstr "Không thể thu hồi mã làm mới."
+
+#: views/administrator.py:154
+msgid "Can not revoke access token."
+msgstr "Không thể thu hồi mã truy cập."
+
+#: views/administrator.py:158
+msgid "Logout success!"
+msgstr "Đăng xuất thành công!"
+
+#: views/user.py:66 views/user.py:70
+msgid "The invitation have been sent."
+msgstr "Lời mời đã được gửi đi."
+
+#: views/user.py:69 views/user.py:137
+msgid "There is an error occur."
+msgstr "Có lỗi xảy ra."
+
+#: views/user.py:120
+msgid "The passwords are mismatch."
+msgstr "Mật khẩu không khớp."
+
+#: views/user.py:127
+#, fuzzy
+#| msgid "The passwords are mismatch."
+msgid "The password is invalid format."
+msgstr "Mật khẩu không đúng định dạng."
+
+#: views/user.py:141
+#, fuzzy
+#| msgid "The passwords are mismatch."
+msgid "The password have been updated."
+msgstr "Mật khẩu đã được cập nhật."
+
+msgid "Authentication credentials were not provided."
+msgstr "Thông tin xác thực chưa được cung cấp."
+
+msgid "Invalid credentials given."
+msgstr "Thông tin đăng nhập không đúng."
