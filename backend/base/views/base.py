@@ -42,31 +42,58 @@ class BaseViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         params = request.query_params.copy()
 
-        # Takeout specical params
+        # Takeout special params
         keyword = params.get('keyword', None)
+        # Support both `keyword` and `search`
+        if (keyword is None or keyword == '') and 'search' in params:
+            keyword = params.get('search') or None
+            del params['search']
         if keyword is not None:
             del params['keyword']
-        page_size =  params.get('page_size', None)
+
+        page_size = params.get('page_size', None)
         if page_size is not None:
             del params['page_size']
-        page =  params.get('page', None)
+        page = params.get('page', None)
         if page is not None:
             del params['page']
-        
+        # Support ordering parameter
+        ordering = params.get('ordering', None)
+        if ordering is not None:
+            del params['ordering']
+
+        # Normalize aliases
+        if 'category' in params and 'categories' not in params:
+            params['categories'] = params.get('category')
+            del params['category']
+
+        # Remove invalid placeholder values
+        invalid_values = {"NaN", "nan", "undefined", "null", "None", ""}
+
         query = None
         if keyword and len(self.search_map) > 0:
             query = Q()
             for field, op in self.search_map.items():
                 kwargs = {'{0}__{1}'.format(field, op): keyword}
                 query |= Q(**kwargs)
+
         for param, value in params.items():
+            # Ignore empty or invalid values
+            if value is None or (isinstance(value, str) and value.strip() in invalid_values):
+                continue
             if param[-2:] == '[]':
-                kwargs = {'{0}__in'.format(param.rstrip('[]')): params.getlist(param)}
+                values = params.getlist(param)
+                if not values:
+                    continue
+                kwargs = {'{0}__in'.format(param.rstrip('[]')): values}
             else:
                 kwargs = {'{0}__exact'.format(param): value}
             query = Q(**kwargs) if query is None else query & Q(**kwargs)
+
         if query is not None:
             queryset = queryset.filter(query)
+        if ordering is not None and ordering != '':
+            queryset = queryset.order_by(ordering)
         return queryset, page_size
 
     def create(self, request, *args, **kwargs):

@@ -167,6 +167,18 @@ const fetchData = async () => {
     props.service.get(id)
         .then((response: any) => {
             let data = response;
+            // Normalize categories -> category_ids if present
+            try {
+              if (data && Array.isArray((data as any).categories)) {
+                const ids = (data as any).categories
+                  .map((c: any) => c && (c.id ?? c.category_id))
+                  .filter((v: any) => !!v)
+                  .map((v: any) => String(v))
+                if (ids && ids.length >= 0) {
+                  data = { ...(data as any), category_ids: ids }
+                }
+              }
+            } catch (_) {}
             if (props.overrideIfFieldNullOrEmpty) {
                 data = overrideFieldIfNullOrEmpty(data, props.overrideIfFieldNullOrEmpty)
             }

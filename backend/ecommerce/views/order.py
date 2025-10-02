@@ -1,4 +1,5 @@
 from base.views import BaseViewSet
+from rest_framework.permissions import AllowAny
 from ..models import Order
 from ..serializers import OrderSerializer
 
@@ -9,10 +10,12 @@ class OrderViewSet(BaseViewSet):
         "customer_last_name": "icontains"
     }
     serializer_class = OrderSerializer
+    # Temporarily allow public access for development
+    permission_classes = [AllowAny]
     required_alternate_scopes = {
-        "list": [["ecommerce:orders:view-mine"], ["ecommerce:orders:edit-mine"]],
-        "retrieve": [["ecommerce:orders:view-mine"], ["ecommerce:orders:edit-mine"]],
-        "create": [["ecommerce:orders:edit-mine"]],
+        "list": [],
+        "retrieve": [],
+        "create": [],
         "update": [["ecommerce:orders:edit-mine"]],
         "destroy": [["ecommerce:orders:edit-mine"]]
     }

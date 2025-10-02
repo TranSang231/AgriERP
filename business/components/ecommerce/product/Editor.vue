@@ -177,7 +177,7 @@
                 <el-upload
                   class="thumbnail-uploader"
                   :auto-upload="false"
-                  :on-change="handleThumbnailChange"
+                  :on-change="(file, fileList) => handleThumbnailChange(file, fileList, current)"
                   :before-upload="beforeImageUpload"
                   :disabled="!editing"
                   accept="image/*"
@@ -192,8 +192,8 @@
                   class="images-uploader"
                   :auto-upload="false"
                   :file-list="imageFileList"
-                  :on-change="handleImagesChange"
-                  :on-remove="handleImageRemove"
+                  :on-change="(file, fileList) => handleImagesChange(file, fileList, current)"
+                  :on-remove="(file, fileList) => handleImageRemove(file, fileList, current)"
                   :before-upload="beforeImageUpload"
                   multiple
                   :disabled="!editing"
@@ -315,26 +315,30 @@ const beforeImageUpload = (file) => {
   return true
 }
 
-const handleThumbnailChange = (file, fileList) => {
-  if (file.raw) {
-    // Create a preview URL for the thumbnail
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      // This will be handled by the ModelForm component
-      // The file will be included in the form data when saving
-    }
-    reader.readAsDataURL(file.raw)
+const handleThumbnailChange = (file, fileList, current) => {
+  if (file && file.raw && current) {
+    // Bind the file to the model so ModelForm converts to FormData
+    current.thumbnail = file.raw
   }
 }
 
-const handleImagesChange = (file, fileList) => {
-  // This will be handled by the ModelForm component
-  // The files will be included in the form data when saving
+const handleImagesChange = (file, fileList, current) => {
+  if (!current) return
+  const files = (fileList || []).map(f => f.raw).filter(Boolean)
+  // Backend expects nested images with field name 'image' on each item
+  // Keep existing objects with id; replace/append new ones with file
+  const existing = Array.isArray(current.images) ? current.images.filter((it) => it && it.id) : []
+  const newOnes = files.map(f => ({ image: f }))
+  current.images = [...existing, ...newOnes]
 }
 
-const handleImageRemove = (file, fileList) => {
-  // Remove image from the images array
-  // This will be handled by the ModelForm component
+const handleImageRemove = (file, fileList, current) => {
+  if (!current) return
+  const uid = file && (file.uid || file.name)
+  const remaining = (fileList || []).map(f => f.raw).filter(Boolean)
+  const remainingSet = new Set(remaining)
+  current.images = (Array.isArray(current.images) ? current.images : [])
+    .filter((it) => it && (it.id || (it.image && remainingSet.has(it.image))))
 }
 
 // Load categories
