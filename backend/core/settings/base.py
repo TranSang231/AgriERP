@@ -118,7 +118,7 @@ CORS_ALLOWED_ORIGINS = env.list(
     ],
 )
 if BUSINESS_FRONTEND_DEV_MODE:
-    CORS_ALLOWED_ORIGINS += [f'http://localhost:3008']
+    CORS_ALLOWED_ORIGINS += [f'http://localhost:3008', f'http://127.0.0.1:3008']
 
 if DOCS_FRONTEND_DEV_MODE:
     CORS_ALLOWED_ORIGINS += [f'http://localhost:3009']
