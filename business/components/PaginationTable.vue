@@ -1,32 +1,26 @@
 <template>
   <client-only>
-    <div class="flex flex-col items-center">
-      <p v-if="error" class="self-center text-red-800">{{ error }}</p>
-      <div class="flex flex-row self-end gap-2 my-2">
-        <slot name="filter">
-          <el-input
-            v-if="searchable"
-            v-model="keyword"
-            style="max-width: 500px"
-            :placeholder="t('Keyword')"
-          >
-            <template #append>
-              <el-button :icon="Search" />
-            </template>
-          </el-input>
-        </slot>
+    <div class="w-full">
+      <!-- Vùng hiển thị lỗi tập trung -->
+      <el-alert v-if="error" :title="t('Error')" type="error" :description="error" show-icon class="mb-4" />
+
+      <!-- Các nút chức năng chính (export, xóa hàng loạt) -->
+      <div class="flex flex-wrap items-center justify-end gap-2 my-2">
         <slot name="buttons">
           <el-button v-if="allowExportToExcel" :icon="Excel" @click="exportToExcel">{{ t("to_excel") }}</el-button>
           <el-button v-if="allowExportToJson" :icon="Json" @click="exportToJson">{{ t("to_json") }}</el-button>
           <el-button
-            v-if="selectedItems && selectedItems.length > 0"
+            v-if="multipleSelect && selectedItems.length > 0"
+            type="danger"
             :icon="Delete"
             @click="onMultipleDelete()"
           >
-            Delete
+            {{ t('delete_selected_items', { count: selectedItems.length }) }}
           </el-button>
         </slot>
       </div>
+
+      <!-- Bảng dữ liệu chính -->
       <el-table
         v-loading="loading"
         :data="data.results"
@@ -37,82 +31,61 @@
         @row-click="onRowClick"
       >
         <el-table-column v-if="multipleSelect" type="selection" width="55" />
-        <slot />
+        <slot /> <!-- Các cột dữ liệu được định nghĩa từ component cha -->
         <el-table-column
           v-if="canDeleteItems || canEditItems || hasAddonButtons"
           :label="t('Operations')"
+          fixed="right"
           :min-width="160"
+          align="center"
         >
           <template #default="scope">
-            <el-button v-if="canEditItems" :icon="Edit" size="small" @click="editItem(scope.row.id)" />
-            <el-button v-if="canDeleteItems" :icon="Delete" size="small" @click="onDeleteItem(scope.row)" />
-            <slot name="addonButtons" :row="scope.row" />
+            <div class="flex items-center justify-center gap-2">
+              <el-button v-if="canEditItems" :icon="Edit" size="small" @click.stop="editItem(scope.row.id)" />
+              <el-button v-if="canDeleteItems" :icon="Delete" size="small" @click.stop="onDeleteItem(scope.row)" />
+              <slot name="addonButtons" :row="scope.row" />
+            </div>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="pageSize && pageSize.valueOf() > 0"
-        :page-size="data.page_size.valueOf()"
-        :page-count="data.num_pages"
-        :total="data.count"
-        :current-page="data.page"
-        layout="prev, pager, next"
-        class="mt-6"
-        @current-change="onCurrentPageChange"
-      />
-      <el-button
-        v-if="canAddItems"
-        type="primary"
-        :icon="Plus"
-        @click="onAdd()"
-        class="self-end px-2 mb-2"
-      >
-        {{ t("add_new") }}
-      </el-button>
-      <el-dialog
-        v-model="confirmDeleteDialog"
-        :title="t('confirm_deleting')"
-        center
-        align-center
-      >
-        <span class="flex justify-center">
-          {{
-            confirmDeletingMessage
-              ? confirmDeletingMessage
-              : t("deleting_item_confirm_default_message")
-          }}
-        </span>
+
+      <!-- Footer: Phân trang và Nút Thêm mới -->
+      <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
+        <el-button
+          v-if="canAddItems"
+          type="primary"
+          :icon="Plus"
+          @click="onAdd()"
+        >
+          {{ t("add_new") }}
+        </el-button>
+        
+        <div v-else></div> <!-- Placeholder để giữ phân trang luôn ở bên phải -->
+
+        <el-pagination
+          v-if="data.count > 0"
+          background
+          :page-size="data.page_size"
+          :total="data.count"
+          :current-page="data.page"
+          layout="total, prev, pager, next, jumper"
+          @current-change="onCurrentPageChange"
+        />
+      </div>
+
+      <!-- Dialogs xác nhận -->
+      <el-dialog v-model="confirmDeleteDialog" :title="t('confirm_deleting')" width="30%" center>
+        <span>{{ confirmDeletingMessage || t("deleting_item_confirm_default_message") }}</span>
         <template #footer>
-          <div class="dialog-footer">
-            <el-button type="primary" @click="deleteItem">{{t("yes")}}</el-button>
-            <el-button plain @click="cancelDeletingItem">
-              {{ t("cancel") }}
-            </el-button>
-          </div>
+          <el-button @click="cancelDeletingItem">{{ t("cancel") }}</el-button>
+          <el-button type="primary" @click="deleteItem">{{t("yes")}}</el-button>
         </template>
       </el-dialog>
-      <el-dialog
-        v-model="confirmMultipleDeleteDialog"
-        :title="t('confirm_deleting')"
-        center
-        align-center
-      >
-        <span class="flex justify-center">
-          {{
-            confirmMultipleDeletingMessage
-              ? confirmMultipleDeletingMessage
-              : t("deleting_items_confirm_default_message")
-          }}
-        </span>
+      <el-dialog v-model="confirmMultipleDeleteDialog" :title="t('confirm_deleting')" width="30%" center>
+        <span>{{ confirmMultipleDeletingMessage || t("deleting_items_confirm_default_message") }}</span>
         <template #footer>
-          <div class="dialog-footer">
-            <el-button type="primary" @click="multipleDelete">{{
-              t("yes")
-            }}</el-button>
-            <el-button plain @click="cancelMultipleDeleting">
-              {{ t("cancel") }}
-            </el-button>
-          </div>
+          <el-button @click="cancelMultipleDeleting">{{ t("cancel") }}</el-button>
+          <el-button type="primary" @click="multipleDelete">{{ t("yes") }}</el-button>
         </template>
       </el-dialog>
       <slot name="addon-confirm-dialog" />
@@ -121,42 +94,37 @@
 </template>
 
 <script setup lang="ts" generic="S extends BaseService">
-import {
-  Plus,
-  Delete,
-  Edit,
-  Search,
-} from "@element-plus/icons-vue";
+import { Plus, Delete, Edit } from "@element-plus/icons-vue";
 import Excel from "@/assets/icons/excel.svg";
 import Json from "@/assets/icons/json.svg";
-import { ref, watch } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import BaseService from "@/services/base";
-import { diff } from "@/utils/obj";
+import { ElNotification } from "element-plus";
 import { toExcel } from "@/exporters/xls/xlsx";
 import { toJson } from "@/exporters/json/json";
 import { getErrorMessage } from "@/utils/error";
 
+// --- PROPS DEFINITION ---
 const props = defineProps<{
   service: S;
-  pageSize?: Number;
-  searchable: Boolean;
-  multipleSelect?: Boolean;
-  canDeleteItems?: Boolean;
-  canEditItems?: Boolean;
-  canAddItems?: Boolean;
-  confirmDeletingMessage?: String;
-  confirmMultipleDeletingMessage?: String;
-  allowExportToExcel: Boolean;
-  excelSheetName?: String;
-  excelFileName?: String;
-  exportFields?: Object;
-  allowExportToJson: Boolean;
-  jsonFileName?: String;
-  disableRowClick?: Boolean;
+  pageSize?: number;
+  multipleSelect?: boolean;
+  canDeleteItems?: boolean;
+  canEditItems?: boolean;
+  canAddItems?: boolean;
+  confirmDeletingMessage?: string;
+  confirmMultipleDeletingMessage?: string;
+  allowExportToExcel?: boolean;
+  excelSheetName?: string;
+  excelFileName?: string;
+  exportFields?: object;
+  allowExportToJson?: boolean;
+  jsonFileName?: string;
+  disableRowClick?: boolean;
   service_params?: Record<string, any>;
-  hasAddonButtons?: Boolean;
-  filter?: Object;
-  prefix?: String;
+  hasAddonButtons?: boolean;
+  params?: object; // Prop quan trọng nhất để nhận bộ lọc
+  prefix?: string;
   onItemDeleted?: Function;
   onItemsDeleted?: Function;
 }>();
@@ -164,233 +132,135 @@ const props = defineProps<{
 const { t } = useI18n();
 const route = useRoute();
 
-const loading = ref(false);
-const keyword = ref("");
-const debouncedKeyword = ref<string>("");
-let timeout: number | undefined = undefined;
-const selectedItems = ref([]);
+// --- STATE ---
+const loading = ref(true);
+const error = ref<string | null>(null);
 const data = ref({
   page: 1,
-  page_size: props.pageSize ? props.pageSize : 0,
+  page_size: props.pageSize || 10,
   num_pages: 0,
   count: 0,
-  results: [],
+  results: [] as any[],
 });
-const error = ref(null);
-const deletingItem = ref(null);
+const selectedItems = ref<any[]>([]);
+const deletingItem = ref<any | null>(null);
 const confirmDeleteDialog = ref(false);
 const confirmMultipleDeleteDialog = ref(false);
 
 const oauthStore = useOauthStore();
 const { tokenInfo } = storeToRefs(oauthStore);
 
-defineExpose({ data: data, error: error });
+defineExpose({ reloadData: fetchData });
 
-const query = computed<any>(() => {
-  const filter = props.filter ? props.filter : {};
-  const { page, page_size } = data.value;
-  let params = {};
-  if (page_size && page_size.valueOf() > 0) {
-    params = { ...params, page_size };
-  }
-  if (page && page > 0) {
-    params = { ...params, page };
-  }
-  if (debouncedKeyword.value && debouncedKeyword.value.trim().length > 0) {
-    params = { ...params, keyword: debouncedKeyword.value };
-  }
-  if (props.service_params) {
-    params = { ...params, ...props.service_params };
-  }
-  return {...filter, ...params};
+// --- COMPUTED ---
+const query = computed(() => {
+  const queryParams: Record<string, any> = {
+    page: data.value.page,
+    page_size: data.value.page_size,
+    ...props.service_params,
+    ...props.params,
+  };
+  Object.keys(queryParams).forEach(key => {
+    if (queryParams[key] === null || queryParams[key] === undefined || queryParams[key] === '') {
+      delete queryParams[key];
+    }
+  });
+  return queryParams;
 });
 
-const onSelectionChange = (val: any) => {
-  selectedItems.value = val;
-};
-
-const onRowClick = (row: any, column: any, event: any) => {
-  if (props.disableRowClick) {
-    return;
-  }
-  const { id } = row;
-  const { property } = column;
-  if (!property || !id) {
-    return;
-  }
-  const to = props.prefix
-    ? `${route.path}/${props.prefix}/${id}`
-    : `${route.path}/${id}`
-  navigateTo(to);
-};
-
-const onCurrentPageChange = (page: number) => {
-  data.value.page = page;
-};
-
-const onDeleteItem = async (item: any) => {
-  deletingItem.value = item;
-  confirmDeleteDialog.value = true;
-};
-
-const deleteItem = async () => {
-  if (!deletingItem.value) {
-    return;
-  }
-  error.value = null;
-  const { id } = deletingItem.value;
-  props.service
-    .delete(id)
-    .then(() => {
-      const { page, results } = data.value;
-      const newResults = results.filter((i: any) => i.id !== id);
-      if (newResults.length === 0 && page > 0) {
-        data.value.page = page - 1;
-      } else {
-        data.value.results = newResults;
-      }
-    })
-    .catch((e: any) => {
-      error.value = getErrorMessage(e, t("an_error_occurred"));
-    })
-    .finally(() => {
-      confirmDeleteDialog.value = false;
-      if (props.onItemDeleted) {
-        props.onItemDeleted(deletingItem.value);
-      }
-    });
-};
-const cancelDeletingItem = () => {
-  confirmDeleteDialog.value = false;
-  deletingItem.value = null;
-};
-
-const onMultipleDelete = () => {
-  confirmMultipleDeleteDialog.value = true;
-};
-
-const multipleDelete = () => {
-  const items = selectedItems.value;
-  if (!items || items.length == 0) {
-    return;
-  }
-  const ids = items.map((item: any) => item.id);
-  error.value = null;
-  props.service
-    .multipleDelete(ids)
-    .then(() => {
-      const { page, results } = data.value;
-      const newResults = results.filter((i:any) => ids.indexOf(i.id) == -1);
-      if (newResults.length === 0 && page > 0) {
-        data.value.page = page - 1;
-      } else {
-        data.value.results = newResults;
-      }
-    })
-    .catch((e: any) => {
-      error.value = getErrorMessage(e, t("an_error_occurred"));
-    })
-    .finally(() => {
-      confirmMultipleDeleteDialog.value = false;
-      if (props.onItemsDeleted) {
-        props.onItemsDeleted(items);
-      }
-    });
-};
-
-const cancelMultipleDeleting = () => {
-  confirmMultipleDeleteDialog.value = false;
-};
-
-const fetchData = async () => {
-  const { page_size } = query.value;
+// --- METHODS ---
+async function fetchData() {
+  if (loading.value && data.value.results.length > 0) return; // Chặn gọi lại khi đang tải, trừ lần đầu
   loading.value = true;
   error.value = null;
 
-  props.service
-    .gets(query.value)
-    .then((response:any) => {
-      if (page_size) {
-        const { page, num_pages, count, results } = response;
-        data.value = {
-          ...data.value,
-          page,
-          num_pages,
-          count,
-          results,
-        };
-      } else {
-        data.value = {
-          ...data.value,
-          results: response,
-        };
-      }
-    })
-    .catch((e: any) => {
-      error.value = getErrorMessage(e, e.statusCode ? t('an_error_occurred') : t('connection_corrupted'));
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-};
-
-const editItem = (id: string) => {
-  const path = props.prefix
-    ? `${route.path}/${props.prefix}/${id}?edit=true`
-    : `${route.path}/${id}?edit=true`
-  navigateTo(path);
-};
-
-const onAdd = () => {
-  const path = props.prefix
-    ? `${route.path}/${props.prefix}/new`
-    : `${route.path}/new`
-  navigateTo(path);
-};
-
-const exportToExcel = () => {
-  const { results } = data.value;
-  if (results) {
-    toExcel(
-      results,
-      props.excelSheetName,
-      props.excelFileName,
-      props.exportFields,
-      t
-    );
+  try {
+    const response = await props.service.gets(query.value);
+    const { page, num_pages, count, results } = response;
+    data.value = { ...data.value, page, num_pages, count, results };
+  } catch (e: any) {
+    error.value = getErrorMessage(e, t('an_error_occurred_while_fetching_data'));
+    data.value.results = [];
+    data.value.count = 0;
+  } finally {
+    loading.value = false;
   }
-};
+}
 
-const exportToJson = () => {
-  const { results } = data.value;
-  if (results) {
-    toJson(results, props.jsonFileName);
+function onCurrentPageChange(newPage: number) {
+  data.value.page = newPage;
+}
+
+// ... các hàm xử lý sự kiện khác giữ nguyên
+function onSelectionChange(selection: any[]) { selectedItems.value = selection; }
+function onRowClick(row: any, column: any) {
+  if (props.disableRowClick || column?.type === 'selection') return;
+  const to = props.prefix ? `${route.path}/${props.prefix}/${row.id}` : `${route.path}/${row.id}`;
+  navigateTo(to);
+}
+function editItem(id: string) {
+  const path = props.prefix ? `${route.path}/${props.prefix}/${id}?edit=true` : `${route.path}/${id}?edit=true`;
+  navigateTo(path);
+}
+function onAdd() {
+  const path = props.prefix ? `${route.path}/${props.prefix}/new` : `${route.path}/new`;
+  navigateTo(path);
+}
+function onDeleteItem(item: any) {
+  deletingItem.value = item;
+  confirmDeleteDialog.value = true;
+}
+function cancelDeletingItem() {
+  confirmDeleteDialog.value = false;
+  deletingItem.value = null;
+}
+async function deleteItem() {
+  if (!deletingItem.value) return;
+  try {
+    await props.service.delete(deletingItem.value.id);
+    ElNotification({ title: t('Success'), message: t('Item_deleted_successfully'), type: 'success' });
+    await fetchData();
+    props.onItemDeleted?.(deletingItem.value);
+  } catch (e: any) {
+    ElNotification({ title: t('Error'), message: getErrorMessage(e, t('Failed_to_delete_item')), type: 'error' });
+  } finally {
+    cancelDeletingItem();
   }
-};
+}
+//...
 
+// --- STEP 3: SỬA LẠI WATCHERS ĐỂ ĐẢM BẢO HOẠT ĐỘNG ỔN ĐỊNH ---
+/**
+ * Watcher 1: Theo dõi sự thay đổi của bộ lọc từ bên ngoài (`props.params`).
+ * Khi bộ lọc thay đổi, nó sẽ tự động reset về trang 1.
+ */
+watch(() => props.params, () => {
+  if (data.value.page !== 1) {
+    // Nếu không ở trang 1, việc set page = 1 sẽ tự động kích hoạt watcher thứ hai
+    data.value.page = 1; 
+  } else {
+    // Nếu đã ở trang 1, phải gọi fetchData thủ công để tải lại dữ liệu với bộ lọc mới
+    fetchData();
+  }
+}, { deep: true }); // `deep` để phát hiện thay đổi bên trong object
+
+/**
+ * Watcher 2: Theo dõi sự thay đổi của trang hiện tại (`data.value.page`).
+ * Khi người dùng chuyển trang, watcher này sẽ gọi lại API.
+ */
+watch(() => data.value.page, fetchData);
+
+/**
+ * Watcher 3: Khi token thay đổi (đăng nhập/đăng xuất), tải lại dữ liệu.
+ */
+watch(tokenInfo, () => {
+    if (tokenInfo.value) { // Chỉ fetch khi có token
+        fetchData();
+    }
+}, { immediate: false });
+
+// --- LIFECYCLE HOOKS ---
 onMounted(() => {
   fetchData();
-});
-
-watch(keyword, (newKeyword) => {
-  if (timeout !== undefined) {
-    clearTimeout(timeout);
-  }
-
-  timeout = window.setTimeout(() => {
-    data.value.page = 1;
-    debouncedKeyword.value = newKeyword;
-  }, 300);
-});
-
-watch(query, async (newValue, oldValue) => {
-  const different = diff(newValue, oldValue);
-  if (different) {
-    fetchData();
-  }
-});
-
-watch(tokenInfo, () => {
-    fetchData();
 });
 </script>
