@@ -16,7 +16,12 @@ class NLUService extends BaseService {
   }
 
   getHost(){
-    return this.request().get(`${this.entity}/nlu-host`)
+    // Use public endpoint that doesn't require authentication
+    // Need to construct full URL since public API has different base path
+    const { $api } = useNuxtApp();
+    const runtimeConfig = useRuntimeConfig();
+    const baseURL = runtimeConfig.public.apiBase.replace('/api/v1', '/api/public/v1');
+    return $fetch(`${baseURL}/va/nlu/nlu-host`);
   }
 
   async fetchHost(force = false) {
