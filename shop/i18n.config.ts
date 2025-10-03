@@ -344,6 +344,96 @@
             returning: 'Returning',
             returned: 'Returned'
           }
+        },
+          // NEW: For the detailed profile page
+        profile: {
+          guest: 'Customer',
+          // Sidebar
+          sidebar: {
+            navTitle: 'Navigate',
+            home: 'Home',
+            products: 'Products',
+            cart: 'Cart'
+          },
+          // Main Content Header
+          header: {
+            title: 'Personal Profile',
+            subtitle: 'Manage your account information',
+            settings: 'Settings'
+          },
+          // Avatar Section
+          avatar: {
+            upload: 'Upload Photo'
+          },
+          // Password Section
+          password: {
+            title: 'Change Password',
+            changeButton: 'Change Password',
+            currentLabel: 'Current Password',
+            currentPlaceholder: 'Enter current password',
+            newLabel: 'New Password',
+            newPlaceholder: 'Enter new password (min. 6 characters)',
+            confirmLabel: 'Confirm New Password',
+            confirmPlaceholder: 'Re-enter new password',
+            updateButton: 'Update Password',
+            cancelButton: 'Cancel'
+          },
+          // Profile Info Section
+          info: {
+            title: 'Personal Information',
+            emailLabel: 'Email',
+            firstNameLabel: 'First Name',
+            firstNamePlaceholder: 'Your first name',
+            lastNameLabel: 'Last Name',
+            lastNamePlaceholder: 'Your last name'
+          },
+          // Contact Info Section
+          contact: {
+            title: 'Contact Information',
+            addressLabel: 'Home Address',
+            addressPlaceholder: 'Street, building, etc.',
+            locationLabel: 'Region (Province/District/Ward)',
+            provinceLabel: 'Province/City',
+            provincePlaceholder: '-- Select province/city --',
+            districtLabel: 'District',
+            districtPlaceholder: '-- Select district --',
+            wardLabel: 'Ward/Commune',
+            wardPlaceholder: '-- Select ward/commune --',
+            phoneLabel: 'Phone Number',
+            phonePlaceholder: '0123456789'
+          },
+          // Actions
+          actions: {
+            save: 'Save',
+            saving: 'Saving...',
+            cancel: 'Cancel',
+            processing: 'Processing...'
+          },
+          // Footer
+          footer: {
+            copyright: '© 2024 AgriShop - Smart Agriculture',
+            language: {
+              vietnamese: 'Tiếng Việt',
+              english: 'English'
+            }
+          },
+          // Notifications (Toasts)
+          notifications: {
+            loadProfileError: 'Could not load profile information.',
+            updateProfileSuccess: 'Profile updated successfully!',
+            updateProfileError: 'Could not update profile.',
+            fieldUpdateSuccess: 'Update successful!',
+            fieldUpdateError: 'Could not update information.',
+            avatarUpdateSuccess: 'Avatar updated.',
+            avatarUpdateError: 'Could not update avatar.',
+            passwordUpdateSuccess: 'Password changed successfully!',
+            passwordUpdateError: 'Could not change password.',
+            currentPasswordRequired: 'Please enter your current password.',
+            newPasswordRequired: 'Please enter a new password.',
+            newPasswordMinLength: 'New password must be at least 6 characters.',
+            passwordMismatch: 'Confirmation password does not match.',
+            sessionExpired: 'Session has expired. Please log in again.'
+          }
         }
       },
          // Vietnamese translations (giữ nguyên)
@@ -675,6 +765,96 @@
             returnRequested: 'Yêu cầu trả hàng',
             returning: 'Đang trả hàng',
             returned: 'Đã trả hàng'
+          }
+        },
+          // NEW: Dành cho trang hồ sơ chi tiết
+        profile: {
+          guest: 'Khách hàng',
+          // Sidebar
+          sidebar: {
+            navTitle: 'Điều hướng',
+            home: 'Trang chủ',
+            products: 'Sản phẩm',
+            cart: 'Giỏ hàng'
+          },
+          // Main Content Header
+          header: {
+            title: 'Hồ sơ cá nhân',
+            subtitle: 'Quản lý thông tin tài khoản',
+            settings: 'Cài đặt'
+          },
+          // Avatar Section
+          avatar: {
+            upload: 'Tải lên ảnh'
+          },
+          // Password Section
+          password: {
+            title: 'Đổi mật khẩu',
+            changeButton: 'Đổi mật khẩu',
+            currentLabel: 'Mật khẩu hiện tại',
+            currentPlaceholder: 'Nhập mật khẩu hiện tại',
+            newLabel: 'Mật khẩu mới',
+            newPlaceholder: 'Nhập mật khẩu mới (ít nhất 6 ký tự)',
+            confirmLabel: 'Xác nhận mật khẩu mới',
+            confirmPlaceholder: 'Nhập lại mật khẩu mới',
+            updateButton: 'Cập nhật mật khẩu',
+            cancelButton: 'Hủy'
+          },
+          // Profile Info Section
+          info: {
+            title: 'Thông tin cá nhân',
+            emailLabel: 'Email',
+            firstNameLabel: 'Tên',
+            firstNamePlaceholder: 'Tên của bạn',
+            lastNameLabel: 'Họ',
+            lastNamePlaceholder: 'Họ của bạn'
+          },
+          // Contact Info Section
+          contact: {
+            title: 'Thông tin liên hệ',
+            addressLabel: 'Địa chỉ nhà',
+            addressPlaceholder: 'Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố',
+            locationLabel: 'Khu vực (Tỉnh/Quận/Phường)',
+            provinceLabel: 'Tỉnh/Thành phố',
+            provincePlaceholder: '-- Chọn tỉnh/thành phố --',
+            districtLabel: 'Quận/Huyện',
+            districtPlaceholder: '-- Chọn quận/huyện --',
+            wardLabel: 'Phường/Xã',
+            wardPlaceholder: '-- Chọn phường/xã --',
+            phoneLabel: 'Số điện thoại',
+            phonePlaceholder: '0123456789'
+          },
+          // Actions
+          actions: {
+            save: 'Lưu',
+            saving: 'Đang lưu...',
+            cancel: 'Hủy',
+            processing: 'Đang xử lý...'
+          },
+          // Footer
+          footer: {
+            copyright: '© 2024 AgriShop - Nông nghiệp thông minh',
+            language: {
+              vietnamese: 'Tiếng Việt',
+              english: 'English'
+            }
+          },
+          // Notifications (Toasts)
+          notifications: {
+            loadProfileError: 'Không thể tải thông tin hồ sơ.',
+            updateProfileSuccess: 'Cập nhật hồ sơ thành công!',
+            updateProfileError: 'Không thể cập nhật hồ sơ.',
+            fieldUpdateSuccess: 'Cập nhật thành công!',
+            fieldUpdateError: 'Không thể cập nhật thông tin.',
+            avatarUpdateSuccess: 'Ảnh đại diện đã được cập nhật.',
+            avatarUpdateError: 'Không thể cập nhật ảnh.',
+            passwordUpdateSuccess: 'Đổi mật khẩu thành công!',
+            passwordUpdateError: 'Không thể đổi mật khẩu.',
+            currentPasswordRequired: 'Vui lòng nhập mật khẩu hiện tại.',
+            newPasswordRequired: 'Vui lòng nhập mật khẩu mới.',
+            newPasswordMinLength: 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            passwordMismatch: 'Mật khẩu xác nhận không khớp.',
+            sessionExpired: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
           }
         }
       }
