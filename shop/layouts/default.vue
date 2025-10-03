@@ -1,3 +1,4 @@
+<!-- D:\nam5ky1\ERP\AgriERP\shop\layouts\default.vue -->
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
@@ -16,7 +17,7 @@
                 v-model="searchQuery"
                 @keyup.enter="performSearch"
                 type="text"
-                placeholder="Search products..."
+                :placeholder="$t('header.searchPlaceholder')"
                 class="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <svg
@@ -37,10 +38,14 @@
 
           <!-- Actions -->
           <div class="flex items-center space-x-4">
+            <!-- THÊM MỚI: Component chuyển đổi ngôn ngữ -->
+            <LanguageSwitcher />
+
             <!-- Orders -->
             <NuxtLink
               to="/orders"
               class="p-2 text-gray-600 hover:text-orange-600 transition-colors"
+              :aria-label="$t('header.orders')"
             >
               <svg
                 class="w-6 h-6"
@@ -61,6 +66,7 @@
             <NuxtLink
               to="/cart"
               class="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
+              :aria-label="$t('header.cart')"
             >
               <svg
                 class="w-6 h-6"
@@ -114,19 +120,19 @@
                   to="/profile"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Profile
+                  {{ $t('header.profile') }}
                 </NuxtLink>
                 <NuxtLink
                   to="/orders"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  My Orders
+                  {{ $t('header.myOrders') }}
                 </NuxtLink>
                 <button
                   @click="onLogout"
                   class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Logout
+                  {{ $t('header.logout') }}
                 </button>
               </div>
             </div>
@@ -137,14 +143,14 @@
                 to="/auth/login"
                 class="text-gray-600 hover:text-orange-600 transition-colors"
               >
-                Login
+                {{ $t('header.login') }}
               </NuxtLink>
               <span class="text-gray-400">|</span>
               <NuxtLink
                 to="/auth/register"
                 class="text-gray-600 hover:text-orange-600 transition-colors"
               >
-                Register
+                {{ $t('header.register') }}
               </NuxtLink>
             </div>
           </div>
@@ -164,74 +170,74 @@
           <div>
             <h3 class="text-lg font-semibold mb-4">AgriShop</h3>
             <p class="text-gray-400 text-sm">
-              Your trusted partner for agricultural products and supplies.
+              {{ $t('footer.tagline') }}
             </p>
           </div>
 
           <div>
-            <h4 class="font-semibold mb-4">Quick Links</h4>
+            <h4 class="font-semibold mb-4">{{ $t('footer.quickLinks') }}</h4>
             <ul class="text-sm text-gray-400 space-y-2">
               <li>
                 <NuxtLink
                   to="/products"
                   class="hover:text-white transition-colors"
-                  >Products</NuxtLink
+                  >{{ $t('footer.products') }}</NuxtLink
                 >
               </li>
               <li>
                 <NuxtLink
                   to="/categories"
                   class="hover:text-white transition-colors"
-                  >Categories</NuxtLink
+                  >{{ $t('footer.categories') }}</NuxtLink
                 >
               </li>
               <li>
                 <NuxtLink to="/about" class="hover:text-white transition-colors"
-                  >About Us</NuxtLink
+                  >{{ $t('footer.aboutUs') }}</NuxtLink
                 >
               </li>
               <li>
                 <NuxtLink
                   to="/contact"
                   class="hover:text-white transition-colors"
-                  >Contact</NuxtLink
+                  >{{ $t('footer.contact') }}</NuxtLink
                 >
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 class="font-semibold mb-4">Customer Service</h4>
+            <h4 class="font-semibold mb-4">{{ $t('footer.customerService') }}</h4>
             <ul class="text-sm text-gray-400 space-y-2">
               <li>
                 <NuxtLink to="/help" class="hover:text-white transition-colors"
-                  >Help Center</NuxtLink
+                  >{{ $t('footer.helpCenter') }}</NuxtLink
                 >
               </li>
               <li>
                 <NuxtLink
                   to="/shipping"
                   class="hover:text-white transition-colors"
-                  >Shipping Info</NuxtLink
+                  >{{ $t('footer.shippingInfo') }}</NuxtLink
                 >
               </li>
               <li>
                 <NuxtLink
                   to="/returns"
                   class="hover:text-white transition-colors"
-                  >Returns</NuxtLink
+                  >{{ $t('footer.returns') }}</NuxtLink
                 >
               </li>
               <li>
                 <NuxtLink to="/faq" class="hover:text-white transition-colors"
-                  >FAQ</NuxtLink
+                  >{{ $t('footer.faq') }}</NuxtLink
                 >
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 class="font-semibold mb-4">Contact Info</h4>
+            <h4 class="font-semibold mb-4">{{ $t('footer.contactInfo') }}</h4>
             <div class="text-sm text-gray-400 space-y-2">
               <p>📧 support@agrishop.com</p>
               <p>📞 +1 (555) 123-4567</p>
@@ -243,7 +249,7 @@
         <div
           class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400"
         >
-          <p>&copy; 2024 AgriShop. All rights reserved.</p>
+          <p>{{ $t('footer.copyright') }}</p>
         </div>
 
       </div>
@@ -253,6 +259,8 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from "vue";
+// THÊM MỚI: Import component LanguageSwitcher
+import LanguageSwitcher from "~/components/LanguageSwitcher.vue";
 import { useCustomersService } from "~/services/customers";
 import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
