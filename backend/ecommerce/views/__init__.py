@@ -9,3 +9,11 @@ from .promotion import PromotionViewSet
 from .cart import CartViewSet
 from .order import OrderViewSet
 from .goods_receipt import GoodsReceiptViewSet
+from .statistic import (
+    general_statistics,
+    sales_data,
+    order_status_data,
+    recent_orders,
+    top_products,
+    inventory_alerts
+)
