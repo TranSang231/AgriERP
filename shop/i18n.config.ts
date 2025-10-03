@@ -223,28 +223,106 @@
             description: 'Complete your purchase by providing your shipping and payment details.'
           }
         },
+           // NEW: For the orders list page
+        orders: {
+          title: 'My Orders',
+          subtitle: 'Review your past and current orders.',
+          loading: 'Loading your orders...',
+          unknownStatus: 'Unknown Status',
+          paymentMethods: {
+            bank_transfer: 'Bank Transfer',
+            cod: 'Cash on Delivery'
+          },
+          empty: {
+            title: 'No Orders Yet',
+            subtitle: 'Start shopping to see your orders here.',
+            shopNow: 'Shop Now'
+          },
+          error: {
+            title: 'Error Loading Orders',
+            loadFailed: 'Failed to load the order list. Please try again later.',
+            retryButton: 'Retry'
+          },
+          orderCard: {
+            orderId: 'Order #{id}',
+            placedOn: 'Placed on {date}',
+            customerInfo: 'Customer Information',
+            name: 'Name:',
+            company: 'Company:',
+            taxCode: 'Tax Code:',
+            paymentMethod: 'Payment Method:',
+            products: 'Products ({count})',
+            moreProducts: 'and {count} more products',
+            summary: 'Order Summary',
+            subtotal: 'Subtotal',
+            tax: 'Tax ({rate}%)',
+            shippingFee: 'Shipping Fee',
+            total: 'Total',
+            viewDetails: 'View Details',
+            payNow: 'Pay Now',
+            cancelOrder: 'Cancel Order',
+            continueShopping: '← Continue Shopping'
+          },
+          meta: {
+            title: 'My Orders - AgriShop',
+            description: 'View your order history at AgriShop.'
+          }
+        },
+
+        // UPDATED: For the single order detail page
         order: {
           title: 'Order',
-          details: 'Order details',
-          customerInfo: 'Customer information',
-          productList: 'Ordered products',
-          paymentInfo: 'Payment information',
-          orderSummary: 'Order summary',
+          title_plural: 'Orders', // For breadcrumb
+          details: 'Order Details',
+          customerInfo: 'Customer Information',
+          customerName: 'Customer Name',
+          company: 'Company Name',
+          taxCode: 'Tax Code',
+          paymentMethod: 'Payment Method',
+          productList: 'Ordered Products',
+          quantity: 'Quantity',
+          unitPrice: 'Unit Price',
+          paymentInfo: 'Payment Information',
+          paymentWaiting: 'Please complete the payment via bank transfer to process the order.',
+          qrCode: 'Payment QR Code',
+          qrInstruction: 'Scan the QR code with your banking app to complete the payment.',
+          paymentSuccess: 'Payment successful! Your order is being processed.',
+          orderSummary: 'Order Summary',
+          subtotal: 'Subtotal',
+          tax: 'Tax',
+          shippingFee: 'Shipping Fee',
+          total: 'Total',
           actions: 'Actions',
-          timeline: 'Order status',
-          back: 'Back to list',
-          pay: 'Pay now',
-          cancel: 'Cancel order',
-          print: 'Print order',
+          timeline: 'Order Status',
+          timelineEvents: {
+            created: 'Order has been placed',
+            confirmed: 'The order is being processed',
+            packing: 'Your order is being packed',
+            shipped: 'The order has been shipped',
+            completed: 'Order completed successfully'
+          },
+          back: 'Back to List',
+          retry: 'Retry',
+          pay: 'Pay Now',
+          cancel: 'Cancel Order',
+          print: 'Print Order',
           loading: 'Loading order information...',
           error: 'An error occurred',
+          placedOn: 'Placed on',
+          errorMessages: {
+            noId: 'Order ID not found.',
+            notFound: 'Order not found.',
+            loadFailed: 'Failed to load order details.'
+          },
+          // Shared Statuses (reused by both pages)
           statuses: {
             new: 'New',
             confirmed: 'Confirmed',
             packing: 'Packing',
             shipped: 'Shipped',
             completed: 'Completed',
-            canceled: 'Canceled'
+            canceled: 'Canceled',
+            unknown: 'Unknown'
           },
           paymentStatuses: {
             init: 'Initialized',
@@ -262,7 +340,7 @@
             packing: 'Packing',
             delivering: 'Delivering',
             delivered: 'Delivered',
-            returnRequested: 'Return requested',
+            returnRequested: 'Return Requested',
             returning: 'Returning',
             returned: 'Returned'
           }
@@ -477,28 +555,106 @@
             description: 'Hoàn tất việc mua hàng của bạn bằng cách cung cấp thông tin giao hàng và thanh toán.'
           }
         },
+          // NEW: Dành cho trang danh sách đơn hàng
+        orders: {
+          title: 'Đơn hàng của tôi',
+          subtitle: 'Xem lại các đơn hàng đã đặt và hiện tại của bạn.',
+          loading: 'Đang tải danh sách đơn hàng...',
+          unknownStatus: 'Trạng thái không xác định',
+          paymentMethods: {
+            bank_transfer: 'Chuyển khoản ngân hàng',
+            cod: 'Thanh toán khi nhận hàng'
+          },
+          empty: {
+            title: 'Chưa có đơn hàng nào',
+            subtitle: 'Hãy bắt đầu mua sắm để xem đơn hàng của bạn ở đây.',
+            shopNow: 'Mua sắm ngay'
+          },
+          error: {
+            title: 'Lỗi khi tải đơn hàng',
+            loadFailed: 'Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.',
+            retryButton: 'Thử lại'
+          },
+          orderCard: {
+            orderId: 'Đơn hàng #{id}',
+            placedOn: 'Đặt ngày {date}',
+            customerInfo: 'Thông tin khách hàng',
+            name: 'Tên:',
+            company: 'Công ty:',
+            taxCode: 'Mã số thuế:',
+            paymentMethod: 'Phương thức thanh toán:',
+            products: 'Sản phẩm ({count})',
+            moreProducts: 'và {count} sản phẩm khác',
+            summary: 'Tóm tắt đơn hàng',
+            subtotal: 'Tạm tính',
+            tax: 'Thuế ({rate}%)',
+            shippingFee: 'Phí vận chuyển',
+            total: 'Tổng cộng',
+            viewDetails: 'Xem chi tiết',
+            payNow: 'Thanh toán ngay',
+            cancelOrder: 'Hủy đơn hàng',
+            continueShopping: '← Tiếp tục mua sắm'
+          },
+          meta: {
+            title: 'Đơn hàng của tôi - AgriShop',
+            description: 'Xem lịch sử đơn hàng của bạn tại AgriShop.'
+          }
+        },
+
+        // UPDATED: Dành cho trang chi tiết đơn hàng
         order: {
           title: 'Đơn hàng',
+          title_plural: 'Đơn hàng', // Dùng cho breadcrumb
           details: 'Chi tiết đơn hàng',
           customerInfo: 'Thông tin khách hàng',
+          customerName: 'Tên khách hàng',
+          company: 'Tên công ty',
+          taxCode: 'Mã số thuế',
+          paymentMethod: 'Phương thức thanh toán',
           productList: 'Sản phẩm đã đặt',
+          quantity: 'Số lượng',
+          unitPrice: 'Đơn giá',
           paymentInfo: 'Thông tin thanh toán',
+          paymentWaiting: 'Vui lòng hoàn tất thanh toán qua chuyển khoản để đơn hàng được xử lý.',
+          qrCode: 'Mã QR thanh toán',
+          qrInstruction: 'Quét mã QR bằng ứng dụng ngân hàng của bạn để hoàn tất thanh toán.',
+          paymentSuccess: 'Thanh toán thành công! Đơn hàng của bạn đang được xử lý.',
           orderSummary: 'Tóm tắt đơn hàng',
+          subtotal: 'Tạm tính',
+          tax: 'Thuế',
+          shippingFee: 'Phí vận chuyển',
+          total: 'Tổng cộng',
           actions: 'Thao tác',
           timeline: 'Trạng thái đơn hàng',
+          timelineEvents: {
+            created: 'Đơn hàng đã được đặt',
+            confirmed: 'Đơn hàng đang được xử lý',
+            packing: 'Đơn hàng của bạn đang được đóng gói',
+            shipped: 'Đơn hàng đã được vận chuyển',
+            completed: 'Đơn hàng đã hoàn thành'
+          },
           back: 'Quay lại danh sách',
+          retry: 'Thử lại',
           pay: 'Thanh toán',
           cancel: 'Hủy đơn hàng',
           print: 'In đơn hàng',
           loading: 'Đang tải thông tin đơn hàng...',
           error: 'Có lỗi xảy ra',
+          placedOn: 'Đặt ngày',
+          errorMessages: {
+            noId: 'Không tìm thấy ID đơn hàng.',
+            notFound: 'Không tìm thấy đơn hàng.',
+            loadFailed: 'Tải chi tiết đơn hàng thất bại.'
+          },
+          // Trạng thái dùng chung (cả 2 trang đều tái sử dụng)
           statuses: {
             new: 'Mới',
             confirmed: 'Đã xác nhận',
             packing: 'Đang đóng gói',
             shipped: 'Đã giao hàng',
             completed: 'Hoàn thành',
-            canceled: 'Đã hủy'
+            canceled: 'Đã hủy',
+            unknown: 'Không xác định'
           },
           paymentStatuses: {
             init: 'Đã khởi tạo',
