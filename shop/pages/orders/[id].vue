@@ -1,3 +1,4 @@
+<!-- D:\nam5ky1\ERP\AgriERP\shop\pages\orders\[id].vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -9,7 +10,8 @@ const route = useRoute();
 const router = useRouter();
 const { format } = useCurrency();
 const { getOrder } = useOrderService();
-const { t } = useI18n();
+// THAY ĐỔI: Lấy thêm 'locale' để dùng cho hàm formatDate
+const { t, locale } = useI18n();
 
 const order = ref(null);
 const loading = ref(true);
@@ -45,10 +47,12 @@ onMounted(async () => {
   }
 });
 
+// THAY ĐỔI: Sửa lại key cho nhất quán với file i18n
 const getPaymentMethodText = (method: number) => {
-  return method === 0 ? t('order.paymentMethods.bank') : t('order.paymentMethods.cod');
+  return method === 0 ? t('orders.paymentMethods.bank_transfer') : t('orders.paymentMethods.cod');
 };
 
+// --- CÁC HÀM LẤY TRẠNG THÁI NÀY ĐÃ ĐÚNG, KHÔNG CẦN THAY ĐỔI ---
 const getOrderStatusText = (status: number) => {
   const statusMap = {
     0: t('order.statuses.new'),
@@ -63,79 +67,53 @@ const getOrderStatusText = (status: number) => {
 
 const getOrderStatusColor = (status: number) => {
   const colorMap = {
-    0: 'bg-blue-100 text-blue-800',
-    1: 'bg-green-100 text-green-800',
-    2: 'bg-yellow-100 text-yellow-800',
-    3: 'bg-purple-100 text-purple-800',
-    4: 'bg-green-100 text-green-800',
-    5: 'bg-red-100 text-red-800'
+    0: 'bg-blue-100 text-blue-800', 1: 'bg-green-100 text-green-800', 2: 'bg-yellow-100 text-yellow-800',
+    3: 'bg-purple-100 text-purple-800', 4: 'bg-green-100 text-green-800', 5: 'bg-red-100 text-red-800'
   };
   return colorMap[status] || 'bg-gray-100 text-gray-800';
 };
 
 const getPaymentStatusText = (status: number) => {
   const statusMap = {
-    0: t('order.paymentStatuses.init'),
-    1: t('order.paymentStatuses.pending'),
-    2: t('order.paymentStatuses.authorized'),
-    3: t('order.paymentStatuses.captured'),
-    4: t('order.paymentStatuses.completed'),
-    5: t('order.paymentStatuses.rejected'),
-    6: t('order.paymentStatuses.error'),
-    7: t('order.paymentStatuses.canceled'),
-    8: t('order.paymentStatuses.paid')
+    0: t('order.paymentStatuses.init'), 1: t('order.paymentStatuses.pending'), 2: t('order.paymentStatuses.authorized'),
+    3: t('order.paymentStatuses.captured'), 4: t('order.paymentStatuses.completed'), 5: t('order.paymentStatuses.rejected'),
+    6: t('order.paymentStatuses.error'), 7: t('order.paymentStatuses.canceled'), 8: t('order.paymentStatuses.paid')
   };
   return statusMap[status] || t('order.statuses.unknown');
 };
 
 const getPaymentStatusColor = (status: number) => {
   const colorMap = {
-    0: 'bg-blue-100 text-blue-800',
-    1: 'bg-yellow-100 text-yellow-800',
-    2: 'bg-purple-100 text-purple-800',
-    3: 'bg-green-100 text-green-800',
-    4: 'bg-green-100 text-green-800',
-    5: 'bg-red-100 text-red-800',
-    6: 'bg-red-100 text-red-800',
-    7: 'bg-gray-100 text-gray-800',
-    8: 'bg-green-100 text-green-800'
+    0: 'bg-blue-100 text-blue-800', 1: 'bg-yellow-100 text-yellow-800', 2: 'bg-purple-100 text-purple-800',
+    3: 'bg-green-100 text-green-800', 4: 'bg-green-100 text-green-800', 5: 'bg-red-100 text-red-800',
+    6: 'bg-red-100 text-red-800', 7: 'bg-gray-100 text-gray-800', 8: 'bg-green-100 text-green-800'
   };
   return colorMap[status] || 'bg-gray-100 text-gray-800';
 };
 
 const getShippingStatusText = (status: number) => {
   const statusMap = {
-    0: t('order.shippingStatuses.placed'),
-    1: t('order.shippingStatuses.packing'),
-    2: t('order.shippingStatuses.delivering'),
-    3: t('order.shippingStatuses.delivered'),
-    4: t('order.shippingStatuses.returnRequested'),
-    5: t('order.shippingStatuses.returning'),
-    6: t('order.shippingStatuses.returned')
+    0: t('order.shippingStatuses.placed'), 1: t('order.shippingStatuses.packing'), 2: t('order.shippingStatuses.delivering'),
+    3: t('order.shippingStatuses.delivered'), 4: t('order.shippingStatuses.returnRequested'),
+    5: t('order.shippingStatuses.returning'), 6: t('order.shippingStatuses.returned')
   };
   return statusMap[status] || t('order.statuses.unknown');
 };
 
 const getShippingStatusColor = (status: number) => {
   const colorMap = {
-    0: 'bg-blue-100 text-blue-800',
-    1: 'bg-yellow-100 text-yellow-800',
-    2: 'bg-purple-100 text-purple-800',
-    3: 'bg-green-100 text-green-800',
-    4: 'bg-orange-100 text-orange-800',
-    5: 'bg-red-100 text-red-800',
+    0: 'bg-blue-100 text-blue-800', 1: 'bg-yellow-100 text-yellow-800', 2: 'bg-purple-100 text-purple-800',
+    3: 'bg-green-100 text-green-800', 4: 'bg-orange-100 text-orange-800', 5: 'bg-red-100 text-red-800',
     6: 'bg-gray-100 text-gray-800'
   };
   return colorMap[status] || 'bg-gray-100 text-gray-800';
 };
 
+// THAY ĐỔI: Sửa lại để hỗ trợ đa ngôn ngữ, không hardcode 'vi-VN'
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  const lang = locale.value === 'vi' ? 'vi-VN' : 'en-US';
+  return new Date(dateString).toLocaleDateString(lang, {
+    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 };
 
@@ -165,7 +143,7 @@ const calculateOrderTotal = (order: any) => {
         <button @click="router.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
           {{ $t('order.back') }}
         </button>
-        <button @click="window.location.reload()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg">
+        <button @click="() => { window.location.reload(); }" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg">
           {{ $t('order.retry') }}
         </button>
       </div>
@@ -260,7 +238,7 @@ const calculateOrderTotal = (order: any) => {
                   {{ $t('order.qrInstruction') }}
                 </p>
               </div>
-              <div v-else-if="order.payment_status === 1" class="text-green-600">
+              <div v-else-if="order.payment_status === 1 || order.payment_status === 8" class="text-green-600">
                 <div class="text-4xl mb-2">✅</div>
                 <p class="font-medium">{{ $t('order.paymentSuccess') }}</p>
               </div>
@@ -312,7 +290,7 @@ const calculateOrderTotal = (order: any) => {
                 {{ $t('order.cancel') }}
               </button>
               <button 
-                @click="window.print()"
+                @click="() => { window.print(); }"
                 class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium"
               >
                 {{ $t('order.print') }}
