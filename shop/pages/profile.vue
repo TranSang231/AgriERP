@@ -1,12 +1,9 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex gap-8">
-        <!-- Left Sidebar Navigation -->
         <div class="w-64 flex-shrink-0">
           <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <!-- User Profile Section -->
             <div class="p-6 border-b border-gray-100">
               <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
@@ -19,10 +16,8 @@
               </div>
             </div>
 
-            <!-- Navigation Menu -->
             <nav class="p-2">
               <div class="space-y-1">
-                <!-- Navigate Section -->
                 <div class="px-3 py-2">
                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ t('profile.sidebar.navTitle') }}</p>
                 </div>
@@ -46,10 +41,8 @@
           </div>
         </div>
 
-        <!-- Main Content Area -->
         <div class="flex-1">
           <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-100">
               <div class="flex items-center justify-between">
                 <div>
@@ -64,10 +57,8 @@
 
             <div class="p-6">
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Profile Photo Section -->
                 <div class="lg:col-span-1">
                   <div class="text-center">
-                    <!-- Profile Image -->
                     <div class="relative inline-block">
                       <div class="w-48 h-48 bg-gradient-to-br from-orange-200 via-pink-200 to-orange-300 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
                         <div v-if="!profileForm.avatar" class="text-6xl font-bold text-orange-600">{{ (profileForm.first_name || 'U')[0] }}</div>
@@ -85,9 +76,7 @@
                       </label>
                     </div>
 
-                    <!-- Password Section -->
                     <div class="mt-8 text-left">
-                      <!-- Password Change Button (Default State) -->
                       <div v-if="!showPasswordForm">
                         <button @click="togglePasswordForm" class="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -95,7 +84,6 @@
                         </button>
                       </div>
 
-                      <!-- Password Change Form (When Expanded) -->
                       <div v-else class="space-y-4">
                         <div class="flex items-center justify-between mb-4">
                           <h4 class="text-sm font-semibold text-gray-700">{{ t('profile.password.title') }}</h4>
@@ -128,14 +116,12 @@
                   </div>
                 </div>
 
-                <!-- Profile Information Section -->
                 <div class="lg:col-span-2">
                   <div class="space-y-6">
                     <div>
                       <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('profile.info.title') }}</h3>
                       <form @submit.prevent="updateProfile" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <!-- Email -->
                           <div>
                             <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.emailLabel') }}</label><button type="button" @click="toggleEdit('email')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                             <input v-model="profileForm.email" :disabled="editingField !== 'email'" type="email" placeholder="email@example.com" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'email' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
@@ -144,7 +130,6 @@
                               <button type="button" @click="cancelEdit" :disabled="loading" class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">{{ t('profile.actions.cancel') }}</button>
                             </div>
                           </div>
-                          <!-- First Name -->
                           <div>
                             <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.firstNameLabel') }}</label><button type="button" @click="toggleEdit('first_name')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                             <input v-model="profileForm.first_name" :disabled="editingField !== 'first_name'" type="text" :placeholder="t('profile.info.firstNamePlaceholder')" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'first_name' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
@@ -153,7 +138,6 @@
                               <button type="button" @click="cancelEdit" :disabled="loading" class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">{{ t('profile.actions.cancel') }}</button>
                             </div>
                           </div>
-                          <!-- Last Name -->
                           <div>
                             <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.lastNameLabel') }}</label><button type="button" @click="toggleEdit('last_name')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                             <input v-model="profileForm.last_name" :disabled="editingField !== 'last_name'" type="text" :placeholder="t('profile.info.lastNamePlaceholder')" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'last_name' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
@@ -166,7 +150,6 @@
                         <div class="border-t border-gray-100 pt-6">
                           <h4 class="text-md font-medium text-gray-900 mb-4">{{ t('profile.contact.title') }}</h4>
                           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Address -->
                             <div>
                               <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.contact.addressLabel') }}</label><button type="button" @click="toggleEdit('address')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                               <input v-model="profileForm.address" :disabled="editingField !== 'address'" type="text" :placeholder="t('profile.contact.addressPlaceholder')" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'address' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
@@ -175,7 +158,6 @@
                                 <button type="button" @click="cancelEdit" :disabled="loading" class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">{{ t('profile.actions.cancel') }}</button>
                               </div>
                             </div>
-                            <!-- Location -->
                             <div class="md:col-span-2">
                               <div class="flex items-center justify-between mb-3"><label class="block text-sm font-medium text-gray-700">{{ t('profile.contact.locationLabel') }}</label><button type="button" @click="toggleEdit('location')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -206,7 +188,6 @@
                                 <button type="button" @click="cancelEdit" :disabled="loading" class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">{{ t('profile.actions.cancel') }}</button>
                               </div>
                             </div>
-                            <!-- Phone -->
                             <div>
                               <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.contact.phoneLabel') }}</label><button type="button" @click="toggleEdit('phone')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                               <input v-model="profileForm.phone" :disabled="editingField !== 'phone'" type="tel" :placeholder="t('profile.contact.phonePlaceholder')" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'phone' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
@@ -228,7 +209,6 @@
       </div>
     </div>
 
-    <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 mt-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
@@ -256,7 +236,6 @@ const auth = useAuthStore();
 const customersService = useCustomersService();
 const { $toast } = useNuxtApp();
 
-// Reactive data
 const loading = ref(false);
 const editingField = ref<string | null>(null);
 const originalValues = ref<any>({});
