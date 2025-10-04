@@ -434,6 +434,38 @@
             passwordMismatch: 'Confirmation password does not match.',
             sessionExpired: 'Session has expired. Please log in again.'
           }
+        },
+                thanks: {
+          loading: 'Loading order information...',
+          errorTitle: 'An error occurred',
+          backToHome: 'Back to Home',
+          successTitle: 'Order placed successfully!',
+          successSubtitle: 'Thank you for your purchase. We will process your order shortly.',
+          orderInfoTitle: 'Order Information',
+          orderId: 'Order ID',
+          orderDate: 'Order Date',
+          paymentMethod: 'Payment Method',
+          status: 'Status',
+          customerInfoTitle: 'Customer Information',
+          customerName: 'Customer Name',
+          company: 'Company',
+          taxCode: 'Tax Code',
+          itemsTitle: 'Ordered Products',
+          quantity: 'Quantity:',
+          summaryTitle: 'Order Summary',
+          subtotal: 'Subtotal',
+          tax: 'Tax',
+          shippingFee: 'Shipping Fee',
+          total: 'Total',
+          paymentInfoTitle: 'Payment Information',
+          paymentPending: 'Your order is awaiting payment confirmation.',
+          paymentConfirmation: 'We will check and confirm the transaction within 24 hours.',
+          continueShopping: 'Continue Shopping',
+          printOrder: 'Print Order',
+          errorMessages: {
+            notFound: 'Order information not found.',
+            loadFailed: 'Could not load order information.'
+          }
         }
       },
          // Vietnamese translations (giữ nguyên)
@@ -856,7 +888,39 @@
             passwordMismatch: 'Mật khẩu xác nhận không khớp.',
             sessionExpired: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
           }
-        }
+        },
+                thanks: {
+          loading: 'Đang tải thông tin đơn hàng...',
+          errorTitle: 'Có lỗi xảy ra',
+          backToHome: 'Về trang chủ',
+          successTitle: 'Đặt hàng thành công!',
+          successSubtitle: 'Cảm ơn bạn đã mua hàng. Chúng tôi sẽ xử lý đơn hàng của bạn sớm nhất.',
+          orderInfoTitle: 'Thông tin đơn hàng',
+          orderId: 'Mã đơn hàng',
+          orderDate: 'Ngày đặt hàng',
+          paymentMethod: 'Phương thức thanh toán',
+          status: 'Trạng thái',
+          customerInfoTitle: 'Thông tin khách hàng',
+          customerName: 'Tên khách hàng',
+          company: 'Công ty',
+          taxCode: 'Mã số thuế',
+          itemsTitle: 'Sản phẩm đã đặt',
+          quantity: 'Số lượng:',
+          summaryTitle: 'Tóm tắt đơn hàng',
+          subtotal: 'Tạm tính',
+          tax: 'Thuế',
+          shippingFee: 'Phí vận chuyển',
+          total: 'Tổng cộng',
+          paymentInfoTitle: 'Thông tin thanh toán',
+          paymentPending: 'Đơn hàng của bạn đang chờ xác nhận thanh toán.',
+          paymentConfirmation: 'Chúng tôi sẽ kiểm tra và xác nhận giao dịch trong vòng 24 giờ.',
+          continueShopping: 'Tiếp tục mua sắm',
+          printOrder: 'In đơn hàng',
+          errorMessages: {
+            notFound: 'Không tìm thấy thông tin đơn hàng.',
+            loadFailed: 'Không thể tải thông tin đơn hàng.'
+          }
+        },
       }
     }
   }
