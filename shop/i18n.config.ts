@@ -1,5 +1,4 @@
-// D:\nam5ky1\ERP\AgriERP\shop\i18n.config.ts
-   // KHÔNG CẦN IMPORT GÌ CẢ - Module i18n tự handle
+
 
    export default () => {
      console.log('i18n.config.ts loaded');
@@ -7,14 +6,12 @@
        legacy: false,
        fallbackLocale: 'en',
        locale: 'en',
-       // Detect browser language và persist qua cookie (giữ locale sau refresh)
        detectBrowserLanguage: {
          useCookie: true,
          cookieKey: 'i18n_redirect',
-         redirectOn: 'root'  // Chỉ detect trên root, phù hợp no_prefix
+         redirectOn: 'root'  
        },
        messages: {
-         // English translations (giữ nguyên)
          en: {
            header: {
              searchPlaceholder: 'Search products...',
@@ -223,7 +220,6 @@
             description: 'Complete your purchase by providing your shipping and payment details.'
           }
         },
-           // NEW: For the orders list page
         orders: {
           title: 'My Orders',
           subtitle: 'Review your past and current orders.',
@@ -269,10 +265,9 @@
           }
         },
 
-        // UPDATED: For the single order detail page
         order: {
           title: 'Order',
-          title_plural: 'Orders', // For breadcrumb
+          title_plural: 'Orders', 
           details: 'Order Details',
           customerInfo: 'Customer Information',
           customerName: 'Customer Name',
@@ -314,7 +309,6 @@
             notFound: 'Order not found.',
             loadFailed: 'Failed to load order details.'
           },
-          // Shared Statuses (reused by both pages)
           statuses: {
             new: 'New',
             confirmed: 'Confirmed',
@@ -345,27 +339,22 @@
             returned: 'Returned'
           }
         },
-          // NEW: For the detailed profile page
         profile: {
           guest: 'Customer',
-          // Sidebar
           sidebar: {
             navTitle: 'Navigate',
             home: 'Home',
             products: 'Products',
             cart: 'Cart'
           },
-          // Main Content Header
           header: {
             title: 'Personal Profile',
             subtitle: 'Manage your account information',
             settings: 'Settings'
           },
-          // Avatar Section
           avatar: {
             upload: 'Upload Photo'
           },
-          // Password Section
           password: {
             title: 'Change Password',
             changeButton: 'Change Password',
@@ -378,7 +367,6 @@
             updateButton: 'Update Password',
             cancelButton: 'Cancel'
           },
-          // Profile Info Section
           info: {
             title: 'Personal Information',
             emailLabel: 'Email',
@@ -387,7 +375,6 @@
             lastNameLabel: 'Last Name',
             lastNamePlaceholder: 'Your last name'
           },
-          // Contact Info Section
           contact: {
             title: 'Contact Information',
             addressLabel: 'Home Address',
@@ -402,14 +389,12 @@
             phoneLabel: 'Phone Number',
             phonePlaceholder: '0123456789'
           },
-          // Actions
           actions: {
             save: 'Save',
             saving: 'Saving...',
             cancel: 'Cancel',
             processing: 'Processing...'
           },
-          // Footer
           footer: {
             copyright: '© 2024 AgriShop - Smart Agriculture',
             language: {
@@ -417,7 +402,6 @@
               english: 'English'
             }
           },
-          // Notifications (Toasts)
           notifications: {
             loadProfileError: 'Could not load profile information.',
             updateProfileSuccess: 'Profile updated successfully!',
@@ -467,7 +451,6 @@
             loadFailed: 'Could not load order information.'
           }
         },
-                // NEW: For the products list page
         products: {
           breadcrumb: {
             products: 'Products'
@@ -490,7 +473,6 @@
             description: 'Browse our wide selection of agricultural products and farming supplies.'
           }
         },
-                // NEW: For the product detail page
         productDetail: {
           loading: 'Loading product details...',
           noName: 'Untitled Product',
@@ -531,7 +513,6 @@
           }
         }
       },
-         // Vietnamese translations (giữ nguyên)
          vi: {
            header: {
              searchPlaceholder: 'Tìm kiếm sản phẩm...',
