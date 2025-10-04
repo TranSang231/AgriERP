@@ -4,15 +4,11 @@ import { useAuthStore } from '~/stores/auth'
 import { useCartService } from '~/services/cart'
 import { useCustomersService } from '~/services/customers'
 
-// Định nghĩa kiểu dữ liệu cho một item trong giỏ hàng
 export type CartItem = {
-  // id của CartItem ở backend, dùng để PATCH/DELETE
   itemId?: number
   productId: number
   name: string
-  // price: đơn giá đã áp dụng giảm (nếu có)
   price: number
-  // originalPrice: đơn giá gốc trước khi giảm
   originalPrice?: number
   qty: number
   selected: boolean
@@ -20,16 +16,13 @@ export type CartItem = {
 }
 
 export const useCartStore = defineStore('cart', () => {
-  // --- STATE ---
+  
   const items = ref<CartItem[]>([])
   const isLoading = ref(false)
   const hasLoaded = ref(false)
 
-  // --- AUTH ---
   const auth = useAuthStore()
 
-  // --- PERSISTENCE HELPERS (per user) ---
-  // Guest session id for anonymous carts
   function getGuestSessionId(): string {
     try {
       if (typeof window === 'undefined') return 'guest'
@@ -71,17 +64,14 @@ export const useCartStore = defineStore('cart', () => {
     } catch (_) {}
   }
 
-  // --- SERVICES ---
   const { getCart, addToCart, updateCartItem, removeFromCart } = useCartService()
   const { getProfile: fetchProfile } = useCustomersService()
 
-  // --- HELPERS ---
   async function ensureBackendAuthMapping(): Promise<void> {
     if (!auth.user) return
     try {
       await fetchProfile()
     } catch (_) {
-      // ignore; mapping may still be missing, API calls will fallback local
     }
   }
   function toDisplayName(name: any): string {
@@ -98,20 +88,17 @@ export const useCartStore = defineStore('cart', () => {
     }))
   }
 
-  // --- GETTERS ---
   const count = computed(() => items.value.reduce((acc, item) => acc + item.qty, 0))
   const total = computed(() => items.value.reduce((acc, item) => acc + item.price * item.qty, 0))
   const selectedItems = computed(() => items.value.filter(item => item.selected))
   const selectedCount = computed(() => selectedItems.value.reduce((acc, item) => acc + item.qty, 0))
   const selectedTotal = computed(() => selectedItems.value.reduce((acc, item) => acc + (item.price * item.qty), 0))
 
-  // --- ACTIONS ---
   
   async function load() {
     if (isLoading.value) return
     try {
       isLoading.value = true
-      // Restore from storage for current context (guest or user)
       loadFromStorage()
       if (auth.user) {
         await ensureBackendAuthMapping()
@@ -134,7 +121,6 @@ export const useCartStore = defineStore('cart', () => {
       }
       hasLoaded.value = true
     } catch (e) {
-      // giữ im lặng, tránh phá UX nếu backend chưa sẵn sàng
     } finally {
       isLoading.value = false
       saveToStorage()
@@ -173,7 +159,6 @@ export const useCartStore = defineStore('cart', () => {
       }
     } catch (_) {}
     
-    // Local (guest or backend error)
     const found = items.value.find(i => i.productId === product.productId)
     if (found) {
       found.qty += quantityToAdd
@@ -198,7 +183,6 @@ export const useCartStore = defineStore('cart', () => {
       await ensureBackendAuthMapping()
       try {
         const { error } = await removeFromCart(backendId)
-        // ignore error, vẫn xóa local để UX mượt
       } catch (_) {}
     }
     items.value = items.value.filter(i => i.productId !== productId)
@@ -215,7 +199,6 @@ export const useCartStore = defineStore('cart', () => {
       try {
         const { error } = await updateCartItem(found.itemId, qty)
         if (error?.value) {
-          // hoàn tác nếu lỗi
           found.qty = previous
         }
       } catch (_) {
@@ -258,17 +241,14 @@ export const useCartStore = defineStore('cart', () => {
     toggleItemSelected,
     toggleSelectAll,
   }
-  // React to login/logout: switch cart namespace and restore items
   async function mergeGuestCartToUserCart() {
     try {
       if (!auth.user) return
-      // Read guest cart
       const guestKey = `cart:guest:${getGuestSessionId()}`
       const raw = typeof window !== 'undefined' ? window.localStorage.getItem(guestKey) : null
       const guestItems: CartItem[] = raw ? JSON.parse(raw) : []
       if (!Array.isArray(guestItems) || guestItems.length === 0) return
 
-      // Fetch backend cart
       const { data, error } = await getCart()
       const backendItems = (!error?.value && data?.value?.items) ? data.value.items : []
       const productIdToBackend = new Map<number, any>()
@@ -277,7 +257,6 @@ export const useCartStore = defineStore('cart', () => {
         if (pid) productIdToBackend.set(pid, it)
       }
 
-      // Merge: add missing or increase qty
       for (const g of guestItems as any[]) {
         const pid = g.productId
         const qty = g.qty || 1
@@ -291,10 +270,8 @@ export const useCartStore = defineStore('cart', () => {
         }
       }
 
-      // Clear guest cart after merge
       if (typeof window !== 'undefined') window.localStorage.removeItem(guestKey)
 
-      // Reload store from backend (force clear items first to avoid stale UI)
       items.value = []
       await load()
     } catch (_) {}

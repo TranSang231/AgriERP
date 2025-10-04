@@ -17,9 +17,7 @@ export const usePromotionsStore = defineStore("promotions", {
     isLoading: false as boolean,
   }),
   actions: {
-    /**
-     * Derive highest product-level discount percent from a product object's embedded promotions
-     */
+  
     getDiscountPercentFromProductObject(product: any): number {
       try {
         if (!product || !Array.isArray((product as any).promotions)) return 0;
@@ -60,8 +58,7 @@ export const usePromotionsStore = defineStore("promotions", {
         const query = new URLSearchParams({
           "start__lte": now,
           "end__gte": now,
-          // fetch all active promotions; server will return both types
-          // we'll only use product-level discounts
+        
         });
         const res = await fetch(`/api/ecommerce/promotions?${query.toString()}`);
         if (!res.ok) return;
@@ -78,7 +75,6 @@ export const usePromotionsStore = defineStore("promotions", {
         this.productIdToDiscountPercent = map;
         this.loadedAt = new Date();
       } catch (e) {
-        // swallow errors for storefront
       } finally {
         this.isLoading = false;
       }
