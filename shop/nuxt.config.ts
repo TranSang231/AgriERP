@@ -1,5 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-// https://nuxt.com/docs/api/nuxt-config
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
@@ -42,16 +40,32 @@ export default defineNuxtConfig({
   modules: [
     ['@nuxtjs/i18n', {
       strategy: 'no_prefix',
+      locales: [
+        {
+          code: 'en',
+          name: 'English'
+        },
+        {
+          code: 'vi',
+          name: 'Tiếng Việt'
+        }
+      ],
       defaultLocale: 'en',
-      vueI18n: './i18n.config.ts',
-      bundle: { optimizeTranslationDirective: false },
+      vueI18n: '~/i18n.config.ts',  // Giữ nguyên: Load config từ file
+      // THÊM: Các options bổ sung cho SPA và persist
+      lazyMessages: false,  // Load messages ngay (không lazy để tránh delay)
+      // Sửa lỗi cảnh báo bundle.optimizeTranslationDirective:
+      bundle: {
+        optimizeTranslationDirective: false
+      },
+      // THÊM: Lang detection từ cookie (hỗ trợ detectBrowserLanguage trong config)
+      langDetectionRedirect: false  // Không redirect, chỉ switch locale
     }],
     ['@pinia/nuxt', { storesDirs: ['./stores/**'] }],
     ['@pinia-plugin-persistedstate/nuxt', { storage: 'localStorage' }],
     'nuxt-svgo',
     'nuxt-lodash',
   ],
-
 
   svgo: {
     defaultImport: 'component',
@@ -64,7 +78,18 @@ export default defineNuxtConfig({
     upperAfterPrefix: false,
   },
 
-  compatibilityDate: '2025-02-19'
+  compatibilityDate: '2025-02-19',
+
+  hooks: {
+    'modules:done'() {
+      console.log('i18n module configuration applied:', {
+        locales: [
+          { code: 'en', name: 'English' },
+          { code: 'vi', name: 'Tiếng Việt' }
+        ],
+        defaultLocale: 'en',
+        vueI18n: '~/i18n.config.ts'
+      });
+    }
+  }
 })
-
-

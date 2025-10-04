@@ -6,24 +6,23 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 class="text-4xl md:text-6xl font-bold mb-6">
-              Quality Agricultural Products
+              {{ $t('home.heroTitle') }}
             </h1>
             <p class="text-xl mb-8 opacity-90">
-              Discover premium farming supplies, seeds, tools, and equipment for
-              modern agriculture.
+              {{ $t('home.heroSubtitle') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4">
               <NuxtLink
                 to="/products"
                 class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-center"
               >
-                Shop Now
+                {{ $t('home.shopNow') }}
               </NuxtLink>
               <NuxtLink
                 to="/categories"
                 class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors text-center"
               >
-                Browse Categories
+                {{ $t('home.browseCategories') }}
               </NuxtLink>
             </div>
           </div>
@@ -33,9 +32,9 @@
             >
               <div class="text-center">
                 <div class="text-6xl mb-4">🌾</div>
-                <div class="text-xl font-semibold">Premium Agriculture</div>
+                <div class="text-xl font-semibold">{{ $t('home.premiumAgriculture') }}</div>
                 <div class="text-sm opacity-80">
-                  Quality Products & Equipment
+                  {{ $t('home.qualityProducts') }}
                 </div>
               </div>
             </div>
@@ -49,11 +48,10 @@
       <div class="container mx-auto px-4">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900 mb-4">
-            Why Choose AgriShop?
+            {{ $t('home.whyChoose') }}
           </h2>
           <p class="text-gray-600 max-w-2xl mx-auto">
-            We provide everything you need for successful farming with quality
-            products and expert support.
+            {{ $t('home.whyChooseSubtitle') }}
           </p>
         </div>
 
@@ -76,10 +74,9 @@
                 ></path>
               </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Quality Guaranteed</h3>
+            <h3 class="text-xl font-semibold mb-2">{{ $t('home.features.quality.title') }}</h3>
             <p class="text-gray-600">
-              Premium products tested and verified for optimal performance in
-              agricultural applications.
+              {{ $t('home.features.quality.description') }}
             </p>
           </div>
 
@@ -101,10 +98,9 @@
                 ></path>
               </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Fast Delivery</h3>
+            <h3 class="text-xl font-semibold mb-2">{{ $t('home.features.delivery.title') }}</h3>
             <p class="text-gray-600">
-              Quick and reliable shipping to get your agricultural supplies when
-              you need them most.
+              {{ $t('home.features.delivery.description') }}
             </p>
           </div>
 
@@ -126,10 +122,9 @@
                 ></path>
               </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Expert Support</h3>
+            <h3 class="text-xl font-semibold mb-2">{{ $t('home.features.support.title') }}</h3>
             <p class="text-gray-600">
-              Professional guidance from agricultural experts to help you make
-              the right choices.
+              {{ $t('home.features.support.description') }}
             </p>
           </div>
         </div>
@@ -141,10 +136,10 @@
       <div class="container mx-auto px-4">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900 mb-4">
-            Shop by Category
+            {{ $t('home.shopByCategory.title') }}
           </h2>
           <p class="text-gray-600">
-            Find exactly what you need for your farming operation
+            {{ $t('home.shopByCategory.subtitle') }}
           </p>
         </div>
 
@@ -188,7 +183,7 @@
             to="/categories"
             class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold"
           >
-            View All Categories
+            {{ $t('home.viewAllCategories') }}
             <svg
               class="ml-2 w-4 h-4"
               fill="none"
@@ -212,10 +207,10 @@
       <div class="container mx-auto px-4">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900 mb-4">
-            Featured Products
+            {{ $t('home.featuredProducts.title') }}
           </h2>
           <p class="text-gray-600">
-            Popular items trusted by farmers worldwide
+            {{ $t('home.featuredProducts.subtitle') }}
           </p>
         </div>
 
@@ -235,7 +230,7 @@
             to="/products"
             class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
           >
-            View All Products
+            {{ $t('home.viewAllProducts') }}
           </NuxtLink>
         </div>
       </div>
@@ -243,15 +238,15 @@
     <!-- Newsletter Section -->
     <section class="py-16 bg-green-600 text-white">
       <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold mb-4">Stay Updated</h2>
+        <h2 class="text-3xl font-bold mb-4">{{ $t('home.newsletter.title') }}</h2>
         <p class="text-xl mb-8 opacity-90">
-          Get the latest news about agricultural products and farming tips
+          {{ $t('home.newsletter.subtitle') }}
         </p>
         <div class="max-w-md mx-auto flex gap-2">
           <input
             v-model="newsletterForm.email"
             type="email"
-            placeholder="Enter your email"
+            :placeholder="$t('home.newsletter.placeholder')"
             class="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
             :disabled="newsletterForm.loading"
           />
@@ -261,7 +256,7 @@
             class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="newsletterForm.loading">...</span>
-            <span v-else>Subscribe</span>
+            <span v-else>{{ $t('home.newsletter.subscribeButton') }}</span>
           </button>
         </div>
       </div>
@@ -271,19 +266,22 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from "vue";
+import { useI18n } from 'vue-i18n';
 import { useProductsService } from "~/services/products";
 import type { Product, ProductCategory } from "~/services/products";
 
 import ProductCard from "@/components/ProductCard.vue";
 
+// Access the t function
+const { t } = useI18n();
+
 // SEO Meta
 useHead({
-  title: "AgriShop - Quality Agricultural Products",
+  title: t('home.meta.title'),
   meta: [
     {
       name: "description",
-      content:
-        "Discover premium farming supplies, seeds, tools, and equipment for modern agriculture at AgriShop.",
+      content: t('home.meta.description'),
     },
   ],
 });
