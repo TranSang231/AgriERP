@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useCurrency } from '~/composables/useCurrency'
 import { useCartStore } from '~/stores/cart'
 import { useApi } from '~/services/api'
 
+const { t } = useI18n()
 const cart = useCartStore()
 const { format } = useCurrency()
 const route = useRoute()
@@ -29,21 +31,21 @@ onMounted(async () => {
     if (data?.value) {
       product.value = data.value
     } else {
-      throw new Error('Không tìm thấy sản phẩm')
+      throw new Error(t('productDetail.error.notFound'))
     }
   } catch (e: any) {
     console.error('Lỗi khi tải sản phẩm:', e)
-    error.value = e?.message || 'Không thể tải thông tin sản phẩm'
+    error.value = e?.message || t('productDetail.error.loadFailed')
   } finally {
     loading.value = false
   }
 })
 
 const productName = computed(() => {
-  if (!product.value?.name) return 'Không có tên'
+  if (!product.value?.name) return t('productDetail.noName')
   return typeof product.value.name === 'string' 
     ? product.value.name 
-    : product.value.name.origin || 'Không có tên'
+    : product.value.name.origin || t('productDetail.noName')
 })
 
 const productDescription = computed(() => {
@@ -54,10 +56,10 @@ const productDescription = computed(() => {
 })
 
 const productUnit = computed(() => {
-  if (!product.value?.unit) return 'Cái'
+  if (!product.value?.unit) return t('productDetail.defaultUnit')
   return typeof product.value.unit === 'string' 
     ? product.value.unit 
-    : product.value.unit.origin || 'Cái'
+    : product.value.unit.origin || t('productDetail.defaultUnit')
 })
 
 const productImages = computed(() => {
@@ -72,7 +74,7 @@ const productCategories = computed(() => {
     return []
   }
   return product.value.categories.map(cat => 
-    typeof cat === 'string' ? cat : cat.name?.origin || cat.name || 'Không xác định'
+    typeof cat === 'string' ? cat : cat.name?.origin || cat.name || t('productDetail.unknownCategory')
   )
 })
 
@@ -82,9 +84,8 @@ const isInStock = computed(() => {
 
 const stockStatus = computed(() => {
   const stock = product.value?.in_stock || 0
-  if (stock === 0) return { text: 'Hết hàng', color: 'text-red-600' }
-  if (stock < 10) return { text: `Còn ${stock} ${productUnit.value}`, color: 'text-orange-600' }
-  return { text: `Còn ${stock} ${productUnit.value}`, color: 'text-green-600' }
+  if (stock === 0) return { text: t('productDetail.stock.outOfStock'), color: 'text-red-600' }
+  return { text: t('productDetail.stock.inStock', { count: stock, unit: productUnit.value }), color: 'text-green-600' }
 })
 
 function addToCart() {
@@ -98,7 +99,7 @@ function addToCart() {
     image: productImages.value[0]
   })
   
-  alert(`Đã thêm ${quantity.value} ${productUnit.value} vào giỏ hàng!`)
+  alert(t('productDetail.notifications.addedToCart', { count: quantity.value, unit: productUnit.value }))
 }
 
 const increaseQuantity = () => {
@@ -113,6 +114,18 @@ const decreaseQuantity = () => {
     quantity.value--
   }
 }
+
+// SEO
+useHead({
+  title: () => t('productDetail.meta.title', { productName: productName.value }),
+  meta: [
+    {
+      name: 'description',
+      content: () => t('productDetail.meta.description', { productName: productName.value }),
+    },
+  ],
+})
+
 </script>
 
 <template>
@@ -120,16 +133,16 @@ const decreaseQuantity = () => {
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-      <p class="mt-4 text-gray-600">Đang tải thông tin sản phẩm...</p>
+      <p class="mt-4 text-gray-600">{{ $t('productDetail.loading') }}</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="text-center py-12">
       <div class="text-red-500 text-6xl mb-4">⚠️</div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">Có lỗi xảy ra</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ $t('productDetail.error.title') }}</h2>
       <p class="text-gray-600 mb-6">{{ error }}</p>
       <button @click="$router.back()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg">
-        Quay lại
+        {{ $t('productDetail.actions.back') }}
       </button>
     </div>
 
@@ -138,7 +151,7 @@ const decreaseQuantity = () => {
       <!-- Breadcrumb -->
       <nav class="mb-6">
         <div class="flex items-center space-x-2 text-sm text-gray-500">
-          <NuxtLink to="/" class="hover:text-orange-600">Trang chủ</NuxtLink>
+          <NuxtLink to="/" class="hover:text-orange-600">{{ $t('cart.breadcrumb.home') }}</NuxtLink>
           <span>›</span>
           <span>{{ productName }}</span>
         </div>
@@ -166,7 +179,7 @@ const decreaseQuantity = () => {
               <span :class="['text-sm font-medium', stockStatus.color]">
                 {{ stockStatus.text }}
               </span>
-              <span class="text-sm text-gray-500">Đơn vị: {{ productUnit }}</span>
+              <span class="text-sm text-gray-500">{{ $t('productDetail.unitLabel') }} {{ productUnit }}</span>
             </div>
           </div>
 
@@ -180,7 +193,7 @@ const decreaseQuantity = () => {
 
           <!-- Categories -->
           <div v-if="productCategories.length > 0">
-            <h3 class="text-sm font-medium text-gray-700 mb-2">Danh mục:</h3>
+            <h3 class="text-sm font-medium text-gray-700 mb-2">{{ $t('productDetail.categoriesLabel') }}</h3>
             <div class="flex flex-wrap gap-2">
               <span 
                 v-for="category in productCategories" 
@@ -194,7 +207,7 @@ const decreaseQuantity = () => {
 
           <!-- Quantity Selector -->
           <div v-if="isInStock">
-            <h3 class="text-sm font-medium text-gray-700 mb-2">Số lượng:</h3>
+            <h3 class="text-sm font-medium text-gray-700 mb-2">{{ $t('productDetail.quantityLabel') }}</h3>
             <div class="flex items-center space-x-3">
               <button 
                 @click="decreaseQuantity"
@@ -226,13 +239,13 @@ const decreaseQuantity = () => {
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               ]"
             >
-              {{ isInStock ? 'Thêm vào giỏ hàng' : 'Hết hàng' }}
+              {{ isInStock ? $t('productDetail.actions.addToCart') : $t('productDetail.stock.outOfStock') }}
             </button>
           </div>
 
           <!-- Product Description -->
           <div v-if="productDescription">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mô tả sản phẩm</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ $t('productDetail.descriptionTitle') }}</h3>
             <div class="prose max-w-none">
               <p class="text-gray-700 leading-relaxed">{{ productDescription }}</p>
             </div>
@@ -242,38 +255,38 @@ const decreaseQuantity = () => {
 
       <!-- Product Specifications -->
       <div class="mt-16">
-        <h2 class="text-2xl font-bold text-gray-900 mb-8">Thông số kỹ thuật</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-8">{{ $t('productDetail.specificationsTitle') }}</h2>
         <div class="bg-white rounded-lg border p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Giá bán</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">{{ $t('productDetail.specs.price') }}</h3>
               <p class="text-lg font-semibold text-gray-900">{{ format(product.price || 0) }}</p>
             </div>
             
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Đơn vị</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">{{ $t('productDetail.specs.unit') }}</h3>
               <p class="text-lg font-semibold text-gray-900">{{ productUnit }}</p>
             </div>
             
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Tồn kho</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">{{ $t('productDetail.specs.stock') }}</h3>
               <p class="text-lg font-semibold text-gray-900">{{ product.in_stock || 0 }} {{ productUnit }}</p>
             </div>
             
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Kích thước</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">{{ $t('productDetail.specs.dimensions') }}</h3>
               <p class="text-lg font-semibold text-gray-900">
                 {{ product.length || 0 }} × {{ product.width || 0 }} × {{ product.height || 0 }} cm
               </p>
             </div>
             
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Trọng lượng</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">{{ $t('productDetail.specs.weight') }}</h3>
               <p class="text-lg font-semibold text-gray-900">{{ product.weight || 0 }} kg</p>
             </div>
             
             <div>
-              <h3 class="text-sm font-medium text-gray-500 mb-1">Thuế VAT</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-1">{{ $t('productDetail.specs.vat') }}</h3>
               <p class="text-lg font-semibold text-gray-900">{{ product.tax_rate || 0 }}%</p>
             </div>
           </div>
@@ -282,5 +295,4 @@ const decreaseQuantity = () => {
     </div>
   </div>
 </template>
-
 

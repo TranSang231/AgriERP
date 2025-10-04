@@ -466,6 +466,69 @@
             notFound: 'Order information not found.',
             loadFailed: 'Could not load order information.'
           }
+        },
+                // NEW: For the products list page
+        products: {
+          breadcrumb: {
+            products: 'Products'
+          },
+          title: 'Products',
+          productsFound: '{count} products found',
+          filters: 'Filters',
+          showingCount: 'Showing {shown} of {total} products',
+          sortBy: 'Sort by:',
+          sortOptions: {
+            default: 'Default',
+            nameAsc: 'Name (A-Z)',
+            nameDesc: 'Name (Z-A)',
+            priceAsc: 'Price (Low to High)',
+            priceDesc: 'Price (High to Low)',
+            newest: 'Newest'
+          },
+          meta: {
+            title: 'Products - AgriShop',
+            description: 'Browse our wide selection of agricultural products and farming supplies.'
+          }
+        },
+                // NEW: For the product detail page
+        productDetail: {
+          loading: 'Loading product details...',
+          noName: 'Untitled Product',
+          defaultUnit: 'item',
+          unknownCategory: 'Uncategorized',
+          unitLabel: 'Unit:',
+          categoriesLabel: 'Categories:',
+          quantityLabel: 'Quantity:',
+          descriptionTitle: 'Product Description',
+          specificationsTitle: 'Technical Specifications',
+          stock: {
+            outOfStock: 'Out of Stock',
+            inStock: 'In stock ({count} {unit})'
+          },
+          actions: {
+            back: 'Go Back',
+            addToCart: 'Add to Cart',
+          },
+          error: {
+            title: 'An error occurred',
+            notFound: 'Product not found.',
+            loadFailed: 'Could not load product details.',
+          },
+          specs: {
+            price: 'Price',
+            unit: 'Unit',
+            stock: 'In Stock',
+            dimensions: 'Dimensions',
+            weight: 'Weight',
+            vat: 'VAT Rate',
+          },
+          notifications: {
+            addedToCart: 'Added {count} {unit} of {productName} to your cart!',
+          },
+          meta: {
+            title: '{productName} - AgriShop',
+            description: 'View details for {productName}. Find high-quality agricultural supplies at AgriShop.'
+          }
         }
       },
          // Vietnamese translations (giữ nguyên)
@@ -921,6 +984,69 @@
             loadFailed: 'Không thể tải thông tin đơn hàng.'
           }
         },
+                // NEW: Dành cho trang danh sách sản phẩm
+        products: {
+          breadcrumb: {
+            products: 'Sản phẩm'
+          },
+          title: 'Sản phẩm',
+          productsFound: 'Tìm thấy {count} sản phẩm',
+          filters: 'Bộ lọc',
+          showingCount: 'Hiển thị {shown} trên {total} sản phẩm',
+          sortBy: 'Sắp xếp theo:',
+          sortOptions: {
+            default: 'Mặc định',
+            nameAsc: 'Tên (A-Z)',
+            nameDesc: 'Tên (Z-A)',
+            priceAsc: 'Giá (Thấp đến Cao)',
+            priceDesc: 'Giá (Cao đến Thấp)',
+            newest: 'Mới nhất'
+          },
+          meta: {
+            title: 'Sản phẩm - AgriShop',
+            description: 'Duyệt qua danh sách đa dạng các sản phẩm nông nghiệp và vật tư canh tác của chúng tôi.'
+          }
+        },
+                // NEW: Dành cho trang chi tiết sản phẩm
+        productDetail: {
+          loading: 'Đang tải thông tin sản phẩm...',
+          noName: 'Không có tên',
+          defaultUnit: 'Cái',
+          unknownCategory: 'Không xác định',
+          unitLabel: 'Đơn vị:',
+          categoriesLabel: 'Danh mục:',
+          quantityLabel: 'Số lượng:',
+          descriptionTitle: 'Mô tả sản phẩm',
+          specificationsTitle: 'Thông số kỹ thuật',
+          stock: {
+            outOfStock: 'Hết hàng',
+            inStock: 'Còn {count} {unit}'
+          },
+          actions: {
+            back: 'Quay lại',
+            addToCart: 'Thêm vào giỏ hàng',
+          },
+          error: {
+            title: 'Có lỗi xảy ra',
+            notFound: 'Không tìm thấy sản phẩm.',
+            loadFailed: 'Không thể tải thông tin sản phẩm.',
+          },
+          specs: {
+            price: 'Giá bán',
+            unit: 'Đơn vị',
+            stock: 'Tồn kho',
+            dimensions: 'Kích thước',
+            weight: 'Trọng lượng',
+            vat: 'Thuế VAT',
+          },
+          notifications: {
+            addedToCart: 'Đã thêm {count} {unit} sản phẩm {productName} vào giỏ hàng!',
+          },
+          meta: {
+            title: '{productName} - AgriShop',
+            description: 'Xem chi tiết sản phẩm {productName}. Tìm các vật tư nông nghiệp chất lượng cao tại AgriShop.'
+          }
+        }
       }
     }
   }
