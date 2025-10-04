@@ -2,7 +2,6 @@
   <div class="bg-white rounded-lg shadow-sm border p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">Filters</h3>
 
-    <!-- Search -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
       <input
@@ -14,7 +13,6 @@
       />
     </div>
 
-    <!-- Categories -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-gray-700 mb-2"
         >Category</label
@@ -35,7 +33,6 @@
       </select>
     </div>
 
-    <!-- Price Range -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-gray-700 mb-2"
         >Price Range</label
@@ -58,7 +55,6 @@
       </div>
     </div>
 
-    <!-- Sort -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-gray-700 mb-2"
         >Sort By</label
@@ -78,7 +74,6 @@
       </select>
     </div>
 
-    <!-- Clear Filters -->
     <button
       @click="clearFilters"
       class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-md transition-colors duration-200"
@@ -107,7 +102,6 @@ const emit = defineEmits<{
 
 const localFilters = ref<ProductFilter>({ ...props.filters });
 
-// Watch for external filter changes
 watch(
   () => props.filters,
   (newFilters) => {
