@@ -2,7 +2,6 @@
   <div
     class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
   >
-      <!-- Product Image -->
       <div class="relative overflow-hidden aspect-square">
         <NuxtLink :to="`/products/${product.id}`" class="block">
           <img
@@ -13,7 +12,6 @@
           />
         </NuxtLink>
 
-      <!-- Sale Badge -->
       <div
         v-if="effectiveSalePrice < product.price"
         class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs font-semibold rounded"
@@ -21,7 +19,6 @@
         -{{ discountPercentage }}%
       </div>
 
-      <!-- Quick Action Buttons -->
       <div
         class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       >
@@ -74,14 +71,11 @@
       </div>
     </div>
 
-    <!-- Product Info -->
     <div class="p-4">
-      <!-- Category -->
       <div class="text-xs text-gray-500 mb-1">
         {{ product.categories?.[0]?.name?.origin || product.category?.name || '' }}
       </div>
 
-      <!-- Product Name -->
       <h3
         class="font-semibold text-gray-800 mb-2 line-clamp-2 hover:text-orange-500 transition-colors cursor-pointer"
       >
@@ -90,7 +84,6 @@
         </NuxtLink>
       </h3>
 
-      <!-- Rating -->
       <div v-if="product.rating" class="flex items-center mb-2">
         <div class="flex items-center">
           <span
@@ -129,7 +122,6 @@
           </span>
         </div>
 
-        <!-- Stock Info -->
         <div class="text-xs text-gray-500">Stock: {{ product.in_stock ?? product.stock }}</div>
       </div>
     </div>
@@ -178,10 +170,8 @@ watch(
 );
 
 const productLevelDiscountPercent = computed(() => {
-  // Prefer discount derived from embedded product.promotions
   const fromEmbedded = promotionsStore.getDiscountPercentFromProductObject(props.product as any);
   if (fromEmbedded && fromEmbedded > 0) return fromEmbedded;
-  // Fallback: map loaded from backend list endpoint
   return promotionsStore.getProductDiscountPercent(props.product.id);
 });
 
@@ -216,7 +206,6 @@ const addToCart = () => {
       qty: 1,
       image: props.product.thumbnail || primaryImage.value,
     });
-    // Show success message (you can add toast notification here)
   }
 };
 
