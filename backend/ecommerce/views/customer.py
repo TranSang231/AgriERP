@@ -77,7 +77,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         first_name = data.get("first_name")
         last_name = data.get("last_name")
         user = data.get("user", None)
-        # only create user after they verify their email
         if user is not None:
             del data['user']
         try:
@@ -118,16 +117,14 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         if len(password) < 6:
             return Response({"detail": "Password must be at least 6 characters."}, status=HTTP_400_BAD_REQUEST)
         
-        # Check if customer already exists
         try:
             customer = Customer.objects.get(email=email)
             return Response({"detail": "A customer account with that email already exists."}, status=HTTP_400_BAD_REQUEST)
         except Customer.DoesNotExist:
-            pass  # Customer doesn't exist, which is what we want
+            pass  
         
         try:
             with transaction.atomic():
-                # Create user if not exists
                 try:
                     user = User.objects.get(email=email)
                     return Response({"detail": "User with this email already exists."}, status=HTTP_400_BAD_REQUEST)
@@ -139,7 +136,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                         last_name=last_name or ""
                     )
                 
-                # Create customer
                 customer = Customer.objects.create(
                     user=user,
                     email=email,
@@ -148,7 +144,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                     status=AccountStatus.ACTIVE
                 )
                 
-                # Return simple success without token for now (to avoid OAuth complexity)
                 customer_serializer = CustomerSerializer(customer)
                 return Response({
                     "message": _("Registration successful! Please log in."),
@@ -191,7 +186,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         last_name = data.get('last_name')
 
         try:
-            # Check if the token were isssued to the right people
             token_payload = Verification.decode_token(token)
             token_email = token_payload.get('email')
             if email is not None and token_email != email:
@@ -216,7 +210,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         except User.DoesNotExist:
             user = None
 
-        # If the customer were created by our employees, just set password, other information have been filled.
         if customer_id is not None:
             try:
                 customer = Customer.objects.get(pk=customer_id)
@@ -252,7 +245,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
     
     @action(detail=False, methods=[Http.HTTP_POST], url_path="login", permission_classes=[AllowAny], authentication_classes=[])
     def login(self, request, pk=None):
-        # Get data from JSON or POST
         username = request.data.get("username") or request.POST.get("username")
         password = request.data.get("password") or request.POST.get("password")
         
@@ -261,7 +253,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         
         print(f"Login attempt - username: {username}, password: {password}")
         
-        # Check if user exists and password is correct
         try:
             user = User.objects.prefetch_related("customers").get(email=username)
             print(f"Found user: {user.email}, id: {user.id}")
@@ -272,7 +263,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
         
-        # Verify password
         password_check = user.check_password(password)
         print(f"Password check result: {password_check}")
         print(f"User password hash: {user.password}")
@@ -284,7 +274,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
         
-        # Check if user has customer account
         customer = user.customers.first()
         if not customer:
             return Response(
@@ -298,16 +287,13 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
         
-        # For development, return simple token (you can replace with JWT or session)
         import secrets
         simple_token = secrets.token_urlsafe(32)
         
-        # Store token in session or cache if needed
         request.session['customer_id'] = str(customer.id)
         request.session['user_id'] = str(user.id)
         request.session.save()  # Force save session
         
-        # Store token mapping in Django cache for cross-origin requests
         from django.core.cache import cache
         cache.set(f'customer_token_{simple_token}', str(customer.id), timeout=3600)  # 1 hour
         print(f"Stored token mapping in cache: customer_token_{simple_token} -> {customer.id}")
@@ -364,7 +350,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         refresh_token = request.POST.get("refresh_token")
         access_token = request.POST.get("access_token")
 
-        # revoke refresh_token first, to make user can not renew access_token
         request.POST.update(
             {
                 "client_id": BUSINESS_CLIENT_ID,
@@ -380,7 +365,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        # revoke access_token
         request.POST.update(
             {
                 "token_type_hint": "access_token",
@@ -394,7 +378,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        # flush session to prevent stale auth
         try:
             request.session.flush()
         except Exception as e:
@@ -457,7 +440,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             print(f"Userinfo request session: {dict(request.session)}")
             print(f"Userinfo request cookies: {request.COOKIES}")
             
-            # Prefer Authorization header first
             customer_id = None
             auth_header = request.META.get('HTTP_AUTHORIZATION')
             if auth_header and auth_header.startswith('Bearer '):
@@ -468,7 +450,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 customer_id = cache.get(cache_key)
                 print(f"Userinfo: Found customer_id from cache: {customer_id}")
 
-            # Fallback to session
             if not customer_id:
                 customer_id = request.session.get('customer_id')
             
@@ -494,7 +475,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             print(f"Profile update session: {request.session.get('customer_id')}")
             print(f"Authorization header: {request.META.get('HTTP_AUTHORIZATION')}")
             
-            # Prefer Authorization header first
             customer_id = None
             auth_header = request.META.get('HTTP_AUTHORIZATION')
             if auth_header and auth_header.startswith('Bearer '):
@@ -509,7 +489,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
                 else:
                     print(f"Token {token} not found in cache")
             
-            # Fallback to session
             if not customer_id:
                 customer_id = request.session.get('customer_id')
             
@@ -518,7 +497,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             
             customer = Customer.objects.get(id=customer_id)
             
-            # Update customer fields
             customer.first_name = request.data.get("first_name", customer.first_name)
             customer.last_name = request.data.get("last_name", customer.last_name)
             customer.phone = request.data.get("phone", customer.phone)
@@ -530,18 +508,15 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             customer.date_of_birth = request.data.get("date_of_birth", customer.date_of_birth)
             customer.gender = request.data.get("gender", customer.gender)
             
-            # Update email if provided
             if request.data.get("email"):
                 customer.email = request.data.get("email")
             
             customer.save()
             
-            # Update user fields if user exists
             if customer.user:
                 user = customer.user
                 user.first_name = request.data.get("first_name", user.first_name)
                 user.last_name = request.data.get("last_name", user.last_name)
-                # Update email if provided
                 if request.data.get("email"):
                     user.email = request.data.get("email")
                 user.save()
@@ -563,7 +538,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         try:
             print(f"Change password request data: {request.data}")
             
-            # Prefer Authorization Bearer token mapped in cache, fallback to session
             customer_id = None
             auth_header = request.META.get('HTTP_AUTHORIZATION')
             if auth_header and auth_header.startswith('Bearer '):
@@ -579,23 +553,18 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             customer = Customer.objects.get(id=customer_id)
             user = customer.user
             
-            # Get passwords from request
             current_password = request.data.get("current_password")
             new_password = request.data.get("new_password")
             
-            # Validation
             if not current_password or not new_password:
                 return Response({"error": _("Current password and new password are required")}, status=HTTP_400_BAD_REQUEST)
             
-            # Verify current password
             if not user.check_password(current_password):
                 return Response({"error": _("Current password is incorrect")}, status=HTTP_400_BAD_REQUEST)
             
-            # Validate new password length
             if len(new_password) < 6:
                 return Response({"error": _("New password must be at least 6 characters")}, status=HTTP_400_BAD_REQUEST)
             
-            # Update password
             user.set_password(new_password)
             user.save()
             
@@ -619,7 +588,6 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             if not customer:
                 return Response({"error": _("Customer not found")}, status=HTTP_404_NOT_FOUND)
             
-            # Customer scopes
             scopes = ['ecommerce:orders:view-mine', 'ecommerce:orders:edit-mine', 'ecommerce:products:view']
             return Response({"scopes": scopes}, status=HTTP_200_OK)
         except Exception as e:

@@ -15,13 +15,10 @@ class CartViewSet(BaseViewSet):
         "customer__last_name": "icontains"
     }
     serializer_class = CartSerializer
-    # Temporarily allow without OAuth scopes during development
     permission_classes = [AllowAny]
     required_alternate_scopes = {}
 
-    # ----- Helpers -----
     def _get_current_customer(self, request):
-        # Prefer Authorization bearer mapping (same approach as customer userinfo)
         customer_id = None
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         if auth_header and auth_header.startswith('Bearer '):
@@ -32,7 +29,6 @@ class CartViewSet(BaseViewSet):
             except Exception:
                 customer_id = None
 
-        # Fallback to session
         if not customer_id:
             try:
                 customer_id = request.session.get('customer_id')
@@ -45,27 +41,22 @@ class CartViewSet(BaseViewSet):
             except Customer.DoesNotExist:
                 return None
 
-        # As a final fallback, use authenticated Django user if present
         user = getattr(request, "user", None)
         if user and getattr(user, 'is_authenticated', False):
             return Customer.objects.filter(user=user).first()
 
-        # No identified customer
         return None
 
     def _get_or_create_cart(self, customer):
         if customer is None:
-            # If there is no customer, return None to avoid creating unusable carts
             return None
         cart, _ = Cart.objects.get_or_create(customer=customer)
         return cart
 
-    # ----- Overrides for cart behavior -----
     def list(self, request, *args, **kwargs):
         customer = self._get_current_customer(request)
         cart = self._get_or_create_cart(customer)
         if cart is None:
-            # No customer -> empty cart response
             data = CartSerializer(instance=Cart(), context=self.get_serializer_context()).data
             data.update({"items": []})
             return Response(data, status=status.HTTP_200_OK)
@@ -73,7 +64,6 @@ class CartViewSet(BaseViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
-        # Keep default behavior: retrieve a specific cart if needed
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -100,7 +90,6 @@ class CartViewSet(BaseViewSet):
 
         product = get_object_or_404(Product, pk=product_id)
 
-        # Merge behavior: if item exists, increase quantity
         origin_price = getattr(product, "sale_price", None)
         if origin_price is None:
             origin_price = getattr(product, "price", 0) or 0
