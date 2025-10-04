@@ -1,6 +1,5 @@
 <template>
   <div class="container mx-auto px-4">
-    <!-- Loading State -->
     <div
       v-if="loading"
       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
@@ -19,7 +18,6 @@
       </div>
     </div>
 
-    <!-- Products Grid -->
     <div
       v-else-if="products.length > 0"
       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
@@ -31,7 +29,6 @@
       />
     </div>
 
-    <!-- Empty State -->
     <div v-else class="text-center py-12">
       <div class="text-gray-400 text-6xl mb-4">📦</div>
       <h3 class="text-xl font-semibold text-gray-700 mb-2">
@@ -40,7 +37,6 @@
       <p class="text-gray-500">Try adjusting your search or filter criteria</p>
     </div>
 
-    <!-- Load More Button -->
     <div v-if="hasMore && !loading" class="text-center mt-8">
       <button
         @click="loadMore"

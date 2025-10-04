@@ -5,7 +5,6 @@
     </div>
 
     <div class="p-4">
-      <!-- All Products -->
       <button
         @click="selectCategory(null)"
         :class="[
@@ -18,7 +17,6 @@
         All Products
       </button>
 
-      <!-- Categories -->
       <div class="max-h-64 overflow-y-auto pr-1">
         <button
           v-for="category in categories"

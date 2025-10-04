@@ -1,16 +1,12 @@
-<!-- D:\nam5ky1\ERP\AgriERP\shop\layouts\default.vue -->
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
-          <!-- Logo -->
           <NuxtLink to="/" class="text-2xl font-bold text-orange-600">
             AgriShop
           </NuxtLink>
 
-          <!-- Search Bar -->
           <div class="flex-1 max-w-lg mx-8">
             <div class="relative">
               <input
@@ -36,12 +32,9 @@
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="flex items-center space-x-4">
-            <!-- THÊM MỚI: Component chuyển đổi ngôn ngữ -->
             <LanguageSwitcher />
 
-            <!-- Orders -->
             <NuxtLink
               to="/orders"
               class="p-2 text-gray-600 hover:text-orange-600 transition-colors"
@@ -62,7 +55,6 @@
               </svg>
             </NuxtLink>
 
-            <!-- Cart -->
             <NuxtLink
               to="/cart"
               class="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
@@ -81,7 +73,6 @@
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h.01M16 19h.01m0 0c.55 0 1 .45 1 1s-.45 1-1 1-.99-.45-.99-1 .44-1 .99-1zm-5.99 0h.01m0 0c.55 0 1 .45 1 1s-.45 1-1 1-.99-.45-.99-1 .44-1 .99-1z"
                 ></path>
               </svg>
-              <!-- Cart Count Badge -->
               <span
                 v-if="auth.isAuthenticated && cart.count > 0"
                 class="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
@@ -90,7 +81,6 @@
               </span>
             </NuxtLink>
 
-            <!-- User Menu -->
             <div class="relative" v-if="auth.isAuthenticated">
               <button
                 @click="toggleUserMenu"
@@ -111,7 +101,6 @@
                 </svg>
               </button>
 
-              <!-- User Dropdown -->
               <div
                 v-if="showUserMenu"
                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
@@ -137,7 +126,6 @@
               </div>
             </div>
 
-            <!-- Login/Register -->
             <div v-else class="flex items-center space-x-2">
               <NuxtLink
                 to="/auth/login"
@@ -158,12 +146,10 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main>
       <slot />
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-white mt-16">
       <div class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -259,36 +245,29 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from "vue";
-// THÊM MỚI: Import component LanguageSwitcher
 import LanguageSwitcher from "~/components/LanguageSwitcher.vue";
 import { useCustomersService } from "~/services/customers";
 import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
 
-// Composables
 const { searchQuery, performSearch } = useSearch();
 const { showUserMenu, toggleUserMenu, closeMenus } = useUI();
 
-// Stores
 const auth = useAuthStore();
 const cart = useCartStore();
 
-// Services
 const { logout } = useCustomersService();
 
-// Methods
 const onLogout = async () => {
   try {
     await logout();
-    auth.logout(); // Clear auth store
+    auth.logout(); 
     closeMenus();
-    await navigateTo('/auth/login'); // Navigate to login page
-    // Show success message after navigation
+    await navigateTo('/auth/login'); 
     const { $toast } = useNuxtApp();
     $toast.success('Đăng xuất thành công');
   } catch (error) {
     console.error("Logout failed:", error);
-    // Force navigation even if logout API fails
     auth.logout();
     await navigateTo('/auth/login');
     const { $toast } = useNuxtApp();
@@ -296,7 +275,6 @@ const onLogout = async () => {
   }
 };
 
-// Close menus when clicking outside
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement;
   if (!target.closest(".relative")) {
@@ -304,10 +282,8 @@ const handleClickOutside = (event: Event) => {
   }
 };
 
-// Lifecycle
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
-  // Ensure cart badge is correct after hard refresh
   try { cart.load() } catch (_) {}
 });
 
@@ -315,7 +291,6 @@ onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
 });
 
-// Reload cart whenever auth status changes (logout/login/switch)
 watch(
   () => auth.isAuthenticated,
   () => {

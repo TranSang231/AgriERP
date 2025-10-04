@@ -15,7 +15,6 @@
 import { computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-// Lấy cả 'locale' và 'locales' từ composable
 const { locale, locales } = useI18n()
 
 const availableLocales = computed(() => {
@@ -25,13 +24,11 @@ const availableLocales = computed(() => {
   return []
 })
 
-// Debugging: Log initial values
 onMounted(() => {
   console.log('Initial locale:', locale.value)
   console.log('Available locales:', locales.value)
 })
 
-// Debugging: Log locale changes
 watch(locale, (newLocale) => {
   console.log('Locale changed to:', newLocale)
 })

@@ -18,24 +18,20 @@ def general_statistics(request):
     Get general statistics for ecommerce dashboard
     """
     try:
-        # Calculate date ranges
         today = timezone.now().date()
         last_month_start = today.replace(day=1) - timedelta(days=1)
         last_month_start = last_month_start.replace(day=1)
         current_month_start = today.replace(day=1)
         
-        # Total counts
         total_products = Product.objects.count()
         total_orders = Order.objects.count()
         total_customers = Customer.objects.count()
         
-        # Total revenue
         total_revenue = OrderItem.objects.aggregate(
             total=Sum('amount')
         )['total'] or 0
         
-        # Growth calculations
-        # Products growth
+
         products_last_month = Product.objects.filter(
             created_at__gte=last_month_start,
             created_at__lt=current_month_start
@@ -45,7 +41,6 @@ def general_statistics(request):
         ).count()
         products_growth = calculate_growth_percentage(products_last_month, products_this_month)
         
-        # Orders growth
         orders_last_month = Order.objects.filter(
             created_at__gte=last_month_start,
             created_at__lt=current_month_start
@@ -55,7 +50,6 @@ def general_statistics(request):
         ).count()
         orders_growth = calculate_growth_percentage(orders_last_month, orders_this_month)
         
-        # Customers growth
         customers_last_month = Customer.objects.filter(
             created_at__gte=last_month_start,
             created_at__lt=current_month_start
@@ -65,7 +59,6 @@ def general_statistics(request):
         ).count()
         customers_growth = calculate_growth_percentage(customers_last_month, customers_this_month)
         
-        # Revenue growth
         revenue_last_month = OrderItem.objects.filter(
             order__created_at__gte=last_month_start,
             order__created_at__lt=current_month_start
@@ -106,7 +99,6 @@ def sales_data(request):
     try:
         period = request.GET.get('period', '30d')
         
-        # Calculate date range based on period
         end_date = timezone.now().date()
         if period == '7d':
             start_date = end_date - timedelta(days=7)
@@ -117,7 +109,6 @@ def sales_data(request):
         else:
             start_date = end_date - timedelta(days=30)
         
-        # Get daily sales data
         sales_data = Order.objects.filter(
             created_at__date__gte=start_date,
             created_at__date__lte=end_date
@@ -128,7 +119,6 @@ def sales_data(request):
             revenue=Sum('orderitem__amount')
         ).order_by('date')
         
-        # Fill missing dates with zero values
         data = []
         current_date = start_date
         sales_dict = {item['date']: item for item in sales_data}
@@ -168,7 +158,6 @@ def order_status_data(request):
             count=Count('id')
         ).order_by('order_status')
         
-        # Map status codes to readable names
         status_map = dict(OrderStatus.CHOICES)
         
         data = []
@@ -237,7 +226,6 @@ def top_products(request):
     try:
         limit = int(request.GET.get('limit', 5))
         
-        # Get products with their sales data
         products = Product.objects.annotate(
             sold_quantity=Sum('orderitem__quantity'),
             total_revenue=Sum('orderitem__amount')
@@ -247,11 +235,9 @@ def top_products(request):
         
         data = []
         for product in products:
-            # Get product name from related content
             product_name = "Unknown Product"
             if product.name:
                 try:
-                    # Assuming name is a ForeignKey to ShortContent
                     product_name = str(product.name)
                 except:
                     product_name = f"Product #{product.id}"
@@ -282,7 +268,6 @@ def inventory_alerts(request):
     Get inventory alerts for low stock products
     """
     try:
-        # Products with low stock (less than 10 items)
         low_stock_threshold = 10
         
         low_stock_products = Product.objects.filter(
@@ -290,7 +275,6 @@ def inventory_alerts(request):
             in_stock__gt=0
         ).order_by('in_stock')
         
-        # Out of stock products
         out_of_stock_products = Product.objects.filter(
             in_stock=0
         )
@@ -302,7 +286,6 @@ def inventory_alerts(request):
             'out_of_stock_count': out_of_stock_products.count()
         }
         
-        # Add low stock products
         for product in low_stock_products[:10]:  # Limit to 10
             product_name = "Unknown Product"
             if product.name:
@@ -318,7 +301,6 @@ def inventory_alerts(request):
                 'price': product.price
             })
         
-        # Add out of stock products
         for product in out_of_stock_products[:10]:  # Limit to 10
             product_name = "Unknown Product"
             if product.name:
