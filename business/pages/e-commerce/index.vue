@@ -72,7 +72,8 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ t('Total_revenue') }}</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(generalStats.total_revenue || 0) }}</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(generalStats.total_revenue || 0)
+                            }}</p>
                         <p class="text-xs text-green-600" v-if="generalStats.revenue_growth">
                             +{{ generalStats.revenue_growth }}% {{ t('from_last_month') }}
                         </p>
@@ -88,7 +89,8 @@
                 <template #header>
                     <div class="flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-white">{{ t('Sales_overview') }}</h3>
-                        <el-select v-model="salesPeriod" @change="loadSalesData" size="small">
+                        <el-select v-model="salesPeriod" @change="loadSalesData" :placeholder="t('Select_time_period')"
+                            clearable filterable size="large" style="width: 220px">
                             <el-option :label="t('Last_7_days')" value="7d" />
                             <el-option :label="t('Last_30_days')" value="30d" />
                             <el-option :label="t('Last_3_months')" value="3m" />
@@ -96,10 +98,7 @@
                     </div>
                 </template>
                 <div class="h-80">
-                    <Line v-if="salesChartData" 
-                        :data="salesChartData" 
-                        :options="chartOptions" 
-                    />
+                    <Line v-if="salesChartData" :data="salesChartData" :options="chartOptions" />
                     <div v-else class="flex items-center justify-center h-full">
                         <el-empty :description="t('No_data_available')" />
                     </div>
@@ -112,10 +111,7 @@
                     <h3 class="text-lg font-semibold text-white">{{ t('Order_status_distribution') }}</h3>
                 </template>
                 <div class="h-80">
-                    <Doughnut v-if="orderStatusChartData" 
-                        :data="orderStatusChartData" 
-                        :options="doughnutOptions" 
-                    />
+                    <Doughnut v-if="orderStatusChartData" :data="orderStatusChartData" :options="doughnutOptions" />
                     <div v-else class="flex items-center justify-center h-full">
                         <el-empty :description="t('No_data_available')" />
                     </div>
@@ -141,8 +137,8 @@
                     </div>
                 </template>
                 <div class="space-y-4">
-                    <div v-for="order in recentOrders" :key="order.id" 
-                         class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div v-for="order in recentOrders" :key="order.id"
+                        class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
                             <p class="font-medium">#{{ order.id }}</p>
                             <p class="text-sm text-gray-600">{{ order.customer_name }}</p>
@@ -150,7 +146,7 @@
                         </div>
                         <div class="text-right">
                             <p class="font-semibold">{{ formatCurrency(order.total_amount) }}</p>
-                            <el-tag :type="getOrderStatusType(order.order_status)" size="small">
+                            <el-tag :type="getOrderStatusType(order.order_status) as any" size="small">
                                 {{ getOrderStatusText(order.order_status) }}
                             </el-tag>
                         </div>
@@ -172,13 +168,12 @@
                     </div>
                 </template>
                 <div class="space-y-4">
-                    <div v-for="product in topProducts" :key="product.id" 
-                         class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div v-for="product in topProducts" :key="product.id"
+                        class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div class="flex items-center">
-                            <img v-if="product.thumbnail" 
-                                 :src="product.thumbnail" 
-                                 :alt="product.name" 
-                                 class="w-12 h-12 object-cover rounded-lg mr-3">
+                            <img v-if="product.thumbnail" :src="getImageUrl(product.thumbnail) || ''"
+                                :alt="product.name" class="w-12 h-12 object-cover rounded-lg mr-3"
+                                @error="handleImageError">
                             <div v-else class="w-12 h-12 bg-gray-200 rounded-lg mr-3 flex items-center justify-center">
                                 <el-icon class="text-gray-400">
                                     <Picture />
@@ -206,12 +201,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { 
-    Box, 
-    ShoppingCart, 
-    User, 
-    Money, 
-    Picture 
+import {
+    Box,
+    ShoppingCart,
+    User,
+    Money,
+    Picture
 } from '@element-plus/icons-vue';
 import {
     Chart as ChartJS,
@@ -259,10 +254,10 @@ const generalStats = ref({
 });
 
 const salesPeriod = ref('30d');
-const salesData = ref([]);
-const orderStatusData = ref([]);
-const recentOrders = ref([]);
-const topProducts = ref([]);
+const salesData = ref<any[]>([]);
+const orderStatusData = ref<any[]>([]);
+const recentOrders = ref<any[]>([]);
+const topProducts = ref<any[]>([]);
 const inventoryAlertsRef = ref(null);
 
 // Chart options
@@ -297,7 +292,7 @@ const doughnutOptions = {
 // Computed properties
 const salesChartData = computed(() => {
     if (!salesData.value.length) return null;
-    
+
     return {
         labels: salesData.value.map((item: any) => item.date),
         datasets: [
@@ -322,7 +317,7 @@ const salesChartData = computed(() => {
 
 const orderStatusChartData = computed(() => {
     if (!orderStatusData.value.length) return null;
-    
+
     return {
         labels: orderStatusData.value.map((item: any) => t(item.status)),
         datasets: [
@@ -352,22 +347,45 @@ const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN');
 };
 
+const getImageUrl = (thumbnail: string) => {
+    if (!thumbnail) return null;
+
+    // If it's already a full URL, return as is
+    if (thumbnail.startsWith('http://') || thumbnail.startsWith('https://')) {
+        return thumbnail;
+    }
+
+    // If it's a relative path, prepend the base URL
+    const runtimeConfig = useRuntimeConfig();
+    const baseUrl = runtimeConfig.public.defaultHost;
+    return `${baseUrl}${thumbnail.startsWith('/') ? '' : '/'}${thumbnail}`;
+};
+
+const handleImageError = (event: Event) => {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+};
+
 const getOrderStatusType = (status: number) => {
     const statusMap: { [key: number]: string } = {
-        1: 'info',    // New
-        2: 'warning', // Processing
-        3: 'success', // Completed
-        4: 'danger',  // Cancelled
+        0: 'info',    // New
+        1: 'warning', // Confirmed
+        2: 'warning', // Packing
+        3: 'success', // Shipped
+        4: 'success', // Completed
+        5: 'danger',  // Cancelled
     };
     return statusMap[status] || 'info';
 };
 
 const getOrderStatusText = (status: number) => {
     const statusMap: { [key: number]: string } = {
-        1: t('New'),
-        2: t('Processing'),
-        3: t('Completed'),
-        4: t('Cancelled'),
+        0: t('New'),
+        1: t('Confirmed'),
+        2: t('Packing'),
+        3: t('Shipped'),
+        4: t('Completed'),
+        5: t('Cancelled'),
     };
     return statusMap[status] || t('Unknown');
 };
@@ -401,7 +419,7 @@ const loadSalesData = async () => {
         // Fallback to mock data if API fails
         const mockData = [];
         const days = salesPeriod.value === '7d' ? 7 : salesPeriod.value === '30d' ? 30 : 90;
-        
+
         for (let i = days - 1; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
@@ -439,29 +457,6 @@ const loadRecentOrders = async () => {
     } catch (error) {
         console.error('Error loading recent orders:', error);
         // Fallback to mock data if API fails
-        recentOrders.value = [
-            {
-                id: 'ORD001',
-                customer_name: 'Nguyễn Văn A',
-                total_amount: 1250000,
-                order_status: 1,
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 'ORD002',
-                customer_name: 'Trần Thị B',
-                total_amount: 890000,
-                order_status: 2,
-                created_at: new Date(Date.now() - 86400000).toISOString()
-            },
-            {
-                id: 'ORD003',
-                customer_name: 'Lê Văn C',
-                total_amount: 2100000,
-                order_status: 3,
-                created_at: new Date(Date.now() - 172800000).toISOString()
-            }
-        ];
     }
 };
 
@@ -473,32 +468,6 @@ const loadTopProducts = async () => {
     } catch (error) {
         console.error('Error loading top products:', error);
         // Fallback to mock data if API fails
-        topProducts.value = [
-            {
-                id: 1,
-                name: 'Phân bón hữu cơ NPK',
-                price: 150000,
-                sold_quantity: 45,
-                in_stock: 120,
-                thumbnail: null
-            },
-            {
-                id: 2,
-                name: 'Thuốc trừ sâu sinh học',
-                price: 85000,
-                sold_quantity: 38,
-                in_stock: 200,
-                thumbnail: null
-            },
-            {
-                id: 3,
-                name: 'Giống lúa ST25',
-                price: 25000,
-                sold_quantity: 156,
-                in_stock: 500,
-                thumbnail: null
-            }
-        ];
     }
 };
 
