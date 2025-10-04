@@ -15,7 +15,6 @@ class PromotionViewSet(BaseViewSet):
         "description__ogigin": "icontains"
     }
     serializer_class = PromotionSerializer
-    # Allow public access to promotions (no auth required)
     permission_classes = [AllowAny]
     required_alternate_scopes = {
         "list": [],
@@ -29,12 +28,10 @@ class PromotionViewSet(BaseViewSet):
         """Override list to handle date filtering for active promotions"""
         queryset = self.get_queryset()
         
-        # Check for date filtering parameters
         start_lte = request.query_params.get('start__lte')
         end_gte = request.query_params.get('end__gte')
         
         if start_lte and end_gte:
-            # Filter for active promotions
             from django.utils import timezone
             from django.db.models import Q
             
@@ -42,18 +39,14 @@ class PromotionViewSet(BaseViewSet):
                 start_date = timezone.datetime.fromisoformat(start_lte.replace('Z', '+00:00'))
                 end_date = timezone.datetime.fromisoformat(end_gte.replace('Z', '+00:00'))
                 
-                # Find promotions that are active between these dates
                 queryset = queryset.filter(
                     Q(start__lte=end_date) & Q(end__gte=start_date)
                 )
             except (ValueError, TypeError):
-                # If date parsing fails, return all promotions
                 pass
         
-        # Apply other filters
         queryset = self.filter_queryset(queryset)
         
-        # Handle pagination
         page_size = request.query_params.get('page_size')
         if page_size:
             page = self.paginate_queryset(queryset)
@@ -65,7 +58,6 @@ class PromotionViewSet(BaseViewSet):
 
     @action(detail=False, methods=['post'], url_path='validate', permission_classes=[AllowAny])
     def validate_promotion(self, request):
-        """Validate if a promotion can be applied to given products and quantities"""
         promotion_id = request.data.get('promotion_id')
         product_ids = request.data.get('product_ids', [])
         quantities = request.data.get('quantities', [])
@@ -79,7 +71,6 @@ class PromotionViewSet(BaseViewSet):
         try:
             promotion = Promotion.objects.get(id=promotion_id)
             
-            # Check if promotion is active
             now = timezone.now()
             if promotion.start > now or promotion.end < now:
                 return Response({
@@ -87,11 +78,9 @@ class PromotionViewSet(BaseViewSet):
                     'message': 'Promotion is not active'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Calculate total discount
             total_discount = 0
             from ..models import Product
             if getattr(promotion, 'type', 'discount') == getattr(Promotion, 'TYPE_VOUCHER', 'voucher'):
-                # Voucher: apply promotion.discount to all selected products
                 for i, product_id in enumerate(product_ids):
                     try:
                         product = Product.objects.get(id=product_id)
@@ -102,7 +91,6 @@ class PromotionViewSet(BaseViewSet):
                     except Product.DoesNotExist:
                         continue
             else:
-                # Discount: product-level via PromotionItem
                 for i, product_id in enumerate(product_ids):
                     try:
                         promotion_item = PromotionItem.objects.get(
@@ -111,7 +99,6 @@ class PromotionViewSet(BaseViewSet):
                         )
                         quantity = quantities[i] if i < len(quantities) else 1
                         
-                        # Check quantity limits
                         if promotion_item.quantity_limit > 0 and quantity > promotion_item.quantity_limit:
                             return Response({
                                 'valid': False,
@@ -121,7 +108,6 @@ class PromotionViewSet(BaseViewSet):
                         product = Product.objects.get(id=product_id)
                         product_price = getattr(product, 'sale_price', None) or getattr(product, 'price', 0) or 0
                         
-                        # Calculate discount for this item: (discount_percent / 100) * price * quantity
                         item_discount = (promotion_item.discount / 100) * float(product_price) * float(quantity)
                         total_discount += item_discount
                         
