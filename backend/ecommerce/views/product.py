@@ -35,7 +35,7 @@ class ProductViewSet(BaseViewSet):
 
     @action(detail=False, methods=[Http.HTTP_GET], url_path="summary-list")
     def summary_list(self, request, *args, **kwargs):
-        queryset, page_size = self.processParams(request);
+        queryset, page_size = self.processParams(request)
         if page_size is not None:
             page = self.paginate_queryset(queryset)
             data = self.get_serializer(page, many=True).data

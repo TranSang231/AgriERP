@@ -12,13 +12,13 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.22",
     "@nuxtjs/i18n": "^9.3.1",
-    "@pinia/nuxt": "^0.5.1",
+    "@pinia/nuxt": "^0.5.5",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
     "nuxt": "^3.17.7",
     "nuxt-lodash": "^2.5.3",
     "nuxt-svgo": "^4.0.1",
-    "pinia": "^2.1.7",
+    "pinia": "^2.3.1",
     "uuid": "^10.0.0",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
