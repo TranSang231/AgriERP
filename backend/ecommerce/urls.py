@@ -21,6 +21,7 @@ from .views import (
     top_products,
     inventory_alerts
 )
+from .views.review_views import ProductReviewViewSet
 
 
 app_name = "ecommerce"
@@ -35,6 +36,7 @@ router.register(r"carts", CartViewSet, basename="ecommerce-carts")
 router.register(r"orders", OrderViewSet, basename="ecommerce-orders")
 router.register(r"goods-receipts", GoodsReceiptViewSet, basename="ecommerce-goods-receipts")
 router.register(r"inventory", InventoryViewSet, basename="ecommerce-inventory")
+router.register(r"reviews", ProductReviewViewSet, basename="ecommerce-reviews")
 
 router.register(r"customers", CustomerViewSet, basename="ecommerce-customers")
 customer_router = routers.NestedSimpleRouter(router, r'customers', lookup='customers')
