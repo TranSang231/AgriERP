@@ -5,10 +5,12 @@ import { useI18n } from 'vue-i18n';
 import { useCurrency } from '~/composables/useCurrency';
 import { useOrderService } from '~/services/orders';
 import { useAuthStore } from '~/stores/auth';
+import { useActionPermissions } from '~/composables/useActionPermissions';
 
 const { format } = useCurrency();
 const { getOrders } = useOrderService();
 const auth = useAuthStore();
+const { canViewOrders, canCancelOrder, canPayOrder, validateAction } = useActionPermissions();
 // THAY ĐỔI: Lấy thêm locale để dùng cho hàm formatDate
 const { t, locale } = useI18n(); 
 
@@ -143,6 +145,40 @@ const calculateOrderTotal = (order: any) => {
   const shippingFee = order.shipping_fee || 0;
   return subtotal + tax + shippingFee;
 };
+
+// Order action handlers
+const handlePayOrder = async (order: any) => {
+  const validation = validateAction('pay_order', { order });
+  if (!validation.allowed) {
+    alert(validation.reason || 'Cannot pay this order');
+    return;
+  }
+  
+  // TODO: Implement payment logic
+  console.log('Pay order:', order.id);
+  alert('Payment functionality will be implemented');
+};
+
+const handleCancelOrder = async (order: any) => {
+  const validation = validateAction('cancel_order', { order });
+  if (!validation.allowed) {
+    alert(validation.reason || 'Cannot cancel this order');
+    return;
+  }
+  
+  if (confirm(t('orders.confirmCancel', { id: order.id }))) {
+    try {
+      // TODO: Implement cancel order API call
+      console.log('Cancel order:', order.id);
+      alert('Order cancellation will be implemented');
+      // Refresh orders after cancellation
+      await fetchOrders();
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Failed to cancel order');
+    }
+  }
+};
 </script>
 
 <template>
@@ -264,13 +300,15 @@ const calculateOrderTotal = (order: any) => {
                 {{ $t('orders.orderCard.viewDetails') }}
               </NuxtLink>
               <button 
-                v-if="order.payment_method === 0 && order.payment_status === 0"
+                v-if="canPayOrder(order)"
+                @click="handlePayOrder(order)"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
               >
                 {{ $t('orders.orderCard.payNow') }}
               </button>
               <button 
-                v-if="order.order_status === 0"
+                v-if="canCancelOrder(order)"
+                @click="handleCancelOrder(order)"
                 class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
               >
                 {{ $t('orders.orderCard.cancelOrder') }}

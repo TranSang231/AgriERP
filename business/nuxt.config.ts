@@ -20,7 +20,10 @@ export default defineNuxtConfig({
   },
 
   app: {
-    buildAssetsDir: "/business/",
+    // Serve the app under the /business/ base path at runtime.
+    // Use baseURL so Nuxt/Vite generate asset URLs like /business/_nuxt/...
+    baseURL: '/business/',
+    // NOTE: do not override buildAssetsDir here — keep the default (/_nuxt/)
   },
 
   experimental: {

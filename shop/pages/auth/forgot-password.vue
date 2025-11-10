@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { reactive, ref } from 'vue'
+import { useRouter, useRoute } from 'nuxt/app'
 import { useCustomersService } from '~/services/customers'
 
 const { forgotPassword } = useCustomersService()

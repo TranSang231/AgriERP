@@ -13,6 +13,7 @@ from .views import (
     CartViewSet,
     OrderViewSet,
     GoodsReceiptViewSet,
+    InventoryViewSet,
     general_statistics,
     sales_data,
     order_status_data,
@@ -33,6 +34,7 @@ router.register(r"promotions", PromotionViewSet, basename="ecommerce-promotions"
 router.register(r"carts", CartViewSet, basename="ecommerce-carts")
 router.register(r"orders", OrderViewSet, basename="ecommerce-orders")
 router.register(r"goods-receipts", GoodsReceiptViewSet, basename="ecommerce-goods-receipts")
+router.register(r"inventory", InventoryViewSet, basename="ecommerce-inventory")
 
 router.register(r"customers", CustomerViewSet, basename="ecommerce-customers")
 customer_router = routers.NestedSimpleRouter(router, r'customers', lookup='customers')

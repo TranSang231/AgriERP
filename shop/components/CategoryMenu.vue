@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-lg shadow-sm border">
     <div class="px-4 py-3 border-b border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-800">Categories</h3>
+      <h3 class="text-lg font-semibold text-gray-800">{{ $t('categories.title') }}</h3>
     </div>
 
     <div class="p-4">
@@ -14,7 +14,7 @@
             : 'hover:bg-gray-100 text-gray-700',
         ]"
       >
-        All Products
+        {{ $t('categories.allProducts') }}
       </button>
 
       <div class="max-h-64 overflow-y-auto pr-1">
@@ -29,7 +29,7 @@
               : 'hover:bg-gray-100 text-gray-700',
           ]"
         >
-          {{ category.name.origin }}
+          {{ localize(category.name) }}
         </button>
       </div>
     </div>
@@ -38,6 +38,9 @@
 
 <script setup lang="ts">
 import type { ProductCategory } from "~/services/products";
+import { useLocalize } from "~/composables/useLocalize";
+
+const { localize } = useLocalize();
 
 interface Props {
   categories: ProductCategory[];

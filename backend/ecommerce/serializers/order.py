@@ -14,6 +14,13 @@ class OrderSerializer(WritableNestedSerializer):
         source='customer'
     )
     items = OrderItemSerializer(many=True, required=False)
+
+    def validate_items(self, value):
+        # Ensure product alias is accepted via nested serializer mapping (product_id -> product)
+        # Amount will be computed on model save; allow incoming price/quantity but do not trust client-side amount
+        for item in value or []:
+            item['amount'] = None
+        return value
     
     class Meta:
         model = Order

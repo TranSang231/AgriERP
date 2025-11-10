@@ -45,9 +45,16 @@
                             <Document class="el-icon" />
                             <span>{{ t('Goods_receipts') }}</span>
                         </el-menu-item>
-                        <div class="text-white px-2">
-                            <span>Todo: Add more features here.</span>
-                        </div>
+                        <el-menu-item index="/e-commerce/inventory">
+                            <Box class="el-icon" />
+                            <span>{{ t('Inventory') }}</span>
+                        </el-menu-item>
+                        <RestrictedView :oneOfScopes="['ecommerce:customers:view', 'ecommerce:customers:edit']">
+                            <el-menu-item index="/e-commerce/customers">
+                                <IconUsers class="el-icon" />
+                                <span>{{ t('Customers') }}</span>
+                            </el-menu-item>
+                        </RestrictedView>
                     </Sidebar>
                 </aside>
                 <div class="flex-auto">
@@ -67,8 +74,10 @@ import IconEcommerce from '~/assets/icons/e-commerce.svg';
 import IconDashboard from '~/assets/icons/dashboard.svg';
 import IconProduct from '~/assets/icons/product.svg';
 import IconPromotion from '~/assets/icons/promotion.svg';
-import { Document, Folder } from '@element-plus/icons-vue';
+import IconUsers from '~/assets/icons/users.svg';
+import { Document, Folder, Box } from '@element-plus/icons-vue';
 import { useOauthStore } from '@/stores/oauth';
+import RestrictedView from '@/components/RestrictedView.vue';
 
 const { t } = useI18n();
 

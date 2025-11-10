@@ -396,17 +396,7 @@ const loadGeneralStats = async () => {
         generalStats.value = response;
     } catch (error) {
         console.error('Error loading general stats:', error);
-        // Fallback to mock data if API fails
-        generalStats.value = {
-            total_products: 156,
-            total_orders: 1234,
-            total_customers: 567,
-            total_revenue: 45678900,
-            products_growth: 12.5,
-            orders_growth: 8.3,
-            customers_growth: 15.2,
-            revenue_growth: 22.1
-        };
+        // Keep default values (zeros) on error
     }
 };
 
@@ -416,20 +406,8 @@ const loadSalesData = async () => {
         salesData.value = response;
     } catch (error) {
         console.error('Error loading sales data:', error);
-        // Fallback to mock data if API fails
-        const mockData = [];
-        const days = salesPeriod.value === '7d' ? 7 : salesPeriod.value === '30d' ? 30 : 90;
-
-        for (let i = days - 1; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            mockData.push({
-                date: date.toLocaleDateString('vi-VN'),
-                revenue: Math.floor(Math.random() * 5000000) + 1000000,
-                orders: Math.floor(Math.random() * 50) + 10
-            });
-        }
-        salesData.value = mockData;
+        // Keep empty array on error - no mock data
+        salesData.value = [];
     }
 };
 
@@ -439,13 +417,8 @@ const loadOrderStatusData = async () => {
         orderStatusData.value = response;
     } catch (error) {
         console.error('Error loading order status data:', error);
-        // Fallback to mock data if API fails
-        orderStatusData.value = [
-            { status: 'New', count: 45 },
-            { status: 'Processing', count: 32 },
-            { status: 'Completed', count: 156 },
-            { status: 'Cancelled', count: 8 }
-        ];
+        // Keep empty array on error - no mock data
+        orderStatusData.value = [];
     }
 };
 

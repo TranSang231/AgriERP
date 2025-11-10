@@ -109,26 +109,31 @@ def sales_data(request):
         else:
             start_date = end_date - timedelta(days=30)
         
+        # Convert dates to datetime for proper comparison
+        from django.utils import timezone as tz
+        start_datetime = tz.make_aware(datetime.combine(start_date, datetime.min.time()))
+        end_datetime = tz.make_aware(datetime.combine(end_date, datetime.max.time()))
+        
         sales_data = Order.objects.filter(
-            created_at__date__gte=start_date,
-            created_at__date__lte=end_date
+            created_at__gte=start_datetime,
+            created_at__lte=end_datetime
         ).annotate(
-            date=TruncDate('created_at')
-        ).values('date').annotate(
+            order_date=TruncDate('created_at')
+        ).values('order_date').annotate(
             orders=Count('id'),
-            revenue=Sum('orderitem__amount')
-        ).order_by('date')
+            revenue=Sum('items__amount')
+        ).order_by('order_date')
         
         data = []
         current_date = start_date
-        sales_dict = {item['date']: item for item in sales_data}
+        sales_dict = {item['order_date']: item for item in sales_data}
         
         while current_date <= end_date:
             if current_date in sales_dict:
                 data.append({
                     'date': current_date.strftime('%Y-%m-%d'),
                     'orders': sales_dict[current_date]['orders'],
-                    'revenue': sales_dict[current_date]['revenue'] or 0
+                    'revenue': float(sales_dict[current_date]['revenue'] or 0)
                 })
             else:
                 data.append({
@@ -141,6 +146,9 @@ def sales_data(request):
         return Response(data, status=status.HTTP_200_OK)
         
     except Exception as e:
+        import traceback
+        print(f"[SALES DATA ERROR] {e}")
+        print(traceback.format_exc())
         return Response(
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -268,25 +276,29 @@ def inventory_alerts(request):
     Get inventory alerts for low stock products
     """
     try:
+        from ..models import Inventory
+        
         low_stock_threshold = 10
         
-        low_stock_products = Product.objects.filter(
-            in_stock__lt=low_stock_threshold,
-            in_stock__gt=0
-        ).order_by('in_stock')
+        # ✅ Filter via Inventory (not Product.in_stock which is now a property)
+        low_stock_inventories = Inventory.objects.filter(
+            current_quantity__lt=low_stock_threshold,
+            current_quantity__gt=0
+        ).select_related('product', 'product__name').order_by('current_quantity')
         
-        out_of_stock_products = Product.objects.filter(
-            in_stock=0
-        )
+        out_of_stock_inventories = Inventory.objects.filter(
+            current_quantity__lte=0
+        ).select_related('product', 'product__name')
         
         data = {
             'low_stock': [],
             'out_of_stock': [],
-            'low_stock_count': low_stock_products.count(),
-            'out_of_stock_count': out_of_stock_products.count()
+            'low_stock_count': low_stock_inventories.count(),
+            'out_of_stock_count': out_of_stock_inventories.count()
         }
         
-        for product in low_stock_products[:10]:  # Limit to 10
+        for inventory in low_stock_inventories[:10]:  # Limit to 10
+            product = inventory.product
             product_name = "Unknown Product"
             if product.name:
                 try:
@@ -297,11 +309,12 @@ def inventory_alerts(request):
             data['low_stock'].append({
                 'id': product.id,
                 'name': product_name,
-                'in_stock': product.in_stock,
+                'in_stock': inventory.current_quantity,  # From Inventory
                 'price': product.price
             })
         
-        for product in out_of_stock_products[:10]:  # Limit to 10
+        for inventory in out_of_stock_inventories[:10]:  # Limit to 10
+            product = inventory.product
             product_name = "Unknown Product"
             if product.name:
                 try:
@@ -312,7 +325,7 @@ def inventory_alerts(request):
             data['out_of_stock'].append({
                 'id': product.id,
                 'name': product_name,
-                'in_stock': product.in_stock,
+                'in_stock': inventory.current_quantity,  # From Inventory
                 'price': product.price
             })
         

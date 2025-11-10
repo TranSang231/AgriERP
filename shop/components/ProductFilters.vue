@@ -28,7 +28,7 @@
           :key="category.id"
           :value="category.id"
         >
-          {{ category.name.origin }}
+          {{ category.name }}
         </option>
       </select>
     </div>

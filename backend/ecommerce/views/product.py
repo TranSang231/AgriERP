@@ -9,7 +9,9 @@ from ..serializers import ProductSerializer, ProductShortSerializer
 
 
 class ProductViewSet(BaseViewSet):
-    queryset = Product.objects.all()
+    # ✅ IMPORTANT: select_related('inventory') to load stock efficiently
+    # Without this, Product.in_stock property will trigger N+1 queries
+    queryset = Product.objects.select_related('inventory').all()
     search_map = {
         "name__origin": "icontains",
         "description__origin": "icontains"

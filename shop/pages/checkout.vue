@@ -204,21 +204,18 @@ async function applyPromotion(promotionId) {
     const productIds = checkoutItems.value.map(item => item.productId);
     const quantities = checkoutItems.value.map(item => item.qty);
     
-    const { data, error } = await validatePromotion(promotionId, productIds, quantities);
+    // validatePromotion uses POST, so it returns direct data (not {data, error} object)
+    const result = await validatePromotion(promotionId, productIds, quantities);
     
-    if (!error?.value && data?.value) {
-      if (data.value.valid) {
-        // Backend đã trả về số tiền giảm thực tế
-        discount.value = data.value.discount || 0;
-        selectedPromotion.value = availablePromotions.value.find(p => p.id === promotionId);
-        voucherError.value = '';
-      } else {
-        voucherError.value = data.value.message || t('checkout.errors.invalidVoucher');
-        discount.value = 0;
-        selectedPromotion.value = null;
-      }
+    if (result && result.valid) {
+      // Backend đã trả về số tiền giảm thực tế
+      discount.value = result.discount || 0;
+      selectedPromotion.value = availablePromotions.value.find(p => p.id === promotionId);
+      voucherError.value = '';
     } else {
-       voucherError.value = t('checkout.errors.applyVoucherFailed');
+      voucherError.value = result?.message || t('checkout.errors.invalidVoucher');
+      discount.value = 0;
+      selectedPromotion.value = null;
     }
   } catch (error) {
     voucherError.value = t('checkout.errors.applyVoucherFailed');
@@ -325,15 +322,11 @@ async function placeOrder() {
 
     console.log('Đang tạo đơn hàng:', orderData);
 
-    // Gọi API tạo đơn hàng
-    const { data, error } = await createOrder(orderData as any);
+    // Gọi API tạo đơn hàng - POST uses $fetch, returns data directly
+    const data = await createOrder(orderData as any);
     
-    if (error?.value) {
-      throw error.value;
-    }
-
-    if (data?.value) {
-      console.log('Đơn hàng đã được tạo:', data.value);
+    if (data) {
+      console.log('Đơn hàng đã được tạo:', data);
       
       // Xóa sản phẩm khỏi giỏ hàng
       const purchasedItemIds = checkoutItems.value.map(item => item.productId);
@@ -341,7 +334,7 @@ async function placeOrder() {
       checkoutStore.clear();
 
       // Chuyển hướng đến trang cảm ơn
-      router.push(`/thanks?order_id=${data.value.id}`);
+      router.push(`/thanks?order_id=${data.id}`);
     } else {
       throw new Error(t('checkout.errors.noServerResponse'));
     }

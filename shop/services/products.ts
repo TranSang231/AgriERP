@@ -1,19 +1,50 @@
 import { useApi } from "./api";
 
+export interface Inventory {
+  id: string;
+  current_quantity: number;
+  min_quantity: number;
+  max_quantity?: number;
+  reserved_quantity: number;
+  available_quantity: number;
+  is_low_stock: boolean;
+  is_out_of_stock: boolean;
+  updated_at: string;
+}
+
 export interface Product {
   id: number;
-  name: string;
-  description: string;
+  name: {
+    origin: string;
+    translates?: Array<{
+      language: string;
+      value: string;
+    }>;
+  };
+  description: {
+    origin: string;
+    translates?: Array<{
+      language: string;
+      value: string;
+    }>;
+  };
   price: number;
   sale_price?: number;
   image: string;
   images?: string[];
   category?: {
     id: number;
-    name: string;
+    name: {
+      origin: string;
+      translates?: Array<{
+        language: string;
+        value: string;
+      }>;
+    };
     slug: string;
   };
-  stock: number;
+  in_stock: number;
+  inventory?: Inventory;
   rating?: number;
   reviews_count?: number;
   slug: string;
@@ -23,10 +54,22 @@ export interface Product {
 }
 
 export interface ProductCategory {
-    id: string;
-  name: string;
+  id: string;
+  name: {
+    origin: string;
+    translates?: Array<{
+      language: string;
+      value: string;
+    }>;
+  };
   slug: string;
-  description?: string;
+  description?: {
+    origin: string;
+    translates?: Array<{
+      language: string;
+      value: string;
+    }>;
+  };
   image?: string;
   parent?: number;
   is_active: boolean;

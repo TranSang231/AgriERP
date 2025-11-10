@@ -27,8 +27,8 @@ from django.contrib.auth import get_user_model
 from common.constants import Http
 from oauth.constants import AccountStatus
 from core.settings.base import (
-    BUSINESS_CLIENT_ID,
-    BUSINESS_CLIENT_SECRET,
+    ECOMMERCE_CLIENT_ID,
+    ECOMMERCE_CLIENT_SECRET,
     SECRET_KEY
 )
 from base.views.base import BaseViewSet
@@ -245,76 +245,166 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
     
     @action(detail=False, methods=[Http.HTTP_POST], url_path="login", permission_classes=[AllowAny], authentication_classes=[])
     def login(self, request, pk=None):
+        # Log raw request data for debugging
+        print(f"[LOGIN] Raw request.data: {request.data}")
+        print(f"[LOGIN] Raw request.POST: {request.POST}")
+        
         username = request.data.get("username") or request.POST.get("username")
         password = request.data.get("password") or request.POST.get("password")
         
-        if not username or not password:
+        print(f"[LOGIN] Received username: '{username}', password: '{password}'")
+        print(f"[LOGIN] Username length: {len(username) if username else 0}, Password length: {len(password) if password else 0}")
+        
+        if not username or not password or username.strip() == "" or password.strip() == "":
+            print("[LOGIN] Username or password missing or empty")
+            # Clear session and revoke old token to prevent confusion
+            try:
+                old_access_token = request.session.get('access_token')
+                if old_access_token:
+                    from django.http import QueryDict
+                    post_data = QueryDict('', mutable=True)
+                    post_data.update({
+                        "client_id": ECOMMERCE_CLIENT_ID,
+                        "client_secret": ECOMMERCE_CLIENT_SECRET,
+                        "token_type_hint": "access_token",
+                        "token": old_access_token,
+                    })
+                    request._request.POST = post_data
+                    self.create_revocation_response(request._request)  # Revoke old token
+                    print(f"[LOGIN] Revoked old access token on validation fail")
+                    
+                    # Also clear the cache for the old token
+                    try:
+                        from django.core.cache import cache
+                        import hashlib
+                        old_token_hash = hashlib.sha256(old_access_token.encode()).hexdigest()
+                        old_cache_key = f'customer_token_{old_token_hash}'
+                        cache.delete(old_cache_key)
+                        print(f"[LOGIN] Cleared cache for old token on validation fail")
+                    except Exception as e:
+                        print(f"[LOGIN] Failed to clear cache for old token: {e}")
+                
+                request.session.flush()
+            except Exception:
+                pass
             return Response({"error": _("Username and password are required.")}, status=HTTP_400_BAD_REQUEST)
         
-        print(f"Login attempt - username: {username}, password: {password}")
+        # Clear any existing session data to prevent cross-contamination
+        try:
+            # Revoke old access token if exists
+            old_access_token = request.session.get('access_token')
+            if old_access_token:
+                from django.http import QueryDict
+                post_data = QueryDict('', mutable=True)
+                post_data.update({
+                    "client_id": ECOMMERCE_CLIENT_ID,
+                    "client_secret": ECOMMERCE_CLIENT_SECRET,
+                    "token_type_hint": "access_token",
+                    "token": old_access_token,
+                })
+                request._request.POST = post_data
+                self.create_revocation_response(request._request)  # Revoke old token
+                print(f"[LOGIN] Revoked old access token")
+                
+                # Also clear the cache for the old token
+                try:
+                    from django.core.cache import cache
+                    import hashlib
+                    old_token_hash = hashlib.sha256(old_access_token.encode()).hexdigest()
+                    old_cache_key = f'customer_token_{old_token_hash}'
+                    cache.delete(old_cache_key)
+                    print(f"[LOGIN] Cleared cache for old token")
+                except Exception as e:
+                    print(f"[LOGIN] Failed to clear cache for old token: {e}")
+            
+            request.session.flush()
+        except Exception as e:
+            print(f"[LOGIN] Warning: Could not flush session: {e}")
         
         try:
             user = User.objects.prefetch_related("customers").get(email=username)
-            print(f"Found user: {user.email}, id: {user.id}")
         except User.DoesNotExist:
-            print(f"User not found: {username}")
-            return Response(
-                {"error": _("Invalid email or password.")},
-                status=HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": _("Invalid email or password.")}, status=HTTP_400_BAD_REQUEST)
         
-        password_check = user.check_password(password)
-        print(f"Password check result: {password_check}")
-        print(f"User password hash: {user.password}")
-        
-        if not password_check:
-            print(f"Password verification failed for user: {username}")
-            return Response(
-                {"error": _("Invalid email or password.")},
-                status=HTTP_400_BAD_REQUEST,
-            )
+        if not user.check_password(password):
+            return Response({"error": _("Invalid email or password.")}, status=HTTP_400_BAD_REQUEST)
         
         customer = user.customers.first()
         if not customer:
-            return Response(
-                {"error": _("Customer account not found.")},
-                status=HTTP_404_NOT_FOUND,
-            )
-        
+            return Response({"error": _("Customer account not found.")}, status=HTTP_404_NOT_FOUND)
         if customer.status != AccountStatus.ACTIVE:
-            return Response(
-                {"error": _("Customer account is not active.")},
-                status=HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": _("Customer account is not active.")}, status=HTTP_400_BAD_REQUEST)
         
-        import secrets
-        simple_token = secrets.token_urlsafe(32)
-        
-        request.session['customer_id'] = str(customer.id)
-        request.session['user_id'] = str(user.id)
-        request.session.save()  # Force save session
-        
-        from django.core.cache import cache
-        cache.set(f'customer_token_{simple_token}', str(customer.id), timeout=3600)  # 1 hour
-        print(f"Stored token mapping in cache: customer_token_{simple_token} -> {customer.id}")
-        
-        print(f"Login successful - stored session data:")
-        print(f"  customer_id: {request.session.get('customer_id')}")
-        print(f"  user_id: {request.session.get('user_id')}")
-        print(f"  session_key: {request.session.session_key}")
-        print(f"  session dict: {dict(request.session)}")
-        
-        customer_serializer = CustomerSerializer(customer)
-        
-        return Response({
-            "message": _("Login successful!"),
-            "customer": customer_serializer.data,
-            "access_token": simple_token,
-            "token_type": "Bearer",
-            "expires_in": 3600
-        }, status=HTTP_200_OK)
+        print(f"[LOGIN] Authenticating customer: {customer.id} ({customer.email})")
 
-    @action(detail=False, methods=[Http.HTTP_POST], url_path="refresh-token", permission_classes=[AllowAny], authentication_classes=[])
+        # Exchange credentials for OAuth2 access/refresh tokens
+        # Ensure requested scope is within the application's allowed scopes to avoid invalid_scope
+        try:
+            from oauth.models import Application
+            app = Application.objects.filter(client_id=ECOMMERCE_CLIENT_ID).first()
+            app_scope = app.scope if app else ''
+        except Exception:
+            app_scope = ''
+        
+        # Update request._request.POST (the underlying Django request, not DRF's request.POST)
+        request._request.POST._mutable = True
+        request._request.POST.update({
+            "grant_type": "password",
+            "client_type": "confidential",
+            "client_id": ECOMMERCE_CLIENT_ID,
+            "client_secret": ECOMMERCE_CLIENT_SECRET,
+            "username": username,
+            "password": password,
+        })
+        if app_scope:
+            request._request.POST.update({"scope": app_scope})
+        
+        url, headers, body, status = self.create_token_response(request._request)
+        try:
+            token_payload = json.loads(body)
+        except Exception:
+            token_payload = {}
+        if status != 200:
+            return Response(token_payload or {"error": _("Login failed")}, status=status)
+
+        # Cache the access token to customer_id mapping
+        access_token = token_payload.get('access_token')
+        if access_token:
+            try:
+                from django.core.cache import cache
+                import hashlib
+                # Hash the token to avoid cache key length issues
+                token_hash = hashlib.sha256(access_token.encode()).hexdigest()
+                cache_key = f'customer_token_{token_hash}'
+                # Cache for the same duration as the access token (default 1 hour = 3600 seconds)
+                expires_in = token_payload.get('expires_in', 3600)
+                cache.set(cache_key, str(customer.id), timeout=expires_in)
+                print(f"[LOGIN] Cached customer_id {customer.id} for token hash (expires in {expires_in}s)")
+            except Exception as e:
+                print(f"[LOGIN] Failed to cache token: {e}")
+
+        # Optionally set session for convenience
+        try:
+            request.session['customer_id'] = str(customer.id)
+            request.session['user_id'] = str(user.id)
+            if access_token:
+                request.session['access_token'] = access_token
+            request.session.save()
+        except Exception:
+            pass
+
+        customer_serializer = CustomerSerializer(customer)
+        customer_data = customer_serializer.data
+        
+        print(f"[LOGIN] Returning customer data: ID={customer_data.get('id')}, Email={customer_data.get('email')}")
+        
+        token_payload.update({
+            "message": _("Login successful!"),
+            "customer": customer_data,
+        })
+        return Response(token_payload, status=HTTP_200_OK)
+
+    @action(detail=False, methods=[Http.HTTP_POST], url_path="refresh", permission_classes=[AllowAny], authentication_classes=[])
     def refreshToken(self, request):
         refresh_token = request.data.get("refresh_token") or request.POST.get("refresh_token")
         if not refresh_token or refresh_token == 'null':
@@ -327,8 +417,8 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
         post_data = QueryDict('', mutable=True)
         post_data.update({
             "grant_type": "refresh_token",
-            "client_id": BUSINESS_CLIENT_ID,
-            "client_secret": BUSINESS_CLIENT_SECRET,
+            "client_id": ECOMMERCE_CLIENT_ID,
+            "client_secret": ECOMMERCE_CLIENT_SECRET,
             "refresh_token": refresh_token,
         })
         request._request.POST = post_data
@@ -346,42 +436,56 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
 
     @action(detail=False, methods=[Http.HTTP_POST], url_path="logout", permission_classes=[IsAuthenticated])
     def logout(self, request, pk=None):
-        request.POST._mutable = True
-        refresh_token = request.POST.get("refresh_token")
-        access_token = request.POST.get("access_token")
-
-        request.POST.update(
-            {
-                "client_id": BUSINESS_CLIENT_ID,
-                "client_secret": BUSINESS_CLIENT_SECRET,
-                "token_type_hint": "refresh_token",
-                "token": refresh_token,
-            }
-        )
-        url, headers, body, status = self.create_revocation_response(request)
+        # Use request.data for POST body (works with DRF), not request.POST
+        refresh_token = request.data.get("refresh_token") or request.POST.get("refresh_token")
+        access_token = request.data.get("access_token") or request.POST.get("access_token")
+        
+        # Clear cache for access token FIRST before revoking
+        if access_token:
+            try:
+                from django.core.cache import cache
+                import hashlib
+                token_hash = hashlib.sha256(access_token.encode()).hexdigest()
+                cache_key = f'customer_token_{token_hash}'
+                cache.delete(cache_key)
+                print(f"[LOGOUT] Cleared cache for access token")
+            except Exception as e:
+                print(f"[LOGOUT] Failed to clear cache: {e}")
+        
+        # Create a mutable copy for OAuth revocation
+        from django.http import QueryDict
+        post_data = QueryDict('', mutable=True)
+        post_data.update({
+            "client_id": ECOMMERCE_CLIENT_ID,
+            "client_secret": ECOMMERCE_CLIENT_SECRET,
+            "token_type_hint": "refresh_token",
+            "token": refresh_token,
+        })
+        request._request.POST = post_data
+        url, headers, body, status = self.create_revocation_response(request._request)
         if status != HTTP_200_OK:
-            return Response(
-                {"error": _("Can not revoke refresh token.")},
-                status=HTTP_400_BAD_REQUEST,
-            )
+            print(f"[LOGOUT] Failed to revoke refresh token, status: {status}")
+            # Don't return error, continue to revoke access token
 
-        request.POST.update(
-            {
-                "token_type_hint": "access_token",
-                "token": access_token,
-            }
-        )
-        url, headers, body, status = self.create_revocation_response(request)
+        post_data = QueryDict('', mutable=True)
+        post_data.update({
+            "client_id": ECOMMERCE_CLIENT_ID,
+            "client_secret": ECOMMERCE_CLIENT_SECRET,
+            "token_type_hint": "access_token",
+            "token": access_token,
+        })
+        request._request.POST = post_data
+        url, headers, body, status = self.create_revocation_response(request._request)
         if status != HTTP_200_OK:
-            return Response(
-                content={"error": _("Can not revoke access token.")},
-                status=HTTP_400_BAD_REQUEST,
-            )
+            print(f"[LOGOUT] Failed to revoke access token, status: {status}")
+            # Don't return error, continue to clear session
 
         try:
             request.session.flush()
+            print(f"[LOGOUT] Session flushed successfully")
         except Exception as e:
-            print(f"Error flushing session: {e}")
+            print(f"[LOGOUT] Error flushing session: {e}")
+        
         return Response({"message": _("Logout success!")}, status=HTTP_200_OK)
     
     @action(detail=False, methods=[Http.HTTP_POST], url_path="forgot_password", permission_classes=[AllowAny], authentication_classes=[])
@@ -444,9 +548,11 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             auth_header = request.META.get('HTTP_AUTHORIZATION')
             if auth_header and auth_header.startswith('Bearer '):
                 token = auth_header.split(' ')[1]
-                print(f"Userinfo: Trying to find customer by token: {token}")
+                print(f"Userinfo: Trying to find customer by token")
                 from django.core.cache import cache
-                cache_key = f'customer_token_{token}'
+                import hashlib
+                token_hash = hashlib.sha256(token.encode()).hexdigest()
+                cache_key = f'customer_token_{token_hash}'
                 customer_id = cache.get(cache_key)
                 print(f"Userinfo: Found customer_id from cache: {customer_id}")
 
@@ -479,15 +585,17 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             auth_header = request.META.get('HTTP_AUTHORIZATION')
             if auth_header and auth_header.startswith('Bearer '):
                 token = auth_header.split(' ')[1]
-                print(f"Trying to find customer by token: {token}")
+                print(f"Trying to find customer by token")
                 from django.core.cache import cache
-                cache_key = f'customer_token_{token}'
+                import hashlib
+                token_hash = hashlib.sha256(token.encode()).hexdigest()
+                cache_key = f'customer_token_{token_hash}'
                 customer_id = cache.get(cache_key)
                 print(f"Found customer_id from cache: {customer_id}")
                 if customer_id:
-                    print(f"Successfully authenticated with token: {token}")
+                    print(f"Successfully authenticated with token")
                 else:
-                    print(f"Token {token} not found in cache")
+                    print(f"Token not found in cache")
             
             if not customer_id:
                 customer_id = request.session.get('customer_id')
@@ -543,7 +651,9 @@ class CustomerViewSet(OAuthLibMixin, BaseViewSet):
             if auth_header and auth_header.startswith('Bearer '):
                 token = auth_header.split(' ')[1]
                 from django.core.cache import cache
-                cache_key = f'customer_token_{token}'
+                import hashlib
+                token_hash = hashlib.sha256(token.encode()).hexdigest()
+                cache_key = f'customer_token_{token_hash}'
                 customer_id = cache.get(cache_key)
             if not customer_id:
                 customer_id = request.session.get('customer_id')

@@ -47,7 +47,6 @@ const removeItem = () => {
         class="w-full h-full object-cover"
       />
     </div>
-    -->
     <div class="flex-1 min-w-0">
       <h4 class="text-sm font-medium text-gray-900 truncate">
         {{ item.name }}

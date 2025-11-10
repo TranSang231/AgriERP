@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { reactive, ref } from 'vue'
+import { useRouter, useRoute } from 'nuxt/app'
 import { useCustomersService } from '~/services/customers'
 const router = useRouter()
 const { register } = useCustomersService()
@@ -28,7 +30,7 @@ async function onSubmit() {
     })
     
     // Check if registration was successful and has access token
-    if (result && result.access_token) {
+    if (result && (result as any).access_token) {
       alert('Đăng ký thành công! Bạn đã được tự động đăng nhập.')
       // User is already logged in, redirect to home or dashboard
       router.push('/')

@@ -260,15 +260,19 @@ const { logout } = useCustomersService();
 
 const onLogout = async () => {
   try {
-    await logout();
-    auth.logout(); 
+    const result = await logout();
+    auth.logout();
+    cart.clear(); // Clear cart items when logging out
     closeMenus();
     await navigateTo('/auth/login'); 
     const { $toast } = useNuxtApp();
-    $toast.success('Đăng xuất thành công');
+    if (result?.success) {
+      $toast.success('Đăng xuất thành công');
+    }
   } catch (error) {
     console.error("Logout failed:", error);
     auth.logout();
+    cart.clear(); // Clear cart items even if logout API fails
     await navigateTo('/auth/login');
     const { $toast } = useNuxtApp();
     $toast.success('Đăng xuất thành công');

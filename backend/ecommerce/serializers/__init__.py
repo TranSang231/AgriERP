@@ -12,3 +12,5 @@ from .product_image import ProductImageSerializer
 from .cart import CartSerializer
 from .order import OrderSerializer
 from .goods_receipt import GoodsReceiptSerializer, GoodsReceiptItemSerializer
+from .inventory import InventorySerializer, InventoryShortSerializer, InventoryTransactionSerializer
+from .inventory_configuration import InventoryConfigurationSerializer

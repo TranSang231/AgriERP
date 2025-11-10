@@ -64,7 +64,7 @@
                         <div v-if="!profileForm.avatar" class="text-6xl font-bold text-orange-600">{{ (profileForm.first_name || 'U')[0] }}</div>
                         <img v-if="profileForm.avatar" :src="profileForm.avatar" alt="Profile" class="w-full h-full object-cover">
                       </div>
-                      <button @click="toggleEdit('avatar')" class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50">
+                      <button v-if="canUploadAvatar()" @click="toggleEdit('avatar')" class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50">
                         <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                       </button>
                     </div>
@@ -77,7 +77,7 @@
                     </div>
 
                     <div class="mt-8 text-left">
-                      <div v-if="!showPasswordForm">
+                      <div v-if="!showPasswordForm && canChangePassword()">
                         <button @click="togglePasswordForm" class="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                           <span>{{ t('profile.password.changeButton') }}</span>
@@ -123,7 +123,7 @@
                       <form @submit.prevent="updateProfile" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.emailLabel') }}</label><button type="button" @click="toggleEdit('email')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
+                            <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.emailLabel') }}</label><button v-if="canEditProfile()" type="button" @click="toggleEdit('email')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                             <input v-model="profileForm.email" :disabled="editingField !== 'email'" type="email" placeholder="email@example.com" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'email' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
                             <div v-if="editingField === 'email'" class="flex space-x-2 mt-2">
                               <button type="button" @click="saveField('email')" :disabled="loading" class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">{{ loading ? t('profile.actions.saving') : t('profile.actions.save') }}</button>
@@ -131,7 +131,7 @@
                             </div>
                           </div>
                           <div>
-                            <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.firstNameLabel') }}</label><button type="button" @click="toggleEdit('first_name')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
+                            <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-gray-700">{{ t('profile.info.firstNameLabel') }}</label><button v-if="canEditProfile()" type="button" @click="toggleEdit('first_name')" class="p-1 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button></div>
                             <input v-model="profileForm.first_name" :disabled="editingField !== 'first_name'" type="text" :placeholder="t('profile.info.firstNamePlaceholder')" :class="['w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm', editingField === 'first_name' ? 'border-gray-200' : 'border-gray-200 bg-gray-50']">
                             <div v-if="editingField === 'first_name'" class="flex space-x-2 mt-2">
                               <button type="button" @click="saveField('first_name')" :disabled="loading" class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">{{ loading ? t('profile.actions.saving') : t('profile.actions.save') }}</button>
@@ -230,11 +230,14 @@ import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '~/stores/auth';
 import { useCustomersService } from '~/services/customers';
+import { useActionPermissions } from '~/composables/useActionPermissions';
+import { useNuxtApp, navigateTo } from 'nuxt/app';
 
 const { t } = useI18n();
 const auth = useAuthStore();
 const customersService = useCustomersService();
-const { $toast } = useNuxtApp();
+const { $toast } = useNuxtApp() as any;
+const { canEditProfile, canChangePassword, canUploadAvatar, validateAction } = useActionPermissions();
 
 const loading = ref(false);
 const editingField = ref<string | null>(null);
@@ -307,6 +310,13 @@ const updateProfile = async () => {
 };
 
 const toggleEdit = (fieldName: string) => {
+  // Check permission before allowing edit
+  const validation = validateAction('edit_profile');
+  if (!validation.allowed) {
+    $toast.error(validation.reason || 'No permission to edit profile');
+    return;
+  }
+
   if (editingField.value === fieldName) {
     cancelEdit();
   } else {
@@ -324,6 +334,13 @@ const cancelEdit = () => {
 };
 
 const saveField = async (fieldName: string) => {
+  // Check permission before saving
+  const validation = validateAction('edit_profile');
+  if (!validation.allowed) {
+    $toast.error(validation.reason || 'No permission to edit profile');
+    return;
+  }
+
   try {
     loading.value = true;
     const updateData: any = {};
@@ -353,6 +370,13 @@ const saveField = async (fieldName: string) => {
 };
 
 const handleImageUpload = async (event: any) => {
+  // Check permission before uploading
+  const validation = validateAction('edit_profile');
+  if (!validation.allowed) {
+    $toast.error(validation.reason || 'No permission to upload avatar');
+    return;
+  }
+
   const file = event.target.files?.[0];
   if (!file) return;
   const reader = new FileReader();
@@ -388,6 +412,13 @@ const cancelPasswordChange = () => {
 };
 
 const changePassword = async () => {
+  // Check permission before changing password
+  const validation = validateAction('change_password');
+  if (!validation.allowed) {
+    $toast.error(validation.reason || 'No permission to change password');
+    return;
+  }
+
   if (!passwordForm.value.current_password) return $toast.error(t('profile.notifications.currentPasswordRequired'));
   if (!passwordForm.value.new_password) return $toast.error(t('profile.notifications.newPasswordRequired'));
   if (passwordForm.value.new_password.length < 6) return $toast.error(t('profile.notifications.newPasswordMinLength'));

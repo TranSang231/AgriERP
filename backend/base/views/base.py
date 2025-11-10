@@ -57,43 +57,89 @@ class BaseViewSet(viewsets.ModelViewSet):
         page = params.get('page', None)
         if page is not None:
             del params['page']
+        # Support limit parameter (alias for page_size)
+        limit = params.get('limit', None)
+        if limit is not None:
+            if page_size is None:  # Use limit as page_size if page_size not provided
+                page_size = limit
+            del params['limit']
         # Support ordering parameter
         ordering = params.get('ordering', None)
         if ordering is not None:
             del params['ordering']
 
-        # Normalize aliases
+        # Normalize aliases and handle category_id
+        # If category_id exists, convert it for proper filtering
+        if 'category_id' in params:
+            category_id_value = params.get('category_id')
+            # Only normalize if we have categories param already or if value is valid
+            if category_id_value and category_id_value not in {"NaN", "nan", "undefined", "null", "None", "", "Null"}:
+                params['categories'] = category_id_value
+                del params['category_id']
+        
         if 'category' in params and 'categories' not in params:
             params['categories'] = params.get('category')
             del params['category']
 
         # Remove invalid placeholder values
-        invalid_values = {"NaN", "nan", "undefined", "null", "None", ""}
+        invalid_values = {"NaN", "nan", "undefined", "null", "None", "", "Null"}
 
         query = None
         if keyword and len(self.search_map) > 0:
             query = Q()
             for field, op in self.search_map.items():
-                kwargs = {'{0}__{1}'.format(field, op): keyword}
-                query |= Q(**kwargs)
+                try:
+                    kwargs = {'{0}__{1}'.format(field, op): keyword}
+                    query |= Q(**kwargs)
+                except Exception:
+                    # Field doesn't exist or invalid, skip it
+                    continue
 
         for param, value in params.items():
             # Ignore empty or invalid values
             if value is None or (isinstance(value, str) and value.strip() in invalid_values):
                 continue
-            if param[-2:] == '[]':
-                values = params.getlist(param)
-                if not values:
-                    continue
-                kwargs = {'{0}__in'.format(param.rstrip('[]')): values}
-            else:
-                kwargs = {'{0}__exact'.format(param): value}
-            query = Q(**kwargs) if query is None else query & Q(**kwargs)
+            
+            # Skip parameters that are purely numeric (likely malformed URL encoding)
+            # or contain only special characters that aren't valid field names
+            if param.isdigit() or not param.replace('_', '').replace('-', '').isalnum():
+                continue
+                
+            try:
+                if param[-2:] == '[]':
+                    values = params.getlist(param)
+                    # Filter out invalid values from the list
+                    valid_values = [v for v in values if v not in invalid_values]
+                    if not valid_values:
+                        continue
+                    kwargs = {'{0}__in'.format(param.rstrip('[]')): valid_values}
+                else:
+                    kwargs = {'{0}__exact'.format(param): value}
+                
+                # Try to build the query
+                if query is None:
+                    query = Q(**kwargs)
+                else:
+                    query = query & Q(**kwargs)
+            except Exception:
+                # Field doesn't exist or other error, skip this parameter
+                continue
 
+        # Wrap filter in try-except to handle FieldError gracefully
         if query is not None:
-            queryset = queryset.filter(query)
+            try:
+                queryset = queryset.filter(query)
+            except Exception:
+                # Field doesn't exist in model, return empty queryset or original queryset
+                pass
+                
         if ordering is not None and ordering != '':
-            queryset = queryset.order_by(ordering)
+            try:
+                queryset = queryset.order_by(ordering)
+            except Exception:
+                # Invalid ordering, skip it
+                pass
+                
         return queryset, page_size
 
     def create(self, request, *args, **kwargs):

@@ -6,7 +6,7 @@
         <NuxtLink :to="`/products/${product.id}`" class="block">
           <img
             :src="primaryImage"
-            :alt="product?.name?.origin || product?.name || 'Product'"
+            :alt="localize(product?.name) || 'Product'"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
@@ -25,7 +25,7 @@
         <button
           @click="addToCart"
           class="bg-white text-gray-700 hover:bg-orange-500 hover:text-white p-2 rounded-full shadow-md transition-colors duration-200 mb-2 block"
-          :disabled="product.stock !== undefined && product.stock !== null && product.stock === 0"
+          :disabled="!canAddToCart"
         >
           <svg
             class="w-4 h-4"
@@ -64,23 +64,23 @@
 
       <!-- Out of Stock Overlay -->
       <div
-        v-if="product.stock === 0"
+        v-if="!canAddToCart"
         class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
       >
-        <span class="text-white font-semibold">Out of Stock</span>
+        <span class="text-white font-semibold">{{ stockStatusText }}</span>
       </div>
     </div>
 
     <div class="p-4">
       <div class="text-xs text-gray-500 mb-1">
-        {{ product.categories?.[0]?.name?.origin || product.category?.name || '' }}
+        {{ localize(product.category?.name) || '' }}
       </div>
 
       <h3
         class="font-semibold text-gray-800 mb-2 line-clamp-2 hover:text-orange-500 transition-colors cursor-pointer"
       >
         <NuxtLink :to="`/products/${product.id}`">
-          {{ product?.name?.origin || product?.name }}
+          {{ localize(product?.name) }}
         </NuxtLink>
       </h3>
 
@@ -122,7 +122,9 @@
           </span>
         </div>
 
-        <div class="text-xs text-gray-500">Stock: {{ product.in_stock ?? product.stock }}</div>
+        <div class="text-xs" :class="stockStatusClass">
+          {{ stockStatusText }}: {{ availableQuantity }}
+        </div>
       </div>
     </div>
   </div>
@@ -134,6 +136,7 @@ import { useCartStore } from "~/stores/cart";
 import { useCurrency } from "~/composables/useCurrency";
 import { computed, onMounted, watch } from "vue";
 import { usePromotionsStore } from "~/stores/promotions";
+import { useLocalize } from "~/composables/useLocalize";
 
 interface Props {
   product: Product;
@@ -143,6 +146,7 @@ const props = defineProps<Props>();
 const cartStore = useCartStore();
 const { format } = useCurrency();
 const promotionsStore = usePromotionsStore();
+const { localize } = useLocalize();
 const primaryImage = computed(() => {
   const images = (props.product as any)?.images;
   if (Array.isArray(images) && images.length > 0) {
@@ -194,17 +198,51 @@ const discountPercentage = computed(() => {
   return 0;
 });
 
+// Inventory-related computed properties
+const availableQuantity = computed(() => {
+  // Use inventory data if available, otherwise fallback to in_stock
+  if (props.product.inventory?.available_quantity !== undefined) {
+    return props.product.inventory.available_quantity;
+  }
+  return props.product.in_stock || 0;
+});
+
+const canAddToCart = computed(() => {
+  return availableQuantity.value > 0;
+});
+
+const stockStatusText = computed(() => {
+  if (props.product.inventory?.is_out_of_stock) {
+    return 'Hết hàng';
+  }
+  if (props.product.inventory?.is_low_stock) {
+    return 'Sắp hết hàng';
+  }
+  if (availableQuantity.value > 0) {
+    return 'Còn hàng';
+  }
+  return 'Hết hàng';
+});
+
+const stockStatusClass = computed(() => {
+  if (props.product.inventory?.is_out_of_stock || availableQuantity.value === 0) {
+    return 'text-red-500';
+  }
+  if (props.product.inventory?.is_low_stock) {
+    return 'text-yellow-500';
+  }
+  return 'text-green-500';
+});
+
 const addToCart = () => {
-  const hasStockInfo = props.product.stock !== undefined && props.product.stock !== null;
-  const canAdd = hasStockInfo ? props.product.stock > 0 : true;
-  if (canAdd) {
+  if (canAddToCart.value) {
     cartStore.add({
       productId: props.product.id,
-      name: props.product.name,
+      name: localize(props.product.name),
       price: effectiveSalePrice.value,
       originalPrice: props.product.price,
       qty: 1,
-      image: props.product.thumbnail || primaryImage.value,
+      image: primaryImage.value,
     });
   }
 };

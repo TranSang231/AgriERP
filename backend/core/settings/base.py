@@ -75,9 +75,9 @@ ECOMMERCE_CLIENT_ID = (
     else env("ECOMMERCE_CLIENT_ID")
 )
 ECOMMERCE_CLIENT_SECRET = (
-    os.environ["BUSINESS_CLIENT_SECRET"]
-    if "BUSINESS_CLIENT_SECRET" in os.environ
-    else env("BUSINESS_CLIENT_SECRET")
+    os.environ["ECOMMERCE_CLIENT_SECRET"]
+    if "ECOMMERCE_CLIENT_SECRET" in os.environ
+    else env("ECOMMERCE_CLIENT_SECRET")
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -131,6 +131,33 @@ CORS_EXPOSE_HEADERS = [
     'ETag'
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# Allow custom headers (e.g., Idempotency-Key, Cache-Control)
+try:
+    from corsheaders.defaults import default_headers
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        'idempotency-key',
+        'cache-control',
+        'pragma',
+        'expires',
+    ]
+except Exception:
+    # Fallback if corsheaders.defaults is unavailable
+    CORS_ALLOW_HEADERS = [
+        'accept',
+        'accept-encoding',
+        'authorization',
+        'content-type',
+        'dnt',
+        'origin',
+        'user-agent',
+        'x-csrftoken',
+        'x-requested-with',
+        'idempotency-key',
+        'cache-control',
+        'pragma',
+        'expires',
+    ]
 
 ALLOWED_HOSTS = env.list(
     'DJANGO_ALLOWED_HOSTS',

@@ -1,5 +1,6 @@
 import BaseService from "../base";
 import { useCustomersStore } from '@/stores/e-commerce/customers';
+import { shouldFetch, createCachedEntry } from '@/utils/caching';
 
 class CustomerService extends BaseService {
   get entity() {
@@ -19,7 +20,56 @@ class CustomerService extends BaseService {
         throw error;
       }
     }     
+  }
+
+  async createCustomer(customerData) {
+    try {
+      const response = await this.create(customerData);
+      // Refresh the store after creating
+      await this.fetch(true);
+      return response;
+    } catch (error) {
+      throw error;
     }
+  }
+
+  async updateCustomer(customerData) {
+    try {
+      const response = await this.update(customerData);
+      // Refresh the store after updating
+      await this.fetch(true);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteCustomer(customerId) {
+    try {
+      const response = await this.delete(customerId);
+      // Refresh the store after deleting
+      await this.fetch(true);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getCustomer(customerId) {
+    try {
+      return await this.get(customerId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async searchCustomers(searchParams) {
+    try {
+      return await this.gets(searchParams);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new CustomerService();

@@ -6,7 +6,7 @@
       :collapsible="true"
       :service="GoodsReceiptService"
       :rules="rules"
-      :editable="canEdit"
+      :editable="canEdit && !isApplied"
       :default="defaultData"
       :nestedFields="nestedFields"
       :sendFullOnUpdate="true"
@@ -41,6 +41,7 @@
           <table>
             <tr>
               <th class="text-left px-2">{{ t('Product') }}</th>
+              <th class="text-left px-2">{{ t('Unit') }}</th>
               <th class="text-right px-2">{{ t('Quantity') }}</th>
               <th class="text-right px-5">{{ t('Unit_cost') }}</th>
               <th class="text-right px-2">{{ t('Amount') }}</th>
@@ -51,7 +52,12 @@
                 <el-select v-if="scope.editing" collapse-tags value-key="id" v-model="scope.current.items[index].product_id" :placeholder="t('Pick_options')" @change="(val) => onProductChange(val, index)">
                   <el-option v-for="p in productsStore.allProducts" :key="p.id" :label="p.name.origin" :value="p.id" />
                 </el-select>
-                <span v-else>{{ productsStore.productName(item.product_id) }}</span>
+                <span v-else>{{ item.product_name || productsStore.productName(item.product_id) }}</span>
+              </td>
+              <td class="px-2">
+                <span v-if="item.unit">{{ item.unit.origin }}</span>
+                <span v-else-if="scope.current.items[index].product_id">{{ getProductUnit(scope.current.items[index].product_id) }}</span>
+                <span v-else>-</span>
               </td>
               <td class="text-right px-2">
                 <el-input v-if="scope.editing" v-model.number="scope.current.items[index].quantity" type="number" min="0" />
@@ -74,8 +80,30 @@
         <el-divider />
         <div class="flex flex-row items-center justify-between">
           <span class="font-bold">{{ t('Total_ammount') }}: {{ totalAmount.toLocaleString() }} VND</span>
-          <el-button v-if="canEdit && scope.current && scope.current.id && !scope.current.is_applied" type="primary" @click="onApply(scope.current.id)">{{ t('Apply') }}</el-button>
-          <el-tag v-else-if="scope.current && scope.current.is_applied" type="success">{{ t('Applied') }}</el-tag>
+          <div class="flex flex-row gap-2 items-center">
+            <!-- Apply Button -->
+            <el-button 
+              v-if="canEdit && scope.current && scope.current.id && !scope.current.is_applied" 
+              type="primary" 
+              @click="onApply(scope.current.id)"
+            >
+              {{ t('Apply') }}
+            </el-button>
+            
+            <!-- Unapply Button -->
+            <el-button 
+              v-if="canEdit && scope.current && scope.current.id && scope.current.is_applied" 
+              type="warning" 
+              @click="onUnapply(scope.current.id)"
+            >
+              {{ t('Unapply') }}
+            </el-button>
+            
+            <!-- Status Tag -->
+            <el-tag v-if="scope.current && scope.current.is_applied" type="success">
+              {{ t('Applied') }}
+            </el-tag>
+          </div>
         </div>
       </template>
     </ModelForm>
@@ -92,6 +120,7 @@ import GoodsReceiptService from '@/services/e-commerce/goods_receipt';
 import ProductService from '@/services/e-commerce/product';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ElMessageBox } from 'element-plus';
 
 const props = defineProps({
   defaultData: {
@@ -123,6 +152,10 @@ const canEdit = computed(() => {
   return oauthStore.hasOneOfScopes(["ecommerce:goods-receipts:edit", "ecommerce:orders:edit"]);
 });
 
+const isApplied = computed(() => {
+  return modelForm.value && modelForm.value.current && modelForm.value.current.is_applied;
+});
+
 const onAddItem = () => {
   if (modelForm.value) {
     let item = {
@@ -144,7 +177,16 @@ const removeItem = (index) => {
 }
 
 const onProductChange = (id, index) => {
-  // placeholder for future auto-fill unit cost or others
+  // Auto-fill unit from product
+  const product = productsStore.allProducts.find(p => p.id === id);
+  if (product && product.unit && modelForm.value) {
+    modelForm.value.current.items[index].unit_id = product.unit.id;
+  }
+}
+
+const getProductUnit = (productId) => {
+  const product = productsStore.allProducts.find(p => p.id === productId);
+  return product && product.unit ? product.unit.origin : '-';
 }
 
 const lineAmount = (item) => {
@@ -169,6 +211,30 @@ const onApply = async (id) => {
   await GoodsReceiptService.apply(id);
   // refresh
   location.reload();
+}
+
+const onUnapply = async (id) => {
+  try {
+    await ElMessageBox.confirm(
+      t('Unapply_goods_receipt_confirm_message', 'This will reverse all stock changes made by this receipt. Are you sure you want to continue?'),
+      t('Confirm_unapply', 'Confirm Unapply'),
+      {
+        confirmButtonText: t('Yes'),
+        cancelButtonText: t('No'),
+        type: 'warning',
+      }
+    );
+    
+    await GoodsReceiptService.unapply(id);
+    // refresh
+    location.reload();
+  } catch (e) {
+    if (e === 'cancel') {
+      // User cancelled
+      return;
+    }
+    throw e;
+  }
 }
 
 onMounted(() => {

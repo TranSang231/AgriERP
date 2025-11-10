@@ -5,6 +5,7 @@ from ..models import ProductCategory, Product
 from .product_category import ProductCategorySerializer
 from .product_image import ProductImageSerializer
 from .promotion import PromotionSerializer
+from .inventory import InventoryShortSerializer
 
 
 class ProductSerializer(WritableNestedSerializer):
@@ -18,6 +19,29 @@ class ProductSerializer(WritableNestedSerializer):
                                                    queryset=ProductCategory.objects.all(),
                                                    source='categories')
     promotions = PromotionSerializer(many=True, required=False, read_only=True)
+    inventory = InventoryShortSerializer(read_only=True)
+    
+    # ✅ READ-ONLY fields from Product @property (reads from Inventory)
+    in_stock = serializers.SerializerMethodField()
+    available_stock = serializers.SerializerMethodField()
+    is_low_stock = serializers.SerializerMethodField()
+    is_out_of_stock = serializers.SerializerMethodField()
+    
+    def get_in_stock(self, obj):
+        """Get stock from Inventory via Product.in_stock property"""
+        return obj.in_stock  # Calls @property which reads from Inventory
+    
+    def get_available_stock(self, obj):
+        """Get available stock (current - reserved)"""
+        return obj.available_stock
+    
+    def get_is_low_stock(self, obj):
+        """Check if stock is low"""
+        return obj.is_low_stock
+    
+    def get_is_out_of_stock(self, obj):
+        """Check if stock is out"""
+        return obj.is_out_of_stock
     
     class Meta:
         model = Product
@@ -29,10 +53,14 @@ class ProductSerializer(WritableNestedSerializer):
             "description",
             "price",
             "unit",
-            "in_stock",
+            "in_stock",  # READ-ONLY via SerializerMethodField
+            "available_stock",  # NEW: available for sale
+            "is_low_stock",  # NEW: low stock indicator
+            "is_out_of_stock",  # NEW: out of stock indicator
             "categories",
             "category_ids",
             "promotions",
+            "inventory",
             "weight",
             "length",
             "width",
@@ -50,6 +78,6 @@ class ProductSerializer(WritableNestedSerializer):
             'height': {'required': False},
             'tax_rate': {'required': False}
         }
-        read_only_fields = ["id", "promotions", "created_at", "updated_at"]
+        read_only_fields = ["id", "promotions", "in_stock", "available_stock", "is_low_stock", "is_out_of_stock", "created_at", "updated_at"]
         nested_create_fields = ["name", "unit", "images", "description"]
         nested_update_fields = ["name", "unit", "images", "description"]

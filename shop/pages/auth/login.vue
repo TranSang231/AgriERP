@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { reactive, ref, computed } from 'vue'
+import { useRouter, useRoute } from 'nuxt/app'
+import { useAuthStore } from '~/stores/auth'
 import { useCustomersService } from '~/services/customers'
 const router = useRouter()
+const route = useRoute()
 const { login } = useCustomersService()
 const auth = useAuthStore()
 
@@ -10,6 +14,12 @@ const form = reactive({ username: '', password: '' })
 const loading = ref(false)
 const err = ref('')
 
+// Lấy returnUrl từ query parameter
+const returnUrl = computed(() => {
+  const url = route.query.returnUrl as string
+  return url && url !== '/auth/login' ? url : '/'
+})
+
 async function onSubmit() {
   loading.value = true
   err.value = ''
@@ -17,7 +27,8 @@ async function onSubmit() {
     const result = await login({ username: form.username, password: form.password })
     console.log('Login successful:', result)
     alert('Đăng nhập thành công!')
-    router.push('/')
+    // Redirect về trang ban đầu hoặc trang chủ
+    router.push(returnUrl.value)
   } catch (e: any) {
     console.error('Login error:', e)
     err.value = e?.data?.error || e?.data?.detail || 'Login failed'

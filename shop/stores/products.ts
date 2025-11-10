@@ -116,7 +116,7 @@ export const useProductsStore = defineStore("products", {
     async filterByCategory(categoryId: number) {
       await this.fetchProducts({
         ...this.filters,
-        category: categoryId,
+        category: String(categoryId),
         page: 1,
       });
     },

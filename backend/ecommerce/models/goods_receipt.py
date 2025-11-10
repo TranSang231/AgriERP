@@ -4,13 +4,14 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 
 from base.models import TimeStampedModel
+from contents.models import ShortContent
 from ..models import Product
 
 
 class GoodsReceipt(TimeStampedModel):
-    supplier_name = models.CharField(max_length=255, blank=True)
-    reference_code = models.CharField(max_length=100, blank=True)
-    note = models.TextField(blank=True)
+    supplier_name = models.CharField(max_length=255, blank=True, default='')
+    reference_code = models.CharField(max_length=100, blank=True, default='')
+    note = models.TextField(blank=True, null=True)
     date = models.DateField(null=True, blank=True)
 
     # Stock application status
@@ -38,6 +39,13 @@ class GoodsReceiptItem(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="goods_receipt_items"
     )
+    unit = models.ForeignKey(
+        ShortContent,
+        on_delete=models.SET_NULL,
+        related_name="goods_receipt_item_units",
+        null=True,
+        blank=True
+    )
     quantity = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -58,6 +66,14 @@ class GoodsReceiptItem(TimeStampedModel):
 
     class Meta:
         db_table = "ecommerce_goods_receipt_items"
+
+    def save(self, *args, **kwargs):
+        # Auto-populate unit from product if not set
+        if self.product and not self.unit:
+            self.unit = self.product.unit
+        # Auto-calculate amount
+        self.amount = (self.quantity or Decimal("0.00")) * (self.unit_cost or Decimal("0.00"))
+        super().save(*args, **kwargs)
         ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):

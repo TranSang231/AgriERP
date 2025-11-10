@@ -95,3 +95,19 @@ class CustomOAuth2Validator(OAuth2Validator):
                     return True
         except Exception:
             return False
+
+    def validate_user(self, username, password, client, request, *args, **kwargs):
+        """
+        Override to handle user validation properly.
+        The parent class checks u.is_active, but when using JWT, it might create
+        a JWTUser object that doesn't have is_active attribute.
+        """
+        try:
+            u = User.objects.get(email=username)
+        except User.DoesNotExist:
+            return False
+        
+        if u is not None and u.is_active and u.check_password(password):
+            request.user = u
+            return True
+        return False

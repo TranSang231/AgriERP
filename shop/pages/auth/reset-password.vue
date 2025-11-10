@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'nuxt/app'
 import { useCustomersService } from '~/services/customers'
 
 const router = useRouter()

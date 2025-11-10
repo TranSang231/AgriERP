@@ -121,6 +121,7 @@
           categories: {
           title: 'Product Categories',
           subtitle: 'Select a category to view related products',
+          allProducts: 'All Products',
           loading: 'Loading categories...',
           error: {
             title: 'An error occurred',
@@ -622,6 +623,7 @@
         categories: {
           title: 'Danh mục sản phẩm',
           subtitle: 'Chọn danh mục để xem các sản phẩm liên quan',
+          allProducts: 'Tất cả sản phẩm',
           loading: 'Đang tải danh mục...',
           error: {
             title: 'Có lỗi xảy ra',

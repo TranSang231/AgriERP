@@ -479,6 +479,9 @@ const vi = {
   Apply: "Áp dụng",
   Applied: "Đã áp dụng",
   Not_applied: "Chưa áp dụng",
+  Unapply: "Thu hồi",
+  Confirm_unapply: "Xác nhận thu hồi",
+  Unapply_goods_receipt_confirm_message: "Hành động này sẽ hoàn tác tất cả thay đổi về tồn kho do phiếu nhập này tạo ra. Bạn có chắc chắn muốn tiếp tục?",
   New_product: "Thêm sản phẩm",
   Refresh: "Làm mới",
   Amount: "Thành tiền",
@@ -561,7 +564,22 @@ const vi = {
   Terms_of_Service: "Điều khoản dịch vụ",
   Content_Policy: "Chính sách nội dụng",
   Follow_us: "Theo dõi chúng tôi trên",
-  Copyright: "© 2025 - Toàn bộ bản quyền thuộc về Công ty TNHH PANDOSIMA."
+  Copyright: "© 2025 - Toàn bộ bản quyền thuộc về Công ty TNHH PANDOSIMA.",
+  
+  // Inventory threshold translations
+  Edit_Stock_Thresholds: "Chỉnh sửa ngưỡng tồn kho",
+  Minimum_Stock: "Tồn kho tối thiểu",
+  Maximum_Stock: "Tồn kho tối đa",
+  Stock_thresholds_updated_successfully: "Đã cập nhật ngưỡng tồn kho thành công",
+  Failed_to_update_thresholds: "Không thể cập nhật ngưỡng tồn kho",
+  Minimum_stock_cannot_be_negative: "Tồn kho tối thiểu không thể âm",
+  Maximum_stock_must_be_greater_than_minimum: "Tồn kho tối đa phải lớn hơn hoặc bằng tối thiểu",
+  Stock_In: "Nhập kho",
+  Stock_Out: "Xuất kho",
+  Adjustment: "Điều chỉnh",
+  Reserve: "Đặt trước",
+  Unreserve: "Hủy đặt trước"
 };
 
 export default vi;
+

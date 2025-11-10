@@ -280,10 +280,29 @@ export const useCartStore = defineStore('cart', () => {
   watch(
     () => [(auth.user && ((auth.user as any).id || (auth.user as any).email))],
     async (val, oldVal) => {
-      if (auth.user) {
-        await mergeGuestCartToUserCart()
-      } else {
-        // On logout switch to guest cart storage
+      const newUserId = val[0]
+      const oldUserId = oldVal?.[0]
+      
+      // User logged in (from no user or different user)
+      if (newUserId && newUserId !== oldUserId) {
+        // Clear existing items to avoid showing previous user's cart
+        items.value = []
+        hasLoaded.value = false
+        
+        // Merge guest cart if switching from guest to logged in
+        if (!oldUserId) {
+          await mergeGuestCartToUserCart()
+        } else {
+          // Switching between different user accounts - just load new user's cart
+          await load()
+        }
+      } 
+      // User logged out
+      else if (!newUserId && oldUserId) {
+        // Clear the authenticated user's cart from memory
+        items.value = []
+        hasLoaded.value = false
+        // Load guest cart from localStorage
         loadFromStorage()
       }
     },

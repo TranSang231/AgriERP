@@ -8,6 +8,10 @@ class GoodsReceiptService extends BaseService {
   apply(id) {
     return this.request().post(`${this.entity}/${id}/apply`);
   }
+
+  unapply(id) {
+    return this.request().post(`${this.entity}/${id}/unapply`);
+  }
 }
 
 export default new GoodsReceiptService();
