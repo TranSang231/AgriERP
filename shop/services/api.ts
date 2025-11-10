@@ -64,57 +64,28 @@ export function useApi() {
       headers['Idempotency-Key'] = headers['Idempotency-Key'] || cryptoRandomKey()
     }
     
-    // For mutation requests (POST, PUT, DELETE, PATCH), use $fetch to avoid caching
-    // For GET requests, use useFetch for better performance
-    const isMutation = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(upperMethod)
+    const fullUrl = `${config.public.apiBase}${path}`
+    console.log('🔥 API Request:', upperMethod, fullUrl, 'params:', (opts as any).params)
     
-    if (isMutation) {
-      // Use $fetch for mutations - no caching, always fresh request
-      return $fetch<T>(`${config.public.apiBase}${path}`, {
-        method: upperMethod as any,
-        headers,
-        credentials: 'include',
-        body: (opts as any).body,
-        onResponseError({ response }: { response: any }) {
-          if (response.status === 401) {
-            if (auth.hasRefreshToken()) {
-              attemptRefresh().catch(() => auth.clear())
-            } else {
-              auth.clear()
-            }
-          }
-        }
-      }) as any
-    }
-    
-    // Use useFetch for GET requests (with proper cache scoping)
-    const authScope = auth.accessToken ? auth.accessToken : 'guest'
-    const key = (opts as any).key ?? `${path}::${authScope}`
-    
-    const requestOptions: any = {
-      ...(opts as any),
+    // Always use $fetch for client-side requests to avoid mounted component warnings
+    // This is especially important for dynamic routes and client-side navigation
+    return $fetch<T>(fullUrl, {
+      method: upperMethod as any,
       headers,
-      credentials: 'include', // Include cookies in requests
-      key,
-      // Do not reuse payload-hydrated cache; always refetch in a new auth context
-      initialCache: false,
-      // Add onResponseError to handle 401 responses with refresh logic
+      credentials: 'include',
+      body: (opts as any).body,
+      params: (opts as any).params,
       onResponseError({ response }: { response: any }) {
+        console.error('❌ API Error:', response.status, response.statusText, 'URL:', fullUrl)
         if (response.status === 401) {
-          // Try to refresh token if available
           if (auth.hasRefreshToken()) {
-            attemptRefresh().catch(() => {
-              // Refresh failed, clear auth state
-              auth.clear()
-            })
+            attemptRefresh().catch(() => auth.clear())
           } else {
-            // No refresh token, clear auth state
             auth.clear()
           }
         }
       }
-    }
-    return useFetch<T>(`${config.public.apiBase}${path}`, requestOptions)
+    }) as any
   }
 
   // Helper function to determine required permission based on endpoint and method
@@ -127,16 +98,10 @@ export function useApi() {
       return CustomerPermission.EDIT_PROFILE
     }
     
-    // Order-related endpoints
-    if (path.includes('/orders') && method === 'GET') {
-      return CustomerPermission.VIEW_ORDERS
-    }
-    // For order creation, rely on server-side authentication; no client permission gate
-    if (path.includes('/orders') && method === 'POST') {
-      return null
-    }
-    if (path.includes('/orders') && method === 'PUT') {
-      return CustomerPermission.CANCEL_ORDER
+    // Order-related endpoints - rely on backend authentication for viewing own orders
+    // Backend will check if user is authenticated and filter orders by customer_id
+    if (path.includes('/orders')) {
+      return null  // No client-side permission check needed
     }
     
     // Cart-related endpoints

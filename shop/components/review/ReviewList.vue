@@ -3,18 +3,18 @@
     <!-- Sort Options -->
     <div class="flex items-center justify-between">
       <h3 class="text-lg font-semibold">
-        {{ reviews.length }} {{ $t('review.reviews') }}
+        {{ reviews.length }} đánh giá
       </h3>
       <select
         :value="sortBy"
         @change="$emit('sort-change', ($event.target as HTMLSelectElement).value)"
         class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
       >
-        <option value="newest">{{ $t('review.newest') }}</option>
-        <option value="oldest">{{ $t('review.oldest') }}</option>
-        <option value="highest_rating">{{ $t('review.highestRating') }}</option>
-        <option value="lowest_rating">{{ $t('review.lowestRating') }}</option>
-        <option value="most_helpful">{{ $t('review.mostHelpful') }}</option>
+        <option value="newest">Mới nhất</option>
+        <option value="oldest">Cũ nhất</option>
+        <option value="highest_rating">Đánh giá cao nhất</option>
+        <option value="lowest_rating">Đánh giá thấp nhất</option>
+        <option value="most_helpful">Hữu ích nhất</option>
       </select>
     </div>
     
@@ -28,7 +28,7 @@
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
       </svg>
-      <p class="mt-2 text-gray-500">{{ $t('review.noReviews') }}</p>
+      <p class="mt-2 text-gray-500">Chưa có đánh giá nào</p>
     </div>
     
     <!-- Review List -->
@@ -50,7 +50,7 @@
               <div class="flex items-center gap-2">
                 <span class="font-medium text-gray-900">{{ review.customer_name }}</span>
                 <span v-if="review.is_verified_purchase" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                  ✓ {{ $t('review.verifiedPurchase') }}
+                  ✓ Đã mua hàng
                 </span>
               </div>
               <div class="flex items-center gap-2 mt-1">
@@ -91,7 +91,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
             </svg>
-            {{ $t('review.helpful') }} ({{ review.helpful_count || 0 }})
+            Hữu ích ({{ review.helpful_count || 0 }})
           </button>
           
           <button
@@ -99,7 +99,7 @@
             @click="$emit('edit-click', review)"
             class="text-sm text-gray-600 hover:text-green-600 transition-colors"
           >
-            {{ $t('review.edit') }}
+            Sửa
           </button>
           
           <button
@@ -107,7 +107,7 @@
             @click="$emit('delete-click', review)"
             class="text-sm text-gray-600 hover:text-red-600 transition-colors"
           >
-            {{ $t('review.delete') }}
+            Xóa
           </button>
         </div>
       </div>
@@ -119,7 +119,7 @@
         @click="$emit('load-more')"
         class="px-6 py-3 bg-white border-2 border-green-600 text-green-600 font-medium rounded-lg hover:bg-green-50 transition-colors"
       >
-        {{ $t('review.loadMore') }}
+        Xem thêm
       </button>
     </div>
   </div>

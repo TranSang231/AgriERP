@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useCurrency } from '~/composables/useCurrency'
 import { useCartStore } from '~/stores/cart'
 import { useApi } from '~/services/api'
+import ProductReviews from '~/components/review/ProductReviews.vue'
 
 const { t } = useI18n()
 const cart = useCartStore()
@@ -22,14 +23,12 @@ onMounted(async () => {
   
   try {
     loading.value = true
-    const { data, error: productError } = await request(`/products/${productId}`)
+    const data = await request(`/products/${productId}`, {
+      method: 'GET'
+    })
     
-    if (productError?.value) {
-      throw productError.value
-    }
-    
-    if (data?.value) {
-      product.value = data.value
+    if (data) {
+      product.value = data
     } else {
       throw new Error(t('productDetail.error.notFound'))
     }
@@ -291,6 +290,12 @@ useHead({
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Product Reviews Section -->
+      <div class="mt-16">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8">Đánh giá sản phẩm</h2>
+        <ProductReviews :product-id="String(route.params.id)" />
       </div>
     </div>
   </div>

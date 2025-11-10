@@ -47,7 +47,8 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             try:
-                customer = Customer.objects.get(user=request.user)
+                user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
+                customer = Customer.objects.get(user_id=user_id)
                 return ReviewHelpful.objects.filter(
                     review=obj,
                     customer=customer
@@ -113,7 +114,8 @@ class ProductReviewCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Bạn phải đăng nhập để đánh giá")
         
         try:
-            customer = Customer.objects.get(user=request.user)
+            user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
+            customer = Customer.objects.get(user_id=user_id)
         except Customer.DoesNotExist:
             raise serializers.ValidationError("Không tìm thấy thông tin khách hàng")
         
@@ -121,15 +123,16 @@ class ProductReviewCreateSerializer(serializers.ModelSerializer):
         order = data.get('order')
         
         # Kiểm tra có thể review không
-        can_review, message = ProductReview.can_customer_review(
-            customer=customer,
-            product=product,
-            order=order,
-            exclude_review_id=self.instance.id if self.instance else None
-        )
-        
-        if not can_review:
-            raise serializers.ValidationError(message)
+        # Skip check if updating existing review
+        if not self.instance:
+            can_review, message = ProductReview.can_customer_review(
+                customer=customer,
+                product=product,
+                order=order
+            )
+            
+            if not can_review:
+                raise serializers.ValidationError(message)
         
         # Set customer từ request
         data['customer'] = customer

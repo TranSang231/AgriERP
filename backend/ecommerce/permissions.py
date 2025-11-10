@@ -25,7 +25,8 @@ class IsReviewOwnerOrReadOnly(permissions.BasePermission):
         
         # Write permissions chỉ cho owner
         try:
-            customer = Customer.objects.get(user=request.user)
+            user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
+            customer = Customer.objects.get(user_id=user_id)
             return obj.customer == customer
         except Customer.DoesNotExist:
             return False
@@ -46,34 +47,50 @@ class HasPurchasedProduct(permissions.BasePermission):
         
         if not request.user or not request.user.is_authenticated:
             self.message = "Bạn phải đăng nhập để đánh giá"
+            print(f"🔴 HasPurchasedProduct: User not authenticated")
             return False
         
         try:
-            customer = Customer.objects.get(user=request.user)
+            user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
+            print(f"🔍 HasPurchasedProduct: user_id = {user_id}")
+            
+            customer = Customer.objects.get(user_id=user_id)
+            print(f"✅ HasPurchasedProduct: Found customer = {customer.id}")
+            
             product_id = request.data.get('product')
+            print(f"🔍 HasPurchasedProduct: product_id = {product_id}")
             
             if not product_id:
                 self.message = "Thiếu thông tin sản phẩm"
                 return False
             
             # Kiểm tra có đơn hàng nào chứa sản phẩm và đã hoàn thành/đang giao
-            has_purchased = Order.objects.filter(
+            orders = Order.objects.filter(
                 customer=customer,
                 order_status__in=[OrderStatus.COMPLETED, OrderStatus.SHIPPED],
                 items__product_id=product_id
-            ).exists()
+            )
+            print(f"🔍 HasPurchasedProduct: Found {orders.count()} completed orders with product")
+            
+            has_purchased = orders.exists()
             
             if not has_purchased:
                 self.message = "Bạn cần mua và nhận sản phẩm này trước khi đánh giá"
+                print(f"❌ HasPurchasedProduct: No purchase found")
                 return False
             
+            print(f"✅ HasPurchasedProduct: Permission granted")
             return True
             
         except Customer.DoesNotExist:
             self.message = "Không tìm thấy thông tin khách hàng"
+            print(f"❌ HasPurchasedProduct: Customer not found")
             return False
         except Exception as e:
             self.message = f"Lỗi khi kiểm tra quyền: {str(e)}"
+            print(f"🔴 HasPurchasedProduct: Exception - {str(e)}")
+            import traceback
+            traceback.print_exc()
             return False
 
 
@@ -94,7 +111,8 @@ class IsCustomerOrReadOnly(permissions.BasePermission):
             return False
         
         try:
-            Customer.objects.get(user=request.user)
+            user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
+            Customer.objects.get(user_id=user_id)
             return True
         except Customer.DoesNotExist:
             return False

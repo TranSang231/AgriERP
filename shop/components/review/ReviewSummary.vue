@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-lg border border-gray-200 p-6">
-    <h3 class="text-lg font-semibold mb-4">{{ $t('review.customerReviews') }}</h3>
+    <h3 class="text-lg font-semibold mb-4">Đánh giá khách hàng</h3>
     
     <div v-if="loading" class="flex justify-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -15,7 +15,7 @@
           </div>
           <RatingStars :rating="statistics.average_rating || 0" />
           <div class="text-sm text-gray-500 mt-1">
-            {{ statistics.review_count || 0 }} {{ $t('review.reviews') }}
+            {{ statistics.review_count || 0 }} đánh giá
           </div>
         </div>
         
@@ -26,7 +26,7 @@
             :key="star"
             class="flex items-center gap-2"
           >
-            <span class="text-sm text-gray-600 w-12">{{ star }} {{ $t('review.star') }}</span>
+            <span class="text-sm text-gray-600 w-12">{{ star }} sao</span>
             <div class="flex-1 bg-gray-200 rounded-full h-2">
               <div
                 class="bg-yellow-400 h-2 rounded-full transition-all"
@@ -49,7 +49,7 @@
             ? 'bg-green-600 text-white' 
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
         >
-          {{ $t('review.all') }}
+          Tất cả
         </button>
         <button
           v-for="star in [5, 4, 3, 2, 1]"
@@ -69,7 +69,7 @@
             ? 'bg-blue-600 text-white' 
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
         >
-          ✓ {{ $t('review.verifiedPurchase') }}
+          ✓ Đã mua hàng
         </button>
       </div>
     </div>

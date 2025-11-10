@@ -102,9 +102,9 @@ export const useCartStore = defineStore('cart', () => {
       loadFromStorage()
       if (auth.user) {
         await ensureBackendAuthMapping()
-        const { data, error } = await getCart()
-        if (!error?.value && data?.value && Array.isArray(data.value.items)) {
-          const backendItems = data.value.items
+        const data = await getCart()
+        if (data && Array.isArray((data as any).items)) {
+          const backendItems = (data as any).items
           if (backendItems.length > 0) {
             items.value = backendItems.map((it: any) => ({
               itemId: it.id,
@@ -134,9 +134,9 @@ export const useCartStore = defineStore('cart', () => {
     try {
       if (auth.user) {
         await ensureBackendAuthMapping()
-        const { data, error } = await addToCart({ product_id: product.productId, quantity: quantityToAdd })
-        if (!error?.value && data?.value) {
-          const it: any = data.value
+        const data = await addToCart({ product_id: product.productId, quantity: quantityToAdd })
+        if (data) {
+          const it: any = data
           const found = items.value.find(i => i.productId === product.productId)
           if (found) {
             found.qty += quantityToAdd
@@ -249,8 +249,8 @@ export const useCartStore = defineStore('cart', () => {
       const guestItems: CartItem[] = raw ? JSON.parse(raw) : []
       if (!Array.isArray(guestItems) || guestItems.length === 0) return
 
-      const { data, error } = await getCart()
-      const backendItems = (!error?.value && data?.value?.items) ? data.value.items : []
+      const data = await getCart()
+      const backendItems = (data && (data as any).items) ? (data as any).items : []
       const productIdToBackend = new Map<number, any>()
       for (const it of backendItems) {
         const pid = it?.product?.id

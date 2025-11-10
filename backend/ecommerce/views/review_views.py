@@ -97,8 +97,9 @@ class ProductReviewViewSet(viewsets.ModelViewSet):
         review = self.get_object()
         
         # Lấy customer
+        user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
         try:
-            customer = Customer.objects.get(user=request.user)
+            customer = Customer.objects.get(user_id=user_id)
         except Customer.DoesNotExist:
             return Response(
                 {'detail': 'Không tìm thấy thông tin khách hàng'},
@@ -141,8 +142,9 @@ class ProductReviewViewSet(viewsets.ModelViewSet):
         """
         review = self.get_object()
         
+        user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
         try:
-            customer = Customer.objects.get(user=request.user)
+            customer = Customer.objects.get(user_id=user_id)
         except Customer.DoesNotExist:
             return Response(
                 {'detail': 'Không tìm thấy thông tin khách hàng'},
@@ -207,8 +209,9 @@ class ProductReviewViewSet(viewsets.ModelViewSet):
         Lấy danh sách reviews của user hiện tại
         GET /reviews/my_reviews/
         """
+        user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
         try:
-            customer = Customer.objects.get(user=request.user)
+            customer = Customer.objects.get(user_id=user_id)
         except Customer.DoesNotExist:
             return Response(
                 {'detail': 'Không tìm thấy thông tin khách hàng'},
@@ -228,45 +231,68 @@ class ProductReviewViewSet(viewsets.ModelViewSet):
         Kiểm tra có thể review sản phẩm không
         GET /reviews/can_review/?product_id=X&order_id=Y
         """
-        product_id = request.query_params.get('product_id')
-        order_id = request.query_params.get('order_id')
-        
-        if not product_id:
-            return Response(
-                {'detail': 'Thiếu product_id'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
         try:
-            customer = Customer.objects.get(user=request.user)
-            product = Product.objects.get(id=product_id)
+            product_id = request.query_params.get('product_id')
+            order_id = request.query_params.get('order_id')
+            
+            if not product_id:
+                return Response(
+                    {'detail': 'Thiếu product_id'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if user is authenticated
+            if not request.user.is_authenticated:
+                return Response(
+                    {'can_review': False, 'message': 'Vui lòng đăng nhập để đánh giá'},
+                    status=status.HTTP_200_OK
+                )
+            
+            # Get user ID from JWT token
+            user_id = request.user.id if hasattr(request.user, 'id') else str(request.user)
+            
+            try:
+                customer = Customer.objects.get(user_id=user_id)
+            except Customer.DoesNotExist:
+                return Response(
+                    {'can_review': False, 'message': 'Không tìm thấy thông tin khách hàng'},
+                    status=status.HTTP_200_OK
+                )
+            
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                return Response(
+                    {'can_review': False, 'message': 'Không tìm thấy sản phẩm'},
+                    status=status.HTTP_200_OK
+                )
+            
             order = None
             if order_id:
-                from ecommerce.models import Order
-                order = Order.objects.get(id=order_id, customer=customer)
-        except Customer.DoesNotExist:
+                try:
+                    from ecommerce.models import Order
+                    order = Order.objects.get(id=order_id, customer=customer)
+                except Order.DoesNotExist:
+                    return Response(
+                        {'can_review': False, 'message': 'Không tìm thấy đơn hàng'},
+                        status=status.HTTP_200_OK
+                    )
+            
+            can_review, message = ProductReview.can_customer_review(
+                customer=customer,
+                product=product,
+                order=order
+            )
+            
             return Response(
-                {'can_review': False, 'message': 'Không tìm thấy thông tin khách hàng'},
+                {'can_review': can_review, 'message': message},
                 status=status.HTTP_200_OK
             )
-        except Product.DoesNotExist:
+        except Exception as e:
+            import traceback
+            print(f"🔴 Error in can_review endpoint: {str(e)}")
+            print(traceback.format_exc())
             return Response(
-                {'can_review': False, 'message': 'Không tìm thấy sản phẩm'},
-                status=status.HTTP_200_OK
+                {'can_review': False, 'message': f'Lỗi hệ thống: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        except Order.DoesNotExist:
-            return Response(
-                {'can_review': False, 'message': 'Không tìm thấy đơn hàng'},
-                status=status.HTTP_200_OK
-            )
-        
-        can_review, message = ProductReview.can_customer_review(
-            customer=customer,
-            product=product,
-            order=order
-        )
-        
-        return Response(
-            {'can_review': can_review, 'message': message},
-            status=status.HTTP_200_OK
-        )

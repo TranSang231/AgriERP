@@ -28,14 +28,10 @@ onMounted(async () => {
 
   try {
     loading.value = true;
-    const { data, error: orderError } = await getOrder(orderId);
+    const data = await getOrder(orderId);
     
-    if (orderError?.value) {
-      throw orderError.value;
-    }
-    
-    if (data?.value) {
-      order.value = data.value;
+    if (data) {
+      order.value = data;
     } else {
       throw new Error(t('order.errorMessages.notFound'));
     }
