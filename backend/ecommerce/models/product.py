@@ -148,6 +148,7 @@ class Product(TimeStampedModel):
         """
         Helper method to reduce stock (e.g., order fulfillment).
         
+        
         Usage: product.reduce_stock(quantity=10, reason="Order fulfillment", user=request.user)
         """
         from .inventory import Inventory, InventoryTransaction
@@ -167,3 +168,32 @@ class Product(TimeStampedModel):
         )
         
         return inventory
+    
+    # ✅ REVIEW PROPERTIES
+    @property
+    def average_rating(self):
+        """Get average rating from approved reviews"""
+        from django.db.models import Avg
+        result = self.reviews.filter(is_approved=True).aggregate(avg=Avg('rating'))
+        return round(result['avg'] or 0, 1)
+    
+    @property
+    def review_count(self):
+        """Get total number of approved reviews"""
+        return self.reviews.filter(is_approved=True).count()
+    
+    @property
+    def rating_distribution(self):
+        """Get distribution of ratings (1-5 stars)"""
+        from django.db.models import Count
+        distribution = {i: 0 for i in range(1, 6)}
+        
+        ratings = self.reviews.filter(is_approved=True).values('rating').annotate(
+            count=Count('rating')
+        )
+        
+        for item in ratings:
+            distribution[item['rating']] = item['count']
+        
+        return distribution
+

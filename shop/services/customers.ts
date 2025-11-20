@@ -163,8 +163,12 @@ export function useCustomersService() {
   }
 
   async function fetchUser() {
-    const { data, error } = await request(`/customers/userinfo`)
-    if (!error.value) auth.user = data.value as any
+    try {
+      const data = await request(`/customers/userinfo`, { method: 'GET' })
+      auth.user = data as any
+    } catch (error) {
+      console.error('Error fetching user:', error)
+    }
   }
 
   async function forgotPassword(email: string) {
@@ -185,9 +189,8 @@ export function useCustomersService() {
 
   async function getProfile() {
     // Use the request() helper which properly handles auth headers
-    const { data, error } = await request<{ customer: any }>(`/customers/userinfo`)
-    if (error.value) throw error.value
-    return data.value
+    const data = await request<{ customer: any }>(`/customers/userinfo`, { method: 'GET' })
+    return data
   }
 
   async function updateProfile(payload: any) {
@@ -217,17 +220,15 @@ export function useCustomersService() {
       throw new Error('No refresh token available')
     }
     
-    const { data, error } = await request<{ access_token: string; refresh_token?: string; expires_in?: number }>(`/customers/refresh`, {
+    const data = await request<{ access_token: string; refresh_token?: string; expires_in?: number }>(`/customers/refresh`, {
       method: 'POST', 
       body: { refresh_token: auth.refreshToken }
     })
     
-    if (error.value) throw error.value
-    
     // Update tokens with new access token
-    auth.setTokens(data.value!.access_token, data.value!.refresh_token || auth.refreshToken, data.value!.expires_in)
+    auth.setTokens(data.access_token, data.refresh_token || auth.refreshToken, data.expires_in)
     
-    return data.value
+    return data
   }
 
   return { login, register, verify, logout, fetchUser, forgotPassword, resetPassword, getProfile, updateProfile, changePassword, refreshToken }

@@ -1,6 +1,7 @@
 from .product_category import ProductCategory
 from .product import Product
 from .product_image import ProductImage
+from .product_review import ProductReview, ReviewHelpful
 from .promotion import Promotion
 from .promotion_item import PromotionItem
 from .customer import Customer

@@ -180,10 +180,10 @@ async function loadWards(districtCode) {
 async function loadActivePromotions() {
   promotionLoading.value = true;
   try {
-    const { data, error } = await getActivePromotions();
-    if (!error?.value && data?.value) {
+    const data = await getActivePromotions();
+    if (data) {
       // Only show voucher-type promotions at checkout
-      availablePromotions.value = (data.value || []).filter((p: any) => (p?.type || '').toLowerCase() === 'voucher');
+      availablePromotions.value = (data || []).filter((p: any) => (p?.type || '').toLowerCase() === 'voucher');
     }
   } catch (error) {
     console.error('Error loading promotions:', error);

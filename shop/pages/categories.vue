@@ -13,9 +13,8 @@ const error = ref('')
 onMounted(async () => {
   try {
     loading.value = true
-    const { data, error: fetchError } = await getCategories()
-    if (fetchError?.value) throw fetchError.value
-    categories.value = (data?.value as any) || []
+    const data = await getCategories()
+    categories.value = (data as any) || []
   } catch (e: any) {
     error.value = e?.message || t('categories.error.loadFailed')
   } finally {

@@ -33,13 +33,25 @@ const fetchOrders = async () => {
       return;
     }
     const customerId = (auth.user as any)?.id;
-    const { data, error: ordersError } = await getOrders(customerId ? { customer_id: customerId } : { customer_id: 'me' });
+    const data = await getOrders(customerId ? { customer_id: customerId } : { customer_id: 'me' });
     
-    if (ordersError?.value) {
-      throw ordersError.value;
+    console.log('Orders API response:', data);
+    console.log('Type of data:', typeof data);
+    
+    // Handle paginated response
+    if (data && typeof data === 'object') {
+      if ('results' in data) {
+        orders.value = (data as any).results || [];
+      } else if (Array.isArray(data)) {
+        orders.value = data;
+      } else {
+        orders.value = [];
+      }
+    } else {
+      orders.value = [];
     }
     
-    orders.value = data?.value || [];
+    console.log('Final orders:', orders.value.length);
   } catch (e: any) {
     console.error('Lỗi khi tải danh sách đơn hàng:', e);
     error.value = e?.message || t('orders.error.loadFailed');

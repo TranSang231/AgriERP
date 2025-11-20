@@ -64,12 +64,15 @@ export function useOrderService() {
 
   const getOrders = (params?: any) => {
     return request<Order[]>("/orders", {
+      method: 'GET',
       params,
     });
   };
 
   const getOrder = (orderId: string) => {
-    return request<Order>(`/orders/${orderId}`);
+    return request<Order>(`/orders/${orderId}`, {
+      method: 'GET'
+    });
   };
 
   return {
