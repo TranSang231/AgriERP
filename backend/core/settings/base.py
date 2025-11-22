@@ -16,6 +16,12 @@ from oauth.tokens import signed_token_generator
 from . import env, BASE_DIR
 from ..scopes import scopes, default_scopes
 
+from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

@@ -168,6 +168,13 @@ const showMobileFilters = ref(false);
 const sortOption = ref("");
 const loadingMore = ref(false);
 
+// Utility: parse integer query param but allow 0
+function parseNumberQuery(val: unknown): number | undefined {
+  if (val === undefined || val === null || val === "") return undefined;
+  const n = parseInt(String(val), 10);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 // Load initial data
 onMounted(async () => {
   // Load categories
@@ -176,22 +183,18 @@ onMounted(async () => {
     categories.value = data.value as any;
   }
 
-  // Set initial filters from URL
+  // Set initial filters from URL (robust parsing)
   const initialFilters = {
     search: (route.query.search as string) || "",
-    category: (route.query.category as string) || undefined,
-    min_price: route.query.min_price
-      ? parseInt(route.query.min_price as string)
-      : undefined,
-    max_price: route.query.max_price
-      ? parseInt(route.query.max_price as string)
-      : undefined,
+    category: (typeof route.query.category !== "undefined" && route.query.category !== "" ? (route.query.category as string) : undefined),
+    min_price: parseNumberQuery(route.query.min_price),
+    max_price: parseNumberQuery(route.query.max_price),
     ordering: (route.query.ordering as string) || "",
     page: 1,
     page_size: 20,
   };
 
-  selectedCategoryId.value = initialFilters.category || null;
+  selectedCategoryId.value = initialFilters.category ?? null;
   sortOption.value = initialFilters.ordering;
 
   // Set filters and fetch products
@@ -203,21 +206,17 @@ onMounted(async () => {
 watch(
   () => route.query,
   async (newQuery) => {
-  const filters = {
+    const filters = {
       search: (newQuery.search as string) || "",
-      category: (newQuery.category as string) || undefined,
-      min_price: newQuery.min_price
-        ? parseInt(newQuery.min_price as string)
-        : undefined,
-      max_price: newQuery.max_price
-        ? parseInt(newQuery.max_price as string)
-        : undefined,
+      category: (typeof newQuery.category !== "undefined" && newQuery.category !== "" ? (newQuery.category as string) : undefined),
+      min_price: parseNumberQuery(newQuery.min_price),
+      max_price: parseNumberQuery(newQuery.max_price),
       ordering: (newQuery.ordering as string) || "",
       page: 1,
       page_size: 20,
     };
 
-    selectedCategoryId.value = filters.category || null;
+    selectedCategoryId.value = filters.category ?? null;
     sortOption.value = filters.ordering;
 
     productsStore.setFilters(filters);
@@ -230,12 +229,15 @@ const handleCategorySelect = async (categoryId: string | null) => {
   selectedCategoryId.value = categoryId;
   showMobileFilters.value = false;
 
-  const query = { ...route.query };
+  const query = { ...route.query } as any;
   if (categoryId) {
     query.category = categoryId;
   } else {
     delete query.category;
   }
+
+  // Reset to first page when category changes
+  if (query.page) delete query.page;
 
   router.push({ query });
 };
@@ -243,17 +245,27 @@ const handleCategorySelect = async (categoryId: string | null) => {
 const handleFiltersUpdate = async (filters: any) => {
   const query: any = { ...route.query };
 
-  if (filters.search) query.search = filters.search;
+  // search: only set if non-empty string
+  if (typeof filters.search !== "undefined" && filters.search !== "") query.search = filters.search;
   else delete query.search;
 
-  if (filters.min_price) query.min_price = filters.min_price.toString();
+  // category: accept empty string as clear
+  if (typeof filters.category !== "undefined" && filters.category !== null && filters.category !== "") query.category = filters.category;
+  else delete query.category;
+
+  // min_price / max_price: only set when not null/undefined
+  if (filters.min_price !== null && typeof filters.min_price !== "undefined") query.min_price = String(filters.min_price);
   else delete query.min_price;
 
-  if (filters.max_price) query.max_price = filters.max_price.toString();
+  if (filters.max_price !== null && typeof filters.max_price !== "undefined") query.max_price = String(filters.max_price);
   else delete query.max_price;
 
-  if (filters.ordering) query.ordering = filters.ordering;
+  // ordering
+  if (typeof filters.ordering !== "undefined" && filters.ordering !== "") query.ordering = filters.ordering;
   else delete query.ordering;
+
+  // always reset to first page on filter change
+  if (query.page) delete query.page;
 
   router.push({ query });
   showMobileFilters.value = false;
@@ -267,12 +279,14 @@ const handleClearFilters = () => {
 };
 
 const handleSort = () => {
-  const query = { ...route.query };
+  const query = { ...route.query } as any;
   if (sortOption.value) {
     query.ordering = sortOption.value;
   } else {
     delete query.ordering;
   }
+  // reset page
+  if (query.page) delete query.page;
   router.push({ query });
 };
 
