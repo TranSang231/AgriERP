@@ -105,6 +105,13 @@ DOCS_HOST = (
     else env.str("DOCS_HOST", default="127.0.0.1:8009")
 )
 
+# Scheme used to build absolute URLs for APIs/files
+DEFAULT_SCHEME = "https" if not DEBUG else "http"
+
+# Cloudflare tunnel / proxy support
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=True)
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
@@ -185,6 +192,14 @@ DEFAULT_SERVICE_EMAIL = env.str(
     "DEFAULT_SERVICE_EMAIL", default="Alpha <service@pandosima.com>"
 )
 OTP_EMAIL_SENDER = DEFAULT_FROM_EMAIL
+
+# VNPay Payment Gateway Configuration
+VNPAY_TMN_CODE = env.str("VNPAY_TMN_CODE", default="")
+VNPAY_HASH_SECRET_KEY = env.str("VNPAY_HASH_SECRET_KEY", default="")
+VNPAY_RETURN_URL = env.str("VNPAY_RETURN_URL", default="http://localhost:3010/payment/vnpay/return")
+VNPAY_IPN_URL = env.str("VNPAY_IPN_URL", default="")
+VNPAY_PAYMENT_URL = env.str("VNPAY_PAYMENT_URL", default="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html")
+VNPAY_API_URL = env.str("VNPAY_API_URL", default="https://sandbox.vnpayment.vn/merchant_webapi/api/transaction")
 
 #SMS
 TWILIO_ACCOUNT_SID = (
@@ -299,6 +314,7 @@ INSTALLED_APPS = [
     'firebase',
     'health_check',
     'django_extensions',
+    'tools'
 ]
 
 

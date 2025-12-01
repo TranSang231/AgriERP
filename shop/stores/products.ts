@@ -61,10 +61,10 @@ export const useProductsStore = defineStore("products", {
 
       try {
         const { getProducts } = useProductsService();
-        const { data } = await getProducts({ ...this.filters, ...filters });
+        // request returns JSON directly via $fetch, not { data, error }
+        const response = await getProducts({ ...this.filters, ...filters }) as any;
 
-        if (data.value) {
-          const response = data.value as any;
+        if (response) {
           this.products = response.results || [];
           this.pagination.count = response.count || 0;
           this.pagination.next = response.next || null;
@@ -84,10 +84,11 @@ export const useProductsStore = defineStore("products", {
 
       try {
         const { getProductById } = useProductsService();
-        const { data } = await getProductById(id);
+        // request returns JSON directly via $fetch
+        const data = await getProductById(id);
 
-        if (data.value) {
-          this.currentProduct = data.value as any;
+        if (data) {
+          this.currentProduct = data as any;
         }
       } catch (error: any) {
         this.error = error.message || "Failed to fetch product";
@@ -99,10 +100,11 @@ export const useProductsStore = defineStore("products", {
     async fetchCategories() {
       try {
         const { getCategories } = useProductsService();
-        const { data } = await getCategories();
+        // request returns JSON directly via $fetch
+        const data = await getCategories();
 
-        if (data.value) {
-          this.categories = data.value as any;
+        if (data) {
+          this.categories = data as any;
         }
       } catch (error: any) {
         this.error = error.message || "Failed to fetch categories";

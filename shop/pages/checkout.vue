@@ -10,6 +10,7 @@ import { usePromotionService } from '~/services/promotions';
 import { useOrderService } from '~/services/orders'; 
 import { useAuthStore } from '~/stores/auth';
 import { useCustomersService } from '~/services/customers';
+import { useVNPayService } from '~/services/vnpayService';
 
 // --- KHỞI TẠO ---
 const checkoutStore = useCheckoutStore();
@@ -21,6 +22,7 @@ const { getActivePromotions, validatePromotion } = usePromotionService();
 const { createOrder } = useOrderService();
 const auth = useAuthStore();
 const { getProfile } = useCustomersService();
+const { createPayment: createVNPayPayment, getSupportedBanks } = useVNPayService();
 
 // Lấy dữ liệu từ checkoutStore
 const { items: checkoutItems, total: subtotal, count: checkoutCount } = storeToRefs(checkoutStore);
@@ -33,12 +35,13 @@ const address = reactive({
   ward_id: '',
 });
 const paymentMethod = ref('bank_transfer'); // 'bank_transfer' or 'cash_on_delivery'
+const selectedBank = ref(''); // VNPay bank code
 const voucherCode = ref('');
 const discount = ref(0);
 const voucherError = ref('');
 const loading = ref(false);
 const err = ref('');
-const transferConfirmed = ref(false); // Xác nhận đã chuyển khoản
+const supportedBanks = getSupportedBanks();
 
 // Promotion state
 const availablePromotions = ref([]);
@@ -246,19 +249,16 @@ const validationErrors = computed(() => {
   if (!address.province_id) errors.push(t('checkout.errors.validation.provinceRequired'));
   if (!address.district_id) errors.push(t('checkout.errors.validation.districtRequired'));
   if (!address.ward_id) errors.push(t('checkout.errors.validation.wardRequired'));
-  if (paymentMethod.value === 'bank_transfer' && !transferConfirmed.value) {
-    errors.push(t('checkout.errors.validation.transferConfirmRequired'));
-  }
   return errors;
 });
 
 const isFormValid = computed(() => validationErrors.value.length === 0);
 
 // --- HÀM XỬ LÝ ---
-// Reset checkbox khi chuyển đổi phương thức thanh toán
+// Clear bank selection when payment method changes
 watch(paymentMethod, (newMethod) => {
   if (newMethod !== 'bank_transfer') {
-    transferConfirmed.value = false;
+    selectedBank.value = '';
   }
 });
 
@@ -328,13 +328,48 @@ async function placeOrder() {
     if (data) {
       console.log('Đơn hàng đã được tạo:', data);
       
-      // Xóa sản phẩm khỏi giỏ hàng
-      const purchasedItemIds = checkoutItems.value.map(item => item.productId);
-      purchasedItemIds.forEach(id => cartStore.remove(id));
-      checkoutStore.clear();
+      // Kiểm tra phương thức thanh toán
+      if (paymentMethod.value === 'bank_transfer') {
+        // Thanh toán qua VNPay
+        try {
+          console.log('Tạo link thanh toán VNPay cho đơn hàng:', data.id);
+          
+          const paymentRequest = {
+            order_id: data.id,
+            bank_code: selectedBank.value || undefined,
+            language: 'vn' as 'vn' | 'en'
+          };
+          
+          const paymentResult = await createVNPayPayment(paymentRequest);
+          
+          if (paymentResult && paymentResult.payment_url) {
+            console.log('Chuyển hướng đến VNPay:', paymentResult.payment_url);
+            
+            // Xóa sản phẩm khỏi giỏ hàng trước khi chuyển sang VNPay
+            const purchasedItemIds = checkoutItems.value.map(item => item.productId);
+            purchasedItemIds.forEach(id => cartStore.remove(id));
+            checkoutStore.clear();
+            
+            // Chuyển hướng sang trang thanh toán VNPay
+            window.location.href = paymentResult.payment_url;
+            return; // Dừng lại để chờ redirect
+          } else {
+            throw new Error('Không thể tạo link thanh toán VNPay');
+          }
+        } catch (vnpayError: any) {
+          console.error('Lỗi tạo thanh toán VNPay:', vnpayError);
+          throw new Error(`VNPay: ${vnpayError?.message || 'Lỗi không xác định'}`);
+        }
+      } else {
+        // Thanh toán COD - flow cũ
+        // Xóa sản phẩm khỏi giỏ hàng
+        const purchasedItemIds = checkoutItems.value.map(item => item.productId);
+        purchasedItemIds.forEach(id => cartStore.remove(id));
+        checkoutStore.clear();
 
-      // Chuyển hướng đến trang cảm ơn
-      router.push(`/thanks?order_id=${data.id}`);
+        // Chuyển hướng đến trang cảm ơn
+        router.push(`/thanks?order_id=${data.id}`);
+      }
     } else {
       throw new Error(t('checkout.errors.noServerResponse'));
     }
@@ -474,6 +509,25 @@ async function placeOrder() {
                 </div>
               </label>
               
+              <!-- Bank Selection for VNPay -->
+              <div v-if="paymentMethod === 'bank_transfer'" class="ml-7 mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
+                  Chọn ngân hàng (tùy chọn)
+                </label>
+                <select 
+                  v-model="selectedBank" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="">-- Tất cả ngân hàng --</option>
+                  <option v-for="bank in supportedBanks" :key="bank.code" :value="bank.code">
+                    {{ bank.name }}
+                  </option>
+                </select>
+                <p class="mt-2 text-xs text-gray-500">
+                  Nếu không chọn, bạn có thể chọn ngân hàng trên trang VNPay
+                </p>
+              </div>
+              
               <label class="flex items-center space-x-3 cursor-pointer">
                 <input 
                   type="radio" 
@@ -505,33 +559,14 @@ async function placeOrder() {
           </div>
         </div>
 
-        <!-- QR Code cho chuyển khoản -->
+        <!-- Thông tin thanh toán VNPay -->
         <div v-if="paymentMethod === 'bank_transfer'" class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 class="text-lg font-semibold text-blue-900 mb-4">{{ $t('checkout.payment.bankTransferInfo.title') }}</h3>
-          <div class="text-center">
-            <div class="bg-white p-4 rounded-lg border-2 border-dashed border-blue-300 mb-4">
-              <div class="text-gray-500 text-sm mb-2">{{ $t('checkout.payment.bankTransferInfo.qrPlaceholder') }}</div>
-              <div class="w-48 h-48 bg-gray-100 mx-auto rounded-lg flex items-center justify-center">
-                <div class="text-gray-400 text-sm">{{ $t('checkout.payment.bankTransferInfo.qrCode') }}</div>
-              </div>
-            </div>
-            <div class="text-sm text-gray-600 mb-4">
-              <p class="mb-2">{{ $t('checkout.payment.bankTransferInfo.qrScanPrompt') }}</p>
-              <p class="font-medium">{{ $t('checkout.payment.bankTransferInfo.amountLabel') }} {{ format(finalTotal) }}</p>
-            </div>
-            
-            <!-- Checkbox xác nhận chuyển khoản -->
-            <div class="bg-white p-4 rounded-lg border border-blue-300">
-              <label class="flex items-center justify-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  v-model="transferConfirmed"
-                  :class="['h-5 w-5 rounded border-2', showValidation && !transferConfirmed ? 'border-red-500' : 'border-blue-500 text-blue-600 focus:ring-blue-500']"
-                />
-                <span class="text-sm font-medium text-gray-700">{{ $t('checkout.payment.bankTransferInfo.confirmCheckbox') }}</span>
-              </label>
-              <p class="text-xs text-gray-500 mt-2">{{ $t('checkout.payment.bankTransferInfo.confirmNote') }}</p>
-            </div>
+          <h3 class="text-lg font-semibold text-blue-900 mb-4">💳 Thanh toán qua VNPay</h3>
+          <div class="text-sm text-gray-600 space-y-2">
+            <p>✓ Thanh toán an toàn qua cổng VNPay</p>
+            <p>✓ Hỗ trợ ATM nội địa, thẻ quốc tế Visa/Master</p>
+            <p>✓ Bạn sẽ được chuyển sang trang VNPay để thanh toán</p>
+            <p class="font-medium text-blue-900 mt-4">Số tiền thanh toán: {{ format(finalTotal) }}</p>
           </div>
         </div>
       </section>

@@ -32,8 +32,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8008/api/v1',
-      defaultHost: 'http://localhost:8008'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8008/api/v1',
+      defaultHost: process.env.NUXT_PUBLIC_DEFAULT_HOST || 'http://localhost:8008'
     }
   },
 
@@ -41,6 +41,13 @@ export default defineNuxtConfig({
     build: {
       manifest: "business.manifest.json"
     },
+    server: {
+      allowedHosts: [
+        'assign-knowing-minds-whatever.trycloudflare.com',
+        '.trycloudflare.com',
+        'localhost'
+      ]
+    }
   },
 
   modules: [

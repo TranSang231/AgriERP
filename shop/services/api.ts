@@ -64,7 +64,7 @@ export function useApi() {
       headers['Idempotency-Key'] = headers['Idempotency-Key'] || cryptoRandomKey()
     }
     
-    const fullUrl = `${config.public.apiBase}${path}`
+    const fullUrl = buildFullUrl(path)
     console.log('🔥 API Request:', upperMethod, fullUrl, 'params:', (opts as any).params)
     
     // Always use $fetch for client-side requests to avoid mounted component warnings
@@ -116,6 +116,28 @@ export function useApi() {
     
     // No specific permission required for other endpoints
     return null
+  }
+
+  function buildFullUrl(path: string): string {
+    const rawBase = (config.public.apiBase ?? '') as string
+
+    if (!path) {
+      return rawBase
+    }
+
+    if (/^https?:\/\//i.test(path)) {
+      return path
+    }
+
+    const base = rawBase.replace(/\/+$/, '')
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+    const shouldTrimEcommerce = base.endsWith('/ecommerce') && normalizedPath.startsWith('/ecommerce/')
+    const dedupedPath = shouldTrimEcommerce
+      ? normalizedPath.replace(/^\/ecommerce/, '')
+      : normalizedPath
+
+    return `${base}${dedupedPath}`
   }
 
   return { request }

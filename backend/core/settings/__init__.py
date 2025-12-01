@@ -16,3 +16,8 @@ if not exists(env_file):
 
 if exists(env_file):
     environ.Env.read_env(str(env_file))
+
+# Load tunnel config if exists
+tunnel_env_file = join(dirname(BASE_DIR), ".env.tunnel")
+if exists(tunnel_env_file):
+    environ.Env.read_env(str(tunnel_env_file))

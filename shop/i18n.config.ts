@@ -71,6 +71,7 @@
             subtitle: 'Popular items trusted by farmers worldwide'
           },
           viewAllProducts: 'View All Products',
+          unknownCategory: 'Unknown category',
           newsletter: {
             title: 'Stay Updated',
             subtitle: 'Get the latest news about agricultural products and farming tips',
@@ -80,6 +81,57 @@
           meta: {
             title: 'AgriShop - Quality Agricultural Products',
             description: 'Discover premium farming supplies, seeds, tools, and equipment for modern agriculture at AgriShop.'
+          }
+        },
+        staticPages: {
+          common: {
+            breadcrumbs: {
+              home: 'Home'
+            },
+            intro: 'We are still preparing rich content for this page.',
+            comingSoon: 'More detailed information will be available soon. Thank you for your patience!'
+          },
+          about: {
+            pageName: 'About',
+            headTitle: 'About AgriShop',
+            metaDescription: 'Learn about AgriShop and how we support modern agriculture.',
+            title: 'About AgriShop',
+            description: 'AgriShop connects farmers and businesses with trusted agricultural supplies and services.'
+          },
+          contact: {
+            pageName: 'Contact',
+            headTitle: 'Contact AgriShop',
+            metaDescription: 'Find ways to contact the AgriShop support team.',
+            title: 'Contact Us',
+            description: 'Need support? Reach out to our team and we will gladly assist you.'
+          },
+          help: {
+            pageName: 'Help Center',
+            headTitle: 'Help Center - AgriShop',
+            metaDescription: 'Find answers to common AgriShop questions.',
+            title: 'Help Center',
+            description: 'We are compiling guides and answers for the most common customer questions.'
+          },
+          shipping: {
+            pageName: 'Shipping',
+            headTitle: 'Shipping Information - AgriShop',
+            metaDescription: 'Understand how AgriShop ships agricultural products.',
+            title: 'Shipping Information',
+            description: 'Details about shipping methods, timelines, and coverage areas will appear here soon.'
+          },
+          returns: {
+            pageName: 'Returns',
+            headTitle: 'Returns & Refunds - AgriShop',
+            metaDescription: 'Learn how returns and refunds work at AgriShop.',
+            title: 'Returns & Refunds',
+            description: 'We are finalizing our return policy to make sure it is clear and fair for every customer.'
+          },
+          faq: {
+            pageName: 'FAQ',
+            headTitle: 'Frequently Asked Questions - AgriShop',
+            metaDescription: 'Frequently asked questions about AgriShop products and services.',
+            title: 'Frequently Asked Questions',
+            description: 'A curated list of answers to common questions will be published very soon.'
           }
         },
           cart: {
@@ -573,6 +625,7 @@
             subtitle: 'Các mặt hàng phổ biến được nông dân trên toàn thế giới tin dùng'
           },
           viewAllProducts: 'Xem tất cả sản phẩm',
+          unknownCategory: 'Chưa có danh mục',
           newsletter: {
             title: 'Luôn cập nhật',
             subtitle: 'Nhận tin tức mới nhất về các sản phẩm nông nghiệp và mẹo canh tác',
@@ -582,6 +635,57 @@
           meta: {
             title: 'AgriShop - Sản phẩm nông nghiệp chất lượng',
             description: 'Khám phá vật tư, hạt giống, công cụ và thiết bị nông nghiệp cao cấp cho nền nông nghiệp hiện đại tại AgriShop.'
+          }
+        },
+        staticPages: {
+          common: {
+            breadcrumbs: {
+              home: 'Trang chủ'
+            },
+            intro: 'Chúng tôi đang hoàn thiện nội dung chi tiết cho trang này.',
+            comingSoon: 'Nội dung chi tiết sẽ sớm được cập nhật. Cảm ơn bạn đã chờ đợi!'
+          },
+          about: {
+            pageName: 'Giới thiệu',
+            headTitle: 'Về AgriShop',
+            metaDescription: 'Tìm hiểu về AgriShop và cách chúng tôi hỗ trợ nông nghiệp hiện đại.',
+            title: 'Về AgriShop',
+            description: 'AgriShop kết nối nông dân và doanh nghiệp với nguồn vật tư và dịch vụ nông nghiệp đáng tin cậy.'
+          },
+          contact: {
+            pageName: 'Liên hệ',
+            headTitle: 'Liên hệ AgriShop',
+            metaDescription: 'Các kênh liên hệ với đội ngũ hỗ trợ của AgriShop.',
+            title: 'Liên hệ với chúng tôi',
+            description: 'Cần hỗ trợ? Hãy nhắn cho chúng tôi, đội ngũ AgriShop luôn sẵn sàng trợ giúp.'
+          },
+          help: {
+            pageName: 'Trợ giúp',
+            headTitle: 'Trung tâm trợ giúp - AgriShop',
+            metaDescription: 'Tìm câu trả lời cho các câu hỏi thường gặp tại AgriShop.',
+            title: 'Trung tâm trợ giúp',
+            description: 'Chúng tôi đang tổng hợp hướng dẫn và câu trả lời cho những câu hỏi phổ biến nhất.'
+          },
+          shipping: {
+            pageName: 'Giao hàng',
+            headTitle: 'Thông tin giao hàng - AgriShop',
+            metaDescription: 'Tìm hiểu cách AgriShop giao sản phẩm nông nghiệp.',
+            title: 'Thông tin giao hàng',
+            description: 'Chi tiết về phương thức, thời gian và phạm vi giao hàng sẽ sớm được cập nhật.'
+          },
+          returns: {
+            pageName: 'Đổi trả',
+            headTitle: 'Chính sách đổi trả - AgriShop',
+            metaDescription: 'Tìm hiểu chính sách đổi trả và hoàn tiền tại AgriShop.',
+            title: 'Chính sách đổi trả',
+            description: 'Chúng tôi đang hoàn thiện chính sách đổi trả minh bạch và công bằng cho tất cả khách hàng.'
+          },
+          faq: {
+            pageName: 'Câu hỏi thường gặp',
+            headTitle: 'FAQ - AgriShop',
+            metaDescription: 'Những câu hỏi thường gặp về sản phẩm và dịch vụ của AgriShop.',
+            title: 'Câu hỏi thường gặp',
+            description: 'Danh sách câu hỏi và câu trả lời chi tiết sẽ được đăng tải trong thời gian sớm nhất.'
           }
         },
          cart: {

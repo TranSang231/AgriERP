@@ -26,8 +26,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8008/api/v1/ecommerce',
-      defaultHost: 'http://localhost:8008'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8008/api/v1/ecommerce',
+      defaultHost: process.env.NUXT_PUBLIC_DEFAULT_HOST || 'http://localhost:8008'
     }
   },
 
@@ -35,6 +35,23 @@ export default defineNuxtConfig({
     build: {
       manifest: "shop.manifest.json",
     },
+    server: {
+      // Allow Cloudflare tunnel host
+      allowedHosts: [
+        'guide-courage-headquarters-photography.trycloudflare.com',
+        'assign-knowing-minds-whatever.trycloudflare.com',
+        '.trycloudflare.com', // Allow all Cloudflare tunnel domains
+        'localhost'
+      ],
+      // Disable HMR when accessed via HTTPS (Cloudflare tunnel)
+      hmr: false
+    }
+  },
+
+  // Allow Cloudflare tunnel host for dev server
+  devServer: {
+    host: '0.0.0.0', // Listen on all interfaces
+    port: 3011
   },
 
   modules: [
@@ -67,6 +84,7 @@ export default defineNuxtConfig({
     'nuxt-lodash',
   ],
 
+  // @ts-expect-error Provided via nuxt-svgo module runtime hooks
   svgo: {
     defaultImport: 'component',
     global: false,

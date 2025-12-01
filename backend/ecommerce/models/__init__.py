@@ -20,3 +20,4 @@ from .order_item import OrderItem
 from .goods_receipt import GoodsReceipt, GoodsReceiptItem
 from .inventory import Inventory, InventoryTransaction
 from .inventory_configuration import InventoryConfiguration
+from .payment_transaction import PaymentTransaction

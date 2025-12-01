@@ -22,6 +22,7 @@ from .views import (
     inventory_alerts
 )
 from .views.review_views import ProductReviewViewSet
+from .views.vnpay_views import create_payment, payment_ipn, payment_return
 
 
 app_name = "ecommerce"
@@ -52,4 +53,8 @@ urlpatterns = [
     path(r'api/v1/ecommerce/statistics/recent-orders', recent_orders, name='ecommerce-recent-orders'),
     path(r'api/v1/ecommerce/statistics/top-products', top_products, name='ecommerce-top-products'),
     path(r'api/v1/ecommerce/statistics/inventory-alerts', inventory_alerts, name='ecommerce-inventory-alerts'),
+    # VNPay payment endpoints
+    path(r'api/v1/ecommerce/payment/vnpay/create', create_payment, name='ecommerce-vnpay-create'),
+    path(r'api/v1/ecommerce/payment/vnpay/ipn', payment_ipn, name='ecommerce-vnpay-ipn'),
+    path(r'api/v1/ecommerce/payment/vnpay/return', payment_return, name='ecommerce-vnpay-return'),
 ]

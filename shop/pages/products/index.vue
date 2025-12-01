@@ -170,10 +170,14 @@ const loadingMore = ref(false);
 
 // Load initial data
 onMounted(async () => {
-  // Load categories
-  const { data } = await getCategories();
-  if (data.value) {
-    categories.value = data.value as any;
+  // Load categories (request returns JSON directly, not { data, error })
+  try {
+    const data = await getCategories();
+    if (Array.isArray(data)) {
+      categories.value = data as any;
+    }
+  } catch (e) {
+    console.error('Error loading categories:', e);
   }
 
   // Set initial filters from URL

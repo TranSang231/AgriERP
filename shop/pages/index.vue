@@ -173,7 +173,7 @@
             <h3
               class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors"
             >
-              {{ category.name.origin }}
+              {{ resolveLocalizedField(category?.name) }}
             </h3>
           </NuxtLink>
         </div>
@@ -300,6 +300,12 @@ const displayedProducts = computed(() =>
 );
 const displayedCategories = computed(() => categories.value.slice(0, 8));
 
+const resolveLocalizedField = (field: any, fallback = t('home.unknownCategory')) => {
+  if (!field) return fallback;
+  if (typeof field === 'string') return field;
+  return field.origin ?? fallback;
+};
+
 // Newsletter form
 const newsletterForm = reactive({
   email: "",
@@ -337,23 +343,33 @@ onMounted(async () => {
       getCategories(),
     ]);
 
-    if (
-      productsResult.status === "fulfilled" &&
-      productsResult.value.data.value
-    ) {
-      const summary = productsResult.value.data.value as any[];
-      featuredProducts.value = summary.map((p) => ({
-        ...p,
-        image: p.image || p.thumbnail,
-      })) as Product[];
-      // console.log("Featured Product", featuredProducts.value);
+    if (productsResult.status === "fulfilled") {
+      console.log("[DEBUG] Products result:", productsResult.value);
+      // Try different response structures
+      const summary = productsResult.value.data?.value || productsResult.value.data || productsResult.value;
+      console.log("[DEBUG] Summary response:", summary);
+      console.log("[DEBUG] Summary length:", summary?.length);
+      
+      if (Array.isArray(summary)) {
+        featuredProducts.value = summary.map((p) => ({
+          ...p,
+          image: p.image || p.thumbnail,
+        })) as Product[];
+        console.log("Featured Product", featuredProducts.value);
+      } else {
+        console.error("[DEBUG] Summary is not an array:", summary);
+      }
+    } else {
+      console.error("[DEBUG] Products fetch failed or empty:", productsResult);
     }
 
-    if (
-      categoriesResult.status === "fulfilled" &&
-      categoriesResult.value.data.value
-    ) {
-      categories.value = categoriesResult.value.data.value as ProductCategory[];
+    if (categoriesResult.status === "fulfilled") {
+      console.log("[DEBUG] Categories result:", categoriesResult.value);
+      const cats = categoriesResult.value.data?.value || categoriesResult.value.data || categoriesResult.value;
+      console.log("[DEBUG] Categories response:", cats);
+      if (cats) {
+        categories.value = cats as ProductCategory[];
+      }
     }
   } catch (error) {
     console.error("Failed to load data:", error);

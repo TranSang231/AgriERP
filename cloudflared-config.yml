@@ -1,0 +1,18 @@
+tunnel: YOUR_TUNNEL_ID
+credentials-file: C:\Users\YOUR_USERNAME\.cloudflared\YOUR_TUNNEL_ID.json
+
+ingress:
+  # Backend API
+  - hostname: api.yourdomain.com
+    service: http://localhost:8008
+  
+  # Business Frontend
+  - hostname: business.yourdomain.com
+    service: http://localhost:3008
+  
+  # Shop Frontend
+  - hostname: shop.yourdomain.com
+    service: http://localhost:3010
+  
+  # Catch-all rule
+  - service: http_status:404

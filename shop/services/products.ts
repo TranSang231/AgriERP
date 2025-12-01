@@ -105,11 +105,13 @@ export function useProductsService() {
     });
 
     const query = params.toString() ? `?${params.toString()}` : "";
-    return request<ProductResponse>(`/products${query}`);
+    // Request the summary-list endpoint exposed under /api/v1/ecommerce/products
+    return request<ProductResponse>(`/ecommerce/products/summary-list${query}`);
   };
 
   const getProductById = (id: number) => {
-    return request<Product>(`/products/${id}`);
+    // Product detail from ecommerce ProductViewSet
+    return request<Product>(`/ecommerce/products/${id}`);
   };
 
   const getProductsByCategory = (
@@ -127,15 +129,15 @@ export function useProductsService() {
   };
 
   const getProductsSummary = () => {
-    return request<Product[]>("/products/summary-list");
+    return request<Product[]>("/ecommerce/products/summary-list");
   };
 
   const getCategories = () => {
-    return request<ProductCategory[]>("/product-categories");
+    return request<ProductCategory[]>("/ecommerce/product-categories");
   };
 
   const getCategoryById = (id: string) => {
-    return request<ProductCategory>(`/product-categories/${id}`);
+    return request<ProductCategory>(`/ecommerce/product-categories/${id}`);
   };
 
   return {
