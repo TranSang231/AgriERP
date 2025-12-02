@@ -27,7 +27,7 @@ Write-Host "  SHOP_TUNNEL_URL: $($tunnelEnv['SHOP_TUNNEL_URL'])" -ForegroundColo
 Write-Host ""
 
 # Update shop/.env
-Write-Host "[1/3] Updating shop/.env..." -ForegroundColor Yellow
+Write-Host "[1/2] Updating shop/.env..." -ForegroundColor Yellow
 $shopEnv = @"
 # Auto-generated from tunnel config
 # Generated at: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
@@ -39,21 +39,11 @@ NUXT_PUBLIC_DEFAULT_HOST=$($tunnelEnv['SHOP_TUNNEL_URL'])
 Set-Content "shop/.env" $shopEnv -NoNewline
 Write-Host "      [OK] shop/.env updated" -ForegroundColor Green
 
-# Update business/.env
-Write-Host "[2/3] Updating business/.env..." -ForegroundColor Yellow
-$businessEnv = @"
-# Auto-generated from tunnel config
-# Generated at: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-BACKEND_TUNNEL_URL=$($tunnelEnv['BACKEND_TUNNEL_URL'])
-BUSINESS_TUNNEL_URL=$($tunnelEnv['BUSINESS_TUNNEL_URL'])
-NUXT_PUBLIC_API_BASE=$($tunnelEnv['BACKEND_TUNNEL_URL'])/api/v1/ecommerce
-NUXT_PUBLIC_DEFAULT_HOST=$($tunnelEnv['BUSINESS_TUNNEL_URL'])
-"@
-Set-Content "business/.env" $businessEnv -NoNewline
-Write-Host "      [OK] business/.env updated" -ForegroundColor Green
+# Skip business/.env (runs locally only)
+Write-Host "[INFO] Skipping business/.env update (business uses local backend)" -ForegroundColor Cyan
 
 # Update backend/config.env - add tunnel URL to ALLOWED_HOSTS and CORS
-Write-Host "[3/3] Updating backend/config.env..." -ForegroundColor Yellow
+Write-Host "[2/2] Updating backend/config.env..." -ForegroundColor Yellow
 
 $configPath = "backend/config.env"
 $configContent = Get-Content $configPath -Raw
@@ -70,24 +60,34 @@ if ($configContent -notmatch [regex]::Escape($backendHost)) {
     Write-Host "      [INFO] $backendHost already in DJANGO_ALLOWED_HOSTS" -ForegroundColor Cyan
 }
 
-# Update CORS_ALLOWED_ORIGINS
+# Update CORS_ALLOWED_ORIGINS (remove old trycloudflare URLs first)
 $shopUrl = $tunnelEnv['SHOP_TUNNEL_URL']
 $businessUrl = $tunnelEnv['BUSINESS_TUNNEL_URL']
 $backendUrl = $tunnelEnv['BACKEND_TUNNEL_URL']
 
-if ($configContent -notmatch [regex]::Escape($shopUrl)) {
-    $configContent = $configContent -replace '(CORS_ALLOWED_ORIGINS=[^\r\n]*)', "`$1,$shopUrl"
-    Write-Host "      [OK] Added $shopUrl to CORS_ALLOWED_ORIGINS" -ForegroundColor Green
-}
+$corsPattern = 'CORS_ALLOWED_ORIGINS=([^\r\n]*)'
+if ($configContent -match $corsPattern) {
+    $originalCors = $matches[1].Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    $filteredCors = $originalCors | Where-Object { $_ -notmatch 'trycloudflare\.com' }
 
-if ($configContent -notmatch [regex]::Escape($businessUrl)) {
-    $configContent = $configContent -replace '(CORS_ALLOWED_ORIGINS=[^\r\n]*)', "`$1,$businessUrl"
-    Write-Host "      [OK] Added $businessUrl to CORS_ALLOWED_ORIGINS" -ForegroundColor Green
-}
+    if ($filteredCors.Count -ne $originalCors.Count) {
+        Write-Host "      [OK] Removed existing trycloudflare URLs from CORS_ALLOWED_ORIGINS" -ForegroundColor Green
+    }
 
-if ($configContent -notmatch [regex]::Escape($backendUrl)) {
-    $configContent = $configContent -replace '(CORS_ALLOWED_ORIGINS=[^\r\n]*)', "`$1,$backendUrl"
-    Write-Host "      [OK] Added $backendUrl to CORS_ALLOWED_ORIGINS" -ForegroundColor Green
+    $newOrigins = @($shopUrl, $businessUrl, $backendUrl) | Where-Object { $_ }
+    foreach ($origin in $newOrigins) {
+        if ($filteredCors -notcontains $origin) {
+            $filteredCors += $origin
+            Write-Host "      [OK] Added $origin to CORS_ALLOWED_ORIGINS" -ForegroundColor Green
+        } else {
+            Write-Host "      [INFO] $origin already in CORS_ALLOWED_ORIGINS" -ForegroundColor Cyan
+        }
+    }
+
+    $corsLine = "CORS_ALLOWED_ORIGINS=" + ($filteredCors -join ',')
+    $configContent = $configContent -replace $corsPattern, $corsLine
+} else {
+    Write-Host "      [WARN] CORS_ALLOWED_ORIGINS not found in config.env" -ForegroundColor Yellow
 }
 
 # Update VNPAY_RETURN_URL to use SHOP_TUNNEL_URL
@@ -104,6 +104,20 @@ if ($configContent -match 'VNPAY_RETURN_URL=([^\r\n]*)') {
     Write-Host "      [WARN] VNPAY_RETURN_URL not found in config.env" -ForegroundColor Yellow
 }
 
+# Update VNPAY_IPN_URL to use BACKEND_TUNNEL_URL
+$vnpayIpnUrl = "$(($tunnelEnv['BACKEND_TUNNEL_URL']))/api/v1/ecommerce/payment/vnpay/ipn"
+if ($configContent -match 'VNPAY_IPN_URL=([^\r\n]*)') {
+    $oldIpnUrl = $matches[1]
+    if ($oldIpnUrl -ne $vnpayIpnUrl) {
+        $configContent = $configContent -replace 'VNPAY_IPN_URL=[^\r\n]*', "VNPAY_IPN_URL=$vnpayIpnUrl"
+        Write-Host "      [OK] Updated VNPAY_IPN_URL to $vnpayIpnUrl" -ForegroundColor Green
+    } else {
+        Write-Host "      [INFO] VNPAY_IPN_URL already correct" -ForegroundColor Cyan
+    }
+} else {
+    Write-Host "      [WARN] VNPAY_IPN_URL not found in config.env" -ForegroundColor Yellow
+}
+
 Set-Content -Path $configPath -Value $configContent -NoNewline
 Write-Host "      [OK] backend/config.env updated" -ForegroundColor Green
 
@@ -115,5 +129,5 @@ Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Restart backend: cd backend; python manage.py runserver 8008" -ForegroundColor White
 Write-Host "  2. Restart shop: cd shop; npm run dev -- --port 3011" -ForegroundColor White
-Write-Host "  3. Restart business: cd business; npm run dev -- --port 3008" -ForegroundColor White
+Write-Host "  3. (Optional) Business frontend runs locally without tunnel" -ForegroundColor White
 Write-Host ""

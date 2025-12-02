@@ -43,7 +43,6 @@ export default defineNuxtConfig({
     },
     server: {
       allowedHosts: [
-        'assign-knowing-minds-whatever.trycloudflare.com',
         '.trycloudflare.com',
         'localhost'
       ]

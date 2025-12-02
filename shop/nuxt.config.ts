@@ -38,8 +38,6 @@ export default defineNuxtConfig({
     server: {
       // Allow Cloudflare tunnel host
       allowedHosts: [
-        'guide-courage-headquarters-photography.trycloudflare.com',
-        'assign-knowing-minds-whatever.trycloudflare.com',
         '.trycloudflare.com', // Allow all Cloudflare tunnel domains
         'localhost'
       ],
