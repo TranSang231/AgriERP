@@ -16,7 +16,6 @@ class ProductCategoryViewSet(BaseViewSet):
         "update": [["ecommerce:products:edit"]],
         "destroy": [["ecommerce:products:edit"]]
     }
-
     def get_permissions(self):
         """Allow public access for listing and viewing product categories."""
         if self.action in ["list", "retrieve"]:
