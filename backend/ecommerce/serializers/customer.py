@@ -11,6 +11,8 @@ class CustomerSerializer(WritableNestedSerializer):
     user_id = serializers.PrimaryKeyRelatedField(required=False, write_only=True, queryset=User.objects.all(),
                                                        pk_field=UUIDField(format='hex'), source='user')
     shipping_addresses = ShippingAddressSerializer(many=True, required=False)
+    permissions = serializers.SerializerMethodField()
+    customer_type = serializers.SerializerMethodField()
 
     class Meta:
         model = Customer
@@ -30,6 +32,8 @@ class CustomerSerializer(WritableNestedSerializer):
             'date_of_birth',
             'gender',
             'status',
+            'permissions',
+            'customer_type',
             'shipping_addresses',
             'created_at',
             'updated_at'
@@ -48,6 +52,21 @@ class CustomerSerializer(WritableNestedSerializer):
             'gender': {'required': False},
             'status': {'required': False}
         }
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "permissions", "customer_type"]
         nested_create_fields = ["user"]
+    
+    def get_permissions(self, obj):
+        """Return default permissions for all customers"""
+        return [
+            'view_profile',
+            'edit_profile',
+            'view_orders',
+            'create_order',
+            'cancel_order'
+        ]
+    
+    def get_customer_type(self, obj):
+        """Return customer type - can be extended later for VIP logic"""
+        # TODO: Add VIP logic based on customer.is_vip or other fields
+        return 'regular'
 
