@@ -14,7 +14,6 @@ class ProductShortSerializer(WritableNestedSerializer):
                                                    queryset=ProductCategory.objects.all(),
                                                    source='categories')
     thumbnail = serializers.SerializerMethodField()
-    
     def get_thumbnail(self, obj):
         """Return absolute API URL for thumbnail with normalized path."""
         if obj.thumbnail:
@@ -25,7 +24,6 @@ class ProductShortSerializer(WritableNestedSerializer):
             print(f"[DEBUG ProductShortSerializer] Generated thumbnail URL: {url}")  # DEBUG
             return url
         return None
-    
     class Meta:
         model = Product
         fields = [
