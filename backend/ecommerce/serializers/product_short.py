@@ -15,13 +15,11 @@ class ProductShortSerializer(WritableNestedSerializer):
                                                    source='categories')
     thumbnail = serializers.SerializerMethodField()
     def get_thumbnail(self, obj):
-        """Return absolute API URL for thumbnail with normalized path."""
         if obj.thumbnail:
             thumbnail_path = obj.thumbnail.name.replace("\\", "/")
             default_host = getattr(settings, "DEFAULT_HOST", "localhost:8008")
             default_scheme = getattr(settings, "DEFAULT_SCHEME", "http")
             url = f"{default_scheme}://{default_host}/api/v1/files/{thumbnail_path}"
-            print(f"[DEBUG ProductShortSerializer] Generated thumbnail URL: {url}")  # DEBUG
             return url
         return None
     class Meta:
