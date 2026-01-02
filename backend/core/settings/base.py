@@ -358,22 +358,33 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # https://docs.djangoproject.com/en/5.0/ref/databases/#mysql-notes
-DB_NAME = os.environ["DB_NAME"] if "DB_NAME" in os.environ else env("DB_NAME")
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": DB_NAME,
-        "USER": os.environ["DB_USER"] if "DB_USER" in os.environ else env("DB_USER"),
-        "PASSWORD": (
-            os.environ["DB_PASSWORD"]
-            if "DB_PASSWORD" in os.environ
-            else env("DB_PASSWORD")
-        ),
-        "HOST": os.environ["DB_HOST"] if "DB_HOST" in os.environ else env("DB_HOST"),
-        "PORT": os.environ["DB_PORT"] if "DB_PORT" in os.environ else env("DB_PORT"),
-        "OPTIONS": {"charset": "utf8mb4"},
+DB_NAME = os.environ.get("DB_NAME", "") or env.str("DB_NAME", default="")
+USE_SQLITE = LOCAL_BUILD and (not DB_NAME or DB_NAME.strip() == "")
+
+if USE_SQLITE:
+    # Use SQLite for local development if no DB_NAME is set
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": join(BASE_DIR, "db.sqlite3"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": DB_NAME,
+            "USER": os.environ["DB_USER"] if "DB_USER" in os.environ else env("DB_USER"),
+            "PASSWORD": (
+                os.environ["DB_PASSWORD"]
+                if "DB_PASSWORD" in os.environ
+                else env("DB_PASSWORD")
+            ),
+            "HOST": os.environ["DB_HOST"] if "DB_HOST" in os.environ else env("DB_HOST"),
+            "PORT": os.environ["DB_PORT"] if "DB_PORT" in os.environ else env("DB_PORT"),
+            "OPTIONS": {"charset": "utf8mb4"},
+        }
+    }
 
 AUTH_USER_MODEL = "oauth.User"
 OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth.Application"

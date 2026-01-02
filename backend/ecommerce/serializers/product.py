@@ -23,7 +23,6 @@ class ProductSerializer(WritableNestedSerializer):
     inventory = InventoryShortSerializer(read_only=True)
     thumbnail = serializers.SerializerMethodField()
     
-    # ✅ READ-ONLY fields from Product @property (reads from Inventory)
     in_stock = serializers.SerializerMethodField()
     available_stock = serializers.SerializerMethodField()
     is_low_stock = serializers.SerializerMethodField()
@@ -31,7 +30,7 @@ class ProductSerializer(WritableNestedSerializer):
     
     def get_in_stock(self, obj):
         """Get stock from Inventory via Product.in_stock property"""
-        return obj.in_stock  # Calls @property which reads from Inventory
+        return obj.in_stock
     
     def get_available_stock(self, obj):
         """Get available stock (current - reserved)"""
@@ -46,13 +45,11 @@ class ProductSerializer(WritableNestedSerializer):
         return obj.is_out_of_stock
     
     def get_thumbnail(self, obj):
-        """Return absolute API URL for thumbnail with normalized path."""
         if obj.thumbnail:
             thumbnail_path = obj.thumbnail.name.replace("\\", "/")
             default_host = getattr(settings, "DEFAULT_HOST", "localhost:8008")
             default_scheme = getattr(settings, "DEFAULT_SCHEME", "http")
             url = f"{default_scheme}://{default_host}/api/v1/files/{thumbnail_path}"
-            print(f"[DEBUG ProductSerializer] Generated thumbnail URL: {url}")
             return url
         return None
     
@@ -66,10 +63,10 @@ class ProductSerializer(WritableNestedSerializer):
             "description",
             "price",
             "unit",
-            "in_stock",  # READ-ONLY via SerializerMethodField
-            "available_stock",  # NEW: available for sale
-            "is_low_stock",  # NEW: low stock indicator
-            "is_out_of_stock",  # NEW: out of stock indicator
+            "in_stock",
+            "available_stock",
+            "is_low_stock",
+            "is_out_of_stock",
             "categories",
             "category_ids",
             "promotions",

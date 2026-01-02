@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
         if not password:
             raise ValueError("User must have an password")
         user = self.model(email=self.normalize_email(email))
-        user.fist_name = first_name
+        user.first_name = first_name
         user.last_name =  last_name
         user.is_superuser = is_superuser
         user.is_staff =  is_staff
@@ -31,4 +31,27 @@ class UserManager(BaseUserManager):
         if role_ids is not None and len(role_ids) > 0:
             role_ids = [UUID(hex=item) if isinstance(item, str) else item for item in role_ids]
             user.roles.add(*role_ids)
+        return user
+
+    def create_superuser(
+        self,
+        email,
+        password=None,
+        first_name=None,
+        last_name=None,
+        role_ids=[]
+    ):
+        """
+        Creates and saves a superuser with the given email and password.
+        """
+        user = self.create_user(
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            is_superuser=True,
+            is_staff=True,
+            active=True,
+            role_ids=role_ids
+        )
         return user
